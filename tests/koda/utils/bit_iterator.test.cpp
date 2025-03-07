@@ -21,3 +21,19 @@ TEST(LittleEndianInputBitIterTest, AppendBits) {
 
     ASSERT_NE(iter, koda::LittleEndianInputBitIter{bytes.cbegin()});
 }
+
+TEST(BigEndianInputBitIterTest, AppendBits) {
+    std::vector<uint8_t> bytes = {0b101011};
+    koda::BigEndianInputBitIter iter{bytes.cbegin()};
+
+    ASSERT_FALSE(*iter++);
+    ASSERT_FALSE(*iter++);
+    ASSERT_TRUE(*iter++);
+    ASSERT_FALSE(*iter++);
+    ASSERT_TRUE(*iter++);
+    ASSERT_FALSE(*iter++);
+    ASSERT_TRUE(*iter++);
+    ASSERT_TRUE(*iter++);
+
+    ASSERT_NE(iter, koda::BigEndianInputBitIter{bytes.cbegin()});
+}
