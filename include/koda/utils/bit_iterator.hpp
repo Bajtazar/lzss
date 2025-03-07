@@ -83,7 +83,7 @@ concept SameSize = (sizeof(Tp) == sizeof(Up));
  */
 template <class Iter>
 concept ByteInputIterator = std::input_iterator<Iter> && requires(Iter iter) {
-    { *iter } -> std::same_as<std::byte>;
+    { *iter } -> SameSize<std::byte>;
 };
 
 /**
