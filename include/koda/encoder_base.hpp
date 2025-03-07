@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cinttypes>
 #include <concepts>
 #include <istream>
 #include <ostream>
