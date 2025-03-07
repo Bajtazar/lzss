@@ -38,9 +38,11 @@ constexpr void LittleEndianOutputBitIter<Iter>::SkipToNextByte(void) noexcept {
 }
 
 template <ByteOutputIterator Iter>
-constexpr void LittleEndianOutputBitIter<Iter>::saveByte(
-    std::byte byte) noexcept {
-    temporary_ = bit_iter_ = 0;
+constexpr void LittleEndianOutputBitIter<Iter>::SaveByte(
+    uint8_t byte) noexcept {
+    if (bit_iter_) {
+        SkipToNextByte();
+    }
     *iter_++ = byte;
 }
 
@@ -82,7 +84,7 @@ constexpr void BigEndianOutputBitIter<Iter>::SkipToNextByte(void) noexcept {
 }
 
 template <ByteOutputIterator Iter>
-constexpr void BigEndianOutputBitIter<Iter>::saveByte(std::byte byte) noexcept {
+constexpr void BigEndianOutputBitIter<Iter>::SaveByte(std::byte byte) noexcept {
     temporary_ = 0;
     bit_iter_ = 7;
     *iter_++ = byte;

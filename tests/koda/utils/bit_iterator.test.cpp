@@ -120,3 +120,74 @@ TEST(BigEndianInputBitIterTest, ReadByte) {
 
     ASSERT_EQ(iter, koda::BigEndianInputBitIter{bytes.cend()});
 }
+
+TEST(LittleEndianOutputBitIterTest, AppendBits) {
+    std::vector<uint8_t> result;
+    koda::LittleEndianOutputBitIter iter{std::back_inserter(result)};
+
+    ASSERT_EQ(iter.Position(), 0);
+    *iter++ = 1;
+    ASSERT_EQ(iter.Position(), 1);
+    *iter++ = 0;
+    ASSERT_EQ(iter.Position(), 2);
+    *iter++ = 1;
+    ASSERT_EQ(iter.Position(), 3);
+    *iter++ = 0;
+    ASSERT_EQ(iter.Position(), 4);
+    *iter++ = 1;
+    ASSERT_EQ(iter.Position(), 5);
+    *iter++ = 1;
+    ASSERT_EQ(iter.Position(), 6);
+    *iter++ = 0;
+    ASSERT_EQ(iter.Position(), 7);
+    *iter++ = 1;
+    ASSERT_EQ(iter.Position(), 0);
+
+    ASSERT_FALSE(result.empty());
+    ASSERT_EQ(result.front(), 0b10110101);
+}
+
+TEST(LittleEndianOutputBitIterTest, Skip) {
+    std::vector<uint8_t> result;
+    koda::LittleEndianOutputBitIter iter{std::back_inserter(result)};
+
+    ASSERT_EQ(iter.Position(), 0);
+    *iter++ = 1;
+    ASSERT_EQ(iter.Position(), 1);
+    *iter++ = 0;
+    ASSERT_EQ(iter.Position(), 2);
+    *iter++ = 1;
+    ASSERT_EQ(iter.Position(), 3);
+    iter.SkipToNextByte();
+    ASSERT_EQ(iter.Position(), 0);
+    *iter++ = 1;
+    ASSERT_EQ(iter.Position(), 1);
+    *iter++ = 1;
+    ASSERT_EQ(iter.Position(), 2);
+    iter.SkipToNextByte();
+    ASSERT_EQ(iter.Position(), 0);
+
+    ASSERT_EQ(result.size(), 2);
+    ASSERT_EQ(result[0], 0b101);
+    ASSERT_EQ(result[1], 0b11);
+}
+
+TEST(LittleEndianOutputBitIterTest, SaveByte) {
+    std::vector<uint8_t> result;
+    koda::LittleEndianOutputBitIter iter{std::back_inserter(result)};
+
+    ASSERT_EQ(iter.Position(), 0);
+    *iter++ = 1;
+    ASSERT_EQ(iter.Position(), 1);
+    *iter++ = 1;
+    ASSERT_EQ(iter.Position(), 2);
+    iter.SaveByte(0b1101);
+    ASSERT_EQ(iter.Position(), 0);
+    iter.SaveByte(0b1001);
+    ASSERT_EQ(iter.Position(), 0);
+
+    ASSERT_EQ(result.size(), 3);
+    ASSERT_EQ(result[0], 0b11);
+    ASSERT_EQ(result[1], 0b1101);
+    ASSERT_EQ(result[2], 0b1001);
+}

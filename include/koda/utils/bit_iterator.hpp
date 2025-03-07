@@ -44,7 +44,7 @@ concept BitOutputIterator =
     requires { typename Iter::iterator_category; } &&
     std::derived_from<typename Iter::iterator_category, BitOutputIteratorTag> &&
     requires(Iter iter, std::byte byte) {
-        { iter.saveByte(byte) } -> std::same_as<void>;
+        { iter.SaveByte(byte) } -> std::same_as<void>;
         { iter.Position() } -> std::same_as<uint8_t>;
     };
 
@@ -92,8 +92,8 @@ concept ByteInputIterator = std::input_iterator<Iter> && requires(Iter iter) {
  * @tparam Iter the checked iterator
  */
 template <class Iter>
-concept ByteOutputIterator = std::output_iterator<Iter, char> &&
-                             requires(Iter iter, char c) { *iter = c; };
+concept ByteOutputIterator = std::output_iterator<Iter, uint8_t> &&
+                             requires(Iter iter, uint8_t c) { *iter = c; };
 
 /**
  * Iterator returning the values of the individual bits in the
@@ -283,7 +283,8 @@ class LittleEndianOutputBitIter {
      *
      * @return the copied object
      */
-    [[nodiscard]] constexpr LittleEndianOutputBitIter operator++(int) noexcept {
+    [[nodiscard]] constexpr LittleEndianOutputBitIter& operator++(
+        int) noexcept {
         return *this;
     }
 
@@ -319,7 +320,7 @@ class LittleEndianOutputBitIter {
      *
      * @param byte the saved byte
      */
-    constexpr void saveByte(std::byte byte) noexcept;
+    constexpr void SaveByte(uint8_t byte) noexcept;
 
     /**
      * Returns the current bit Position
@@ -559,7 +560,7 @@ class BigEndianOutputBitIter {
      *
      * @param byte the saved byte
      */
-    constexpr void saveByte(std::byte byte) noexcept;
+    constexpr void SaveByte(std::byte byte) noexcept;
 
     /**
      * Returns the current bit Position
