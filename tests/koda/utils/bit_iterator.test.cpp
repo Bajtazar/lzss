@@ -88,3 +88,35 @@ TEST(BigEndianInputBitIterTest, AppendBits) {
 
     ASSERT_NE(iter, koda::BigEndianInputBitIter{bytes.cbegin()});
 }
+
+TEST(BigEndianInputBitIterTest, Skip) {
+    std::vector<uint8_t> bytes = {0b101011, 0b1101};
+    koda::BigEndianInputBitIter iter{bytes.cbegin()};
+
+    ASSERT_EQ(iter.Position(), 7);
+    ASSERT_FALSE(*iter++);
+    ASSERT_EQ(iter.Position(), 6);
+    ASSERT_FALSE(*iter++);
+    iter.SkipToNextByte();
+    ASSERT_EQ(iter.Position(), 7);
+    ASSERT_FALSE(*iter++);
+    ASSERT_EQ(iter.Position(), 6);
+    ASSERT_FALSE(*iter++);
+    ASSERT_EQ(iter.Position(), 5);
+
+    ASSERT_EQ(iter, koda::BigEndianInputBitIter{std::next(bytes.cbegin())});
+}
+
+TEST(BigEndianInputBitIterTest, ReadByte) {
+    std::vector<uint8_t> bytes = {0b101011, 0b1101};
+    koda::BigEndianInputBitIter iter{bytes.cbegin()};
+
+    ASSERT_EQ(iter.Position(), 7);
+    ASSERT_FALSE(*iter++);
+    ASSERT_EQ(iter.Position(), 6);
+    ASSERT_FALSE(*iter++);
+    iter.SkipToNextByte();
+    ASSERT_EQ(iter.ReadByte(), std::byte{0b1101});
+
+    ASSERT_EQ(iter, koda::BigEndianInputBitIter{bytes.cend()});
+}
