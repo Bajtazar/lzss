@@ -6,16 +6,16 @@
 
 namespace koda {
 
-template <std::integral InputToken, std::integral OutputToken>
+template <std::integral InputToken>
 class EncoderBase {
    public:
     using InputTokenStream = std::basic_istream<InputToken>;
-    using OutputTokenStream = std::basic_ostream<OutputToken>;
+    using OutputBinaryStream = std::basic_ostream<bool>;
 
     constexpr explicit EncoderBase() noexcept = default;
 
     virtual void operator()(InputTokenStream& input,
-                            OutputTokenStream& output) const = 0;
+                            OutputBinaryStream& output) const = 0;
 
     virtual ~EncoderBase() noexcept = default;
 
