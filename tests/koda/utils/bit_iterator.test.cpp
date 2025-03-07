@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include <iterator>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -29,6 +30,38 @@ TEST(LittleEndianInputBitIterTest, AppendBits) {
     ASSERT_EQ(iter.Position(), 0);
 
     ASSERT_NE(iter, koda::LittleEndianInputBitIter{bytes.cbegin()});
+}
+
+TEST(LittleEndianInputBitIterTest, Skip) {
+    std::vector<uint8_t> bytes = {0b101011, 0b1101};
+    koda::LittleEndianInputBitIter iter{bytes.cbegin()};
+
+    ASSERT_EQ(iter.Position(), 0);
+    ASSERT_TRUE(*iter++);
+    ASSERT_EQ(iter.Position(), 1);
+    ASSERT_TRUE(*iter++);
+    iter.SkipToNextByte();
+    ASSERT_EQ(iter.Position(), 0);
+    ASSERT_TRUE(*iter++);
+    ASSERT_EQ(iter.Position(), 1);
+    ASSERT_FALSE(*iter++);
+    ASSERT_EQ(iter.Position(), 2);
+
+    ASSERT_EQ(iter, koda::LittleEndianInputBitIter{std::next(bytes.cbegin())});
+}
+
+TEST(LittleEndianInputBitIterTest, ReadByte) {
+    std::vector<uint8_t> bytes = {0b101011, 0b1101};
+    koda::LittleEndianInputBitIter iter{bytes.cbegin()};
+
+    ASSERT_EQ(iter.Position(), 0);
+    ASSERT_TRUE(*iter++);
+    ASSERT_EQ(iter.Position(), 1);
+    ASSERT_TRUE(*iter++);
+    iter.SkipToNextByte();
+    ASSERT_EQ(iter.ReadByte(), std::byte{0b1101});
+
+    ASSERT_EQ(iter, koda::LittleEndianInputBitIter{bytes.cend()});
 }
 
 TEST(BigEndianInputBitIterTest, AppendBits) {
