@@ -9,7 +9,7 @@
 
 namespace koda {
 
-class LzssDistanceTable {
+class LzDistanceTable {
    public:
     using InputBinaryStream = std::basic_istream<bool>;
     using OutputBinaryStream = std::basic_ostream<bool>;
@@ -19,7 +19,7 @@ class LzssDistanceTable {
         size_t match_length;
     };
 
-    constexpr explicit LzssDistanceTable() noexcept = default;
+    constexpr explicit LzDistanceTable() noexcept = default;
 
     virtual void EncodeDistance(
         OutputBinaryStream& stream, size_t distance, size_t match_length,
@@ -29,16 +29,15 @@ class LzssDistanceTable {
         InputBinaryStream& stream, uint16_t start_token,
         const DecoderBase<uint16_t>& auxiliary_decoder) const = 0;
 
-    virtual ~LzssDistanceTable() noexcept = default;
+    virtual ~LzDistanceTable() noexcept = default;
 
    protected:
-    constexpr LzssDistanceTable(const LzssDistanceTable&) noexcept = default;
-    constexpr LzssDistanceTable(LzssDistanceTable&&) noexcept = default;
+    constexpr LzDistanceTable(const LzDistanceTable&) noexcept = default;
+    constexpr LzDistanceTable(LzDistanceTable&&) noexcept = default;
 
-    constexpr LzssDistanceTable& operator=(const LzssDistanceTable&) noexcept =
+    constexpr LzDistanceTable& operator=(const LzDistanceTable&) noexcept =
         default;
-    constexpr LzssDistanceTable& operator=(LzssDistanceTable&&) noexcept =
-        default;
+    constexpr LzDistanceTable& operator=(LzDistanceTable&&) noexcept = default;
 };
 
 }  // namespace koda
