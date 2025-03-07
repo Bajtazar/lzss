@@ -1,0 +1,15 @@
+---
+Language: Cpp
+BasedOnStyle: Google
+IndentWidth: 4
+IncludeBlocks: Regroup
+IncludeCategories:
+
+- Regex:           '^<koda/.*'
+  Priority:        1
+- Regex:           '^<.*\.h>'
+  Priority:        2
+- Regex:           '^<.*'
+  Priority:        3
+- Regex:           '.*'
+  Priority:        4
