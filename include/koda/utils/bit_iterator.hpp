@@ -524,7 +524,7 @@ class BigEndianOutputBitIter {
      *
      * @return the copied object
      */
-    [[nodiscard]] constexpr BigEndianOutputBitIter operator++(int) noexcept {
+    [[nodiscard]] constexpr BigEndianOutputBitIter& operator++(int) noexcept {
         return *this;
     }
 
@@ -560,7 +560,7 @@ class BigEndianOutputBitIter {
      *
      * @param byte the saved byte
      */
-    constexpr void SaveByte(std::byte byte) noexcept;
+    constexpr void SaveByte(uint8_t byte) noexcept;
 
     /**
      * Returns the current bit Position

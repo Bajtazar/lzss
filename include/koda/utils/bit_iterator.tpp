@@ -51,7 +51,7 @@ constexpr BigEndianInputBitIter<Iter>& BigEndianInputBitIter<Iter>::operator++(
     void) noexcept {
     if (!(bit_iter_--)) {
         ++iter_;
-        bit_iter_ = 7;
+        bit_iter_ = ByteLength() - 1;
     }
     return *this;
 }
@@ -59,7 +59,7 @@ constexpr BigEndianInputBitIter<Iter>& BigEndianInputBitIter<Iter>::operator++(
 template <ByteInputIterator Iter>
 [[nodiscard]] constexpr std::byte BigEndianInputBitIter<Iter>::ReadByte(
     void) noexcept {
-    bit_iter_ = 7;
+    bit_iter_ = ByteLength() - 1;
     return static_cast<std::byte>(*iter_++);
 }
 
@@ -70,7 +70,7 @@ constexpr BigEndianOutputBitIter<Iter>& BigEndianOutputBitIter<Iter>::operator=(
     temporary_ = (~mask & temporary_) | (value << bit_iter_);
     if (!(bit_iter_--)) {
         *iter_++ = temporary_;
-        bit_iter_ = 7;
+        bit_iter_ = ByteLength() - 1;
         temporary_ = 0;
     }
     return *this;
@@ -79,14 +79,15 @@ constexpr BigEndianOutputBitIter<Iter>& BigEndianOutputBitIter<Iter>::operator=(
 template <ByteOutputIterator Iter>
 constexpr void BigEndianOutputBitIter<Iter>::SkipToNextByte(void) noexcept {
     *iter_++ = temporary_;
-    bit_iter_ = 7;
+    bit_iter_ = ByteLength() - 1;
     temporary_ = 0;
 }
 
 template <ByteOutputIterator Iter>
-constexpr void BigEndianOutputBitIter<Iter>::SaveByte(std::byte byte) noexcept {
-    temporary_ = 0;
-    bit_iter_ = 7;
+constexpr void BigEndianOutputBitIter<Iter>::SaveByte(uint8_t byte) noexcept {
+    if (bit_iter_ != ByteLength() - 1) {
+        SkipToNextByte();
+    }
     *iter_++ = byte;
 }
 
