@@ -3,89 +3,91 @@
 namespace koda {
 
 template <ByteInputIterator Iter>
-constexpr LittleEndianInputBitIter<Iter>&
-LittleEndianInputBitIter<Iter>::operator++(void) noexcept {
-    if (++bitIter == byteLength()) {
-        ++iter;
-        bitIter = 0;
+constexpr LittleEndianInputbit_iter_<Iter>&
+LittleEndianInputbit_iter_<Iter>::operator++(void) noexcept {
+    if (++bit_iter_ == byteLength()) {
+        ++iter_;
+        bit_iter_ = 0;
     }
     return *this;
 }
 
 template <ByteInputIterator Iter>
-[[nodiscard]] constexpr std::byte LittleEndianInputBitIter<Iter>::readByte(
+[[nodiscard]] constexpr std::byte LittleEndianInputbit_iter_<Iter>::ReadByte(
     void) noexcept {
-    bitIter = 0;
-    return static_cast<std::byte>(*iter++);
+    bit_iter_ = 0;
+    return static_cast<std::byte>(*iter_++);
 }
 
 template <ByteOutputIterator Iter>
-constexpr LittleEndianOutputBitIter<Iter>&
-LittleEndianOutputBitIter<Iter>::operator=(bit value) noexcept {
-    uint8 mask = 1 << bitIter;
-    temporary = (~mask & temporary) | (value << bitIter);
-    if (++bitIter == byteLength()) {
-        *iter++ = temporary;
-        bitIter = temporary = 0;
+constexpr LittleEndianOutputbit_iter_<Iter>&
+LittleEndianOutputbit_iter_<Iter>::operator=(bit value) noexcept {
+    uint8 mask = 1 << bit_iter_;
+    temporary_ = (~mask & temporary_) | (value << bit_iter_);
+    if (++bit_iter_ == byteLength()) {
+        *iter_++ = temporary_;
+        bit_iter_ = temporary_ = 0;
     }
     return *this;
 }
 
 template <ByteOutputIterator Iter>
-constexpr void LittleEndianOutputBitIter<Iter>::skipToNextByte(void) noexcept {
-    *iter++ = temporary;
-    bitIter = temporary = 0;
+constexpr void LittleEndianOutputbit_iter_<Iter>::SkipToNextByte(
+    void) noexcept {
+    *iter_++ = temporary_;
+    bit_iter_ = temporary_ = 0;
 }
 
 template <ByteOutputIterator Iter>
-constexpr void LittleEndianOutputBitIter<Iter>::saveByte(
+constexpr void LittleEndianOutputbit_iter_<Iter>::saveByte(
     std::byte byte) noexcept {
-    temporary = bitIter = 0;
-    *iter++ = byte;
+    temporary_ = bit_iter_ = 0;
+    *iter_++ = byte;
 }
 
 template <ByteInputIterator Iter>
-constexpr BigEndianInputBitIter<Iter>& BigEndianInputBitIter<Iter>::operator++(
-    void) noexcept {
-    if (!(bitIter--)) {
-        ++iter;
-        bitIter = 7;
+constexpr BigEndianInputbit_iter_<Iter>&
+BigEndianInputbit_iter_<Iter>::operator++(void) noexcept {
+    if (!(bit_iter_--)) {
+        ++iter_;
+        bit_iter_ = 7;
     }
     return *this;
 }
 
 template <ByteInputIterator Iter>
-[[nodiscard]] constexpr std::byte BigEndianInputBitIter<Iter>::readByte(
+[[nodiscard]] constexpr std::byte BigEndianInputbit_iter_<Iter>::ReadByte(
     void) noexcept {
-    bitIter = 7;
-    return static_cast<std::byte>(*iter++);
+    bit_iter_ = 7;
+    return static_cast<std::byte>(*iter_++);
 }
 
 template <ByteOutputIterator Iter>
-constexpr BigEndianOutputBitIter<Iter>& BigEndianOutputBitIter<Iter>::operator=(
-    bit value) noexcept {
-    uint8 mask = 1 << bitIter;
-    temporary = (~mask & temporary) | (value << bitIter);
-    if (!(bitIter--)) {
-        *iter++ = temporary;
-        bitIter = 7;
-        temporary = 0;
+constexpr BigEndianOutputbit_iter_<Iter>&
+BigEndianOutputbit_iter_<Iter>::operator=(bit value) noexcept {
+    uint8 mask = 1 << bit_iter_;
+    temporary_ = (~mask & temporary_) | (value << bit_iter_);
+    if (!(bit_iter_--)) {
+        *iter_++ = temporary_;
+        bit_iter_ = 7;
+        temporary_ = 0;
     }
     return *this;
 }
 
 template <ByteOutputIterator Iter>
-constexpr void BigEndianOutputBitIter<Iter>::skipToNextByte(void) noexcept {
-    *iter++ = temporary;
-    bitIter = 7;
-    temporary = 0;
+constexpr void BigEndianOutputbit_iter_<Iter>::SkipToNextByte(void) noexcept {
+    *iter_++ = temporary_;
+    bit_iter_ = 7;
+    temporary_ = 0;
 }
 
 template <ByteOutputIterator Iter>
-constexpr void BigEndianOutputBitIter<Iter>::saveByte(std::byte byte) noexcept {
-    temporary = 0;
-    bitIter = 7;
-    *iter++ = byte;
+constexpr void BigEndianOutputbit_iter_<Iter>::saveByte(
+    std::byte byte) noexcept {
+    temporary_ = 0;
+    bit_iter_ = 7;
+    *iter_++ = byte;
 }
 
 }  // namespace koda

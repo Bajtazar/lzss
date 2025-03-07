@@ -29,8 +29,8 @@ concept BitInputIterator =
     requires { typename Iter::iterator_category; } &&
     std::derived_from<typename Iter::iterator_category, BitInputIteratorTag> &&
     requires(Iter iter) {
-        { iter.readByte() } -> std::same_as<std::byte>;
-        { iter.position() } -> std::same_as<uint8_t>;
+        { iter.ReadByte() } -> std::same_as<std::byte>;
+        { iter.Position() } -> std::same_as<uint8_t>;
     };
 
 /**
@@ -45,7 +45,7 @@ concept BitOutputIterator =
     std::derived_from<typename Iter::iterator_category, BitOutputIteratorTag> &&
     requires(Iter iter, std::byte byte) {
         { iter.saveByte(byte) } -> std::same_as<void>;
-        { iter.position() } -> std::same_as<uint8_t>;
+        { iter.Position() } -> std::same_as<uint8_t>;
     };
 
 /**
@@ -117,7 +117,7 @@ class LittleEndianInputBitIter {
      * @param iter the constant reference to the iterator
      */
     explicit constexpr LittleEndianInputBitIter(Iter const& iter) noexcept
-        : iter{iter}, bitIter{0} {}
+        : iter_{iter}, bit_iter_{0} {}
 
     /**
      * Constructs a new little endian bit input iterator from
@@ -126,7 +126,7 @@ class LittleEndianInputBitIter {
      * @param iter the rvalue reference to the iterator
      */
     explicit constexpr LittleEndianInputBitIter(Iter&& iter) noexcept
-        : iter{std::move(iter)}, bitIter{0} {}
+        : iter_{std::move(iter)}, bit_iter_{0} {}
 
     /**
      * Constructs a new little endian bit input iterator
@@ -139,7 +139,7 @@ class LittleEndianInputBitIter {
      * @return the value of the currently examined bit
      */
     [[nodiscard]] constexpr bit operator*(void) const noexcept {
-        return ((1 << bitIter) & (*iter)) >> bitIter;
+        return ((1 << bit_iter_) & (*iter_)) >> bit_iter_;
     }
 
     /**
@@ -171,7 +171,7 @@ class LittleEndianInputBitIter {
     [[nodiscard]] friend constexpr bool operator==(
         LittleEndianInputBitIter const& left,
         LittleEndianInputBitIter const& right) noexcept {
-        return left.iter == right.iter;
+        return left.iter_ == right.iter_;
     }
 
     /**
@@ -179,16 +179,16 @@ class LittleEndianInputBitIter {
      *
      * @return the number of bits in byte
      */
-    [[nodiscard]] static inline consteval uint8_t byteLength(void) noexcept {
+    [[nodiscard]] static inline consteval uint8_t ByteLength(void) noexcept {
         return CHAR_BIT;
     }
 
     /**
      * Jums to the begining of the next byte
      */
-    constexpr void skipToNextByte(void) noexcept {
-        ++iter;
-        bitIter = 0;
+    constexpr void SkipToNextByte(void) noexcept {
+        ++iter_;
+        bit_iter_ = 0;
     }
 
     /**
@@ -196,20 +196,20 @@ class LittleEndianInputBitIter {
      *
      * @return the readed byte
      */
-    [[nodiscard]] constexpr std::byte readByte(void) noexcept;
+    [[nodiscard]] constexpr std::byte ReadByte(void) noexcept;
 
     /**
-     * Returns the current bit position
+     * Returns the current bit Position
      *
-     * @return the current bit position
+     * @return the current bit Position
      */
-    [[nodiscard]] constexpr uint8_t position(void) const noexcept {
-        return bitIter;
+    [[nodiscard]] constexpr uint8_t Position(void) const noexcept {
+        return bit_iter_;
     }
 
    private:
-    Iter iter;
-    uint8_t bitIter;
+    Iter iter_;
+    uint8_t bit_iter_;
 };
 
 /**
@@ -234,7 +234,7 @@ class LittleEndianOutputBitIter {
      * @param iter the constant reference to the iterator
      */
     explicit constexpr LittleEndianOutputBitIter(Iter const& iter) noexcept
-        : iter{iter}, temporary{0}, bitIter{0} {}
+        : iter_{iter}, temporary_{0}, bit_iter_{0} {}
 
     /**
      * Constructs a new little endian bit output iterator from
@@ -243,7 +243,7 @@ class LittleEndianOutputBitIter {
      * @param iter the rvalue reference to the iterator
      */
     explicit constexpr LittleEndianOutputBitIter(Iter&& iter) noexcept
-        : iter{std::move(iter)}, temporary{0}, bitIter{0} {}
+        : iter_{std::move(iter)}, temporary_{0}, bit_iter_{0} {}
 
     /**
      * Constructs a new little endian bit output iterator
@@ -297,7 +297,7 @@ class LittleEndianOutputBitIter {
     [[nodiscard]] friend constexpr bool operator==(
         LittleEndianOutputBitIter const& left,
         LittleEndianOutputBitIter const& right) noexcept {
-        return left.iter == right.iter;
+        return left.iter_ == right.iter_;
     }
 
     /**
@@ -305,14 +305,14 @@ class LittleEndianOutputBitIter {
      *
      * @return the number of bits in byte
      */
-    [[nodiscard]] static inline consteval uint8_t byteLength(void) noexcept {
+    [[nodiscard]] static inline consteval uint8_t ByteLength(void) noexcept {
         return CHAR_BIT;
     }
 
     /**
      * Jums to the begining of the next byte
      */
-    constexpr void skipToNextByte(void) noexcept;
+    constexpr void SkipToNextByte(void) noexcept;
 
     /**
      * Saves the entire byte
@@ -322,18 +322,18 @@ class LittleEndianOutputBitIter {
     constexpr void saveByte(std::byte byte) noexcept;
 
     /**
-     * Returns the current bit position
+     * Returns the current bit Position
      *
-     * @return the current bit position
+     * @return the current bit Position
      */
-    [[nodiscard]] constexpr uint8_t position(void) const noexcept {
-        return bitIter;
+    [[nodiscard]] constexpr uint8_t Position(void) const noexcept {
+        return bit_iter_;
     }
 
    private:
-    Iter iter;
-    uint8_t temporary;
-    uint8_t bitIter;
+    Iter iter_;
+    uint8_t temporary_;
+    uint8_t bit_iter_;
 };
 
 /**
@@ -358,7 +358,7 @@ class BigEndianInputBitIter {
      * @param iter the constant reference to the iterator
      */
     explicit constexpr BigEndianInputBitIter(Iter const& iter) noexcept
-        : iter{iter}, bitIter{7} {}
+        : iter_{iter}, bit_iter_{7} {}
 
     /**
      * Constructs a new big endian bit input iterator from
@@ -367,7 +367,7 @@ class BigEndianInputBitIter {
      * @param iter the rvalue reference to the iterator
      */
     explicit constexpr BigEndianInputBitIter(Iter&& iter) noexcept
-        : iter{std::move(iter)}, bitIter{7} {}
+        : iter_{std::move(iter)}, bit_iter_{7} {}
 
     /**
      * Constructs a new big endian bit input iterator
@@ -380,7 +380,7 @@ class BigEndianInputBitIter {
      * @return the value of the currently examined bit
      */
     [[nodiscard]] constexpr bit operator*(void) const noexcept {
-        return ((1 << bitIter) & (*iter)) >> bitIter;
+        return ((1 << bit_iter_) & (*iter_)) >> bit_iter_;
     }
 
     /**
@@ -412,7 +412,7 @@ class BigEndianInputBitIter {
     [[nodiscard]] friend constexpr bool operator==(
         BigEndianInputBitIter const& left,
         BigEndianInputBitIter const& right) noexcept {
-        return left.iter == right.iter;
+        return left.iter_ == right.iter_;
     }
 
     /**
@@ -420,16 +420,16 @@ class BigEndianInputBitIter {
      *
      * @return the number of bits in byte
      */
-    [[nodiscard]] static inline consteval uint8_t byteLength(void) noexcept {
+    [[nodiscard]] static inline consteval uint8_t ByteLength(void) noexcept {
         return CHAR_BIT;
     }
 
     /**
      * Jums to the begining of the next byte
      */
-    constexpr void skipToNextByte(void) noexcept {
-        ++iter;
-        bitIter = 7;
+    constexpr void SkipToNextByte(void) noexcept {
+        ++iter_;
+        bit_iter_ = 7;
     }
 
     /**
@@ -437,20 +437,20 @@ class BigEndianInputBitIter {
      *
      * @return the readed byte
      */
-    [[nodiscard]] constexpr std::byte readByte(void) noexcept;
+    [[nodiscard]] constexpr std::byte ReadByte(void) noexcept;
 
     /**
-     * Returns the current bit position
+     * Returns the current bit Position
      *
-     * @return the current bit position
+     * @return the current bit Position
      */
-    [[nodiscard]] constexpr uint8_t position(void) const noexcept {
-        return bitIter;
+    [[nodiscard]] constexpr uint8_t Position(void) const noexcept {
+        return bit_iter_;
     }
 
    private:
-    Iter iter;
-    uint8_t bitIter;
+    Iter iter_;
+    uint8_t bit_iter_;
 };
 
 /**
@@ -475,7 +475,7 @@ class BigEndianOutputBitIter {
      * @param iter the constant reference to the iterator
      */
     explicit constexpr BigEndianOutputBitIter(Iter const& iter) noexcept
-        : iter{iter}, temporary{0}, bitIter{7} {}
+        : iter_{iter}, temporary_{0}, bit_iter_{7} {}
 
     /**
      * Constructs a new big endian bit output iterator from
@@ -484,7 +484,7 @@ class BigEndianOutputBitIter {
      * @param iter the rvalue reference to the iterator
      */
     explicit constexpr BigEndianOutputBitIter(Iter&& iter) noexcept
-        : iter{std::move(iter)}, temporary{0}, bitIter{7} {}
+        : iter_{std::move(iter)}, temporary_{0}, bit_iter_{7} {}
 
     /**
      * Constructs a new big endian bit output iterator
@@ -537,7 +537,7 @@ class BigEndianOutputBitIter {
     [[nodiscard]] friend constexpr bool operator==(
         BigEndianOutputBitIter const& left,
         BigEndianOutputBitIter const& right) noexcept {
-        return left.iter == right.iter;
+        return left.iter_ == right.iter_;
     }
 
     /**
@@ -545,14 +545,14 @@ class BigEndianOutputBitIter {
      *
      * @return the number of bits in byte
      */
-    [[nodiscard]] static inline consteval uint8_t byteLength(void) noexcept {
+    [[nodiscard]] static inline consteval uint8_t ByteLength(void) noexcept {
         return CHAR_BIT;
     }
 
     /**
      * Jums to the begining of the next byte
      */
-    constexpr void skipToNextByte(void) noexcept;
+    constexpr void SkipToNextByte(void) noexcept;
 
     /**
      * Saves the entire byte
@@ -562,18 +562,18 @@ class BigEndianOutputBitIter {
     constexpr void saveByte(std::byte byte) noexcept;
 
     /**
-     * Returns the current bit position
+     * Returns the current bit Position
      *
-     * @return the current bit position
+     * @return the current bit Position
      */
-    [[nodiscard]] constexpr uint8_t position(void) const noexcept {
-        return bitIter;
+    [[nodiscard]] constexpr uint8_t Position(void) const noexcept {
+        return bit_iter_;
     }
 
    private:
-    Iter iter;
-    uint8_t temporary;
-    uint8_t bitIter;
+    Iter iter_;
+    uint8_t temporary_;
+    uint8_t bit_iter_;
 };
 
 }  // namespace koda
