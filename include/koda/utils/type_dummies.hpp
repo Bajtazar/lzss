@@ -6,40 +6,108 @@
 
 namespace koda {
 
-struct DummyBinaryInputIterator {
+template <typename Tp>
+struct DummyInputIterator {
     using difference_type = std::ptrdiff_t;
-    using value_type = uint8_t;
+    using value_type = Tp;
 
-    DummyBinaryInputIterator() = delete;
+    DummyInputIterator() = delete;
 
-    uint8_t operator*() const;
+    value_type operator*() const;
 
-    DummyBinaryInputIterator& operator++();
+    DummyInputIterator& operator++();
 
     void operator++(int);
 };
 
-using DummyLittleEndianInputBitIter =
-    LittleEndianInputBitIter<DummyBinaryInputIterator>;
-using DummyBigEndianInputBitIter =
-    BigEndianInputBitIter<DummyBinaryInputIterator>;
-
-struct DummyBinaryOutputIterator {
+struct DummyBitInputIterator {
     using difference_type = std::ptrdiff_t;
     using value_type = uint8_t;
 
-    DummyBinaryOutputIterator() = delete;
+    DummyBitInputIterator() = delete;
 
-    uint8_t& operator*() const;
+    value_type operator*() const;
 
-    DummyBinaryOutputIterator& operator++();
+    DummyBitInputIterator& operator++();
 
-    DummyBinaryOutputIterator& operator++(int);
+    std::byte ReadByte();
+
+    uint8_t Position();
+
+    void operator++(int);
 };
 
-using DummyLittleEndianOutputBitIter =
-    LittleEndianOutputBitIter<DummyBinaryOutputIterator>;
-using DummyBigEndianOutputBitIter =
-    BigEndianOutputBitIter<DummyBinaryOutputIterator>;
+static_assert(BitInputIterator<DummyBitInputIterator>);
+
+template <typename Tp>
+struct DummyOutputIterator {
+    using difference_type = std::ptrdiff_t;
+    using value_type = Tp;
+
+    DummyOutputIterator() = delete;
+
+    value_type& operator*() const;
+
+    DummyOutputIterator& operator++();
+
+    DummyOutputIterator& operator++(int);
+};
+
+struct DummyBitOutputIterator {
+    using difference_type = std::ptrdiff_t;
+    using value_type = uint8_t;
+
+    DummyBitOutputIterator() = delete;
+
+    value_type& operator*() const;
+
+    void SaveByte(uint8_t);
+
+    uint8_t Position();
+
+    DummyBitOutputIterator& operator++();
+
+    DummyBitOutputIterator& operator++(int);
+};
+
+static_assert(BitOutputIterator<DummyBitOutputIterator>);
+
+template <typename Tp>
+class DummyInputRange {
+   public:
+    using iterator = DummyInputIterator<Tp>;
+
+    iterator begin();
+
+    iterator end();
+};
+
+class DummyBitInputRange {
+   public:
+    using iterator = DummyBitInputIterator;
+
+    iterator begin();
+
+    iterator end();
+};
+
+template <typename Tp>
+class DummyOutputRange {
+   public:
+    using iterator = DummyOutputIterator<Tp>;
+
+    iterator begin();
+
+    iterator end();
+};
+
+class DummyBitOutputRange {
+   public:
+    using iterator = DummyBitOutputIterator;
+
+    iterator begin();
+
+    iterator end();
+};
 
 }  // namespace koda
