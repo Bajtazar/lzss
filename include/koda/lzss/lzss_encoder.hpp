@@ -1,26 +1,25 @@
 #pragma once
 
-#include <koda/encoder_base.hpp>
+#include <koda/coder.hpp>
 #include <koda/lz/lz_distance_table.hpp>
 
+#include <concepts>
 #include <memory>
 
 namespace koda {
 
-class LzssEncoder final : public EncoderBase<uint8_t> {
+template <typename DistanteTable, Encoder<uint16_t> AuxiliaryEncoder>
+class LzssEncoder {
    public:
-    explicit LzssEncoder(std::unique_ptr<LzDistanceTable> distance_table,
-                         std::unique_ptr<EncoderBase<uint16_t>>
-                             auxiliary_encoder = nullptr) noexcept;
+    explicit LzssEncoder(DistanteTable distance_table,
+                         AuxiliaryEncoder auxiliary_encoder) noexcept;
 
-    void operator()(InputTokenStream& input,
-                    OutputBinaryStream& output) const override final;
-
-    ~LzssEncoder() noexcept override final = default;
+    void operator()(auto std::ranges::input_range&& input,
+                    auto BitOutputRange&& output) const;
 
    private:
-    std::unique_ptr<LzDistanceTable> distance_table_;
-    std::unique_ptr<EncoderBase<uint16_t>> auxiliary_encoder_;
+    DistanteTable distance_table_;
+    AuxiliaryEncoder auxiliary_encoder_;
 };
 
 }  // namespace koda

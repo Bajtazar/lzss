@@ -49,7 +49,7 @@ concept BitInputRange = std::ranges::input_range<Range> &&
  * @tparam Range the checked range
  */
 template <class Range>
-concept BitOutputRange = std::ranges::output_range<Range, bool> &&
+concept BitOutputRange = std::ranges::output_range<Range, uint8_t> &&
                          BitOutputIterator<std::ranges::iterator_t<Range>>;
 
 /**

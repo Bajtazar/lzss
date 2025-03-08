@@ -6,18 +6,16 @@
 
 namespace koda {
 
-template <typename Tp>
+template <typename EncoderTp, typename Tp>
 concept Encoder =
-    std::integral<Tp> && requires(Tp encoder, DummyInputRange<Tp> input,
-                                  DummyBitOutputRange output) {
-        { encoder(input, output) } -> std::same_as<void>;
-    };
+    std::integral<Tp> &&
+    requires(EncoderTp encoder, DummyInputRange<Tp> input,
+             DummyBitOutputRange output) { encoder(input, output); };
 
-template <typename Tp>
+template <typename DecoderTp, typename Tp>
 concept Decoder =
-    std::integral<Tp> && requires(Tp decoder, DummyBitInputRange input,
-                                  DummyOutputRange<Tp> output) {
-        { decoder(input, output) } -> std::same_as<void>;
-    };
+    std::integral<Tp> &&
+    requires(DecoderTp decoder, DummyBitInputRange input,
+             DummyOutputRange<Tp> output) { decoder(input, output); };
 
 }  // namespace koda
