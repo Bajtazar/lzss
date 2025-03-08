@@ -7,6 +7,7 @@
 namespace koda {
 
 struct DummyBinaryInputIterator {
+    using difference_type = std::ptrdiff_t;
     using value_type = uint8_t;
 
     DummyBinaryInputIterator() = delete;
@@ -24,6 +25,7 @@ using DummyBigEndianInputBitIter =
     BigEndianInputBitIter<DummyBinaryInputIterator>;
 
 struct DummyBinaryOutputIterator {
+    using difference_type = std::ptrdiff_t;
     using value_type = uint8_t;
 
     DummyBinaryOutputIterator() = delete;
@@ -38,6 +40,6 @@ struct DummyBinaryOutputIterator {
 using DummyLittleEndianOutputBitIter =
     LittleEndianOutputBitIter<DummyBinaryOutputIterator>;
 using DummyBigEndianOutputBitIter =
-    BigEndianOutputBitIter<DummyBigEndianOutputBitIter>;
+    BigEndianOutputBitIter<DummyBinaryOutputIterator>;
 
 }  // namespace koda
