@@ -22,7 +22,7 @@ class [[nodiscard]] IntermediateToken {
 
     [[nodiscard]] constexpr bool holds_symbol() const noexcept;
 
-    [[nodiscard]] constexpr bool holds_repeatition_marker() const noexcept;
+    [[nodiscard]] constexpr bool holds_marker() const noexcept;
 
     [[nodiscard]] constexpr std::optional<uint8_t> get_symbol() const noexcept;
 
@@ -55,3 +55,5 @@ class LzssEncoder {
 };
 
 }  // namespace koda
+
+#include <koda/lzss/lzss_encoder.ipp>
