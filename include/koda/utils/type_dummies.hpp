@@ -73,8 +73,7 @@ struct DummyBitOutputIterator {
 static_assert(BitOutputIterator<DummyBitOutputIterator>);
 
 template <typename Tp>
-class DummyInputRange {
-   public:
+struct DummyInputRange {
     using iterator = DummyInputIterator<Tp>;
 
     iterator begin();
@@ -82,8 +81,7 @@ class DummyInputRange {
     iterator end();
 };
 
-class DummyBitInputRange {
-   public:
+struct DummyBitInputRange {
     using iterator = DummyBitInputIterator;
 
     iterator begin();
@@ -92,8 +90,7 @@ class DummyBitInputRange {
 };
 
 template <typename Tp>
-class DummyOutputRange {
-   public:
+struct DummyOutputRange {
     using iterator = DummyOutputIterator<Tp>;
 
     iterator begin();
@@ -101,13 +98,21 @@ class DummyOutputRange {
     iterator end();
 };
 
-class DummyBitOutputRange {
-   public:
+struct DummyBitOutputRange {
     using iterator = DummyBitOutputIterator;
 
     iterator begin();
 
     iterator end();
+};
+
+struct DummyEncoder {
+    void operator()(auto std::ranges::input_range, auto BitOutputRange);
+};
+
+template <typename Tp>
+struct DummyDecoder {
+    void operator()(auto BitInputRange, auto std::ranges::output_range<Tp>);
 };
 
 }  // namespace koda

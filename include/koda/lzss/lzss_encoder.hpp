@@ -9,7 +9,8 @@
 namespace koda {
 
 template <std::integral InputToken = uint8_t,
-          std::integral IntermediateToken = uint16_t, typename DistanteTable,
+          std::integral IntermediateToken = uint16_t,
+          LzDistanceTable<IntermediateToken> DistanteTable,
           Encoder<IntermediateToken> AuxiliaryEncoder>
     requires(sizeof(InputToken) <= sizeof(IntermediateToken))
 class LzssEncoder {
