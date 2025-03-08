@@ -107,12 +107,12 @@ struct DummyBitOutputRange {
 };
 
 struct DummyEncoder {
-    void operator()(auto std::ranges::input_range, auto BitOutputRange);
+    void operator()(std::ranges::input_range auto, BitOutputRange auto);
 };
 
 template <typename Tp>
 struct DummyDecoder {
-    void operator()(auto BitInputRange, auto std::ranges::output_range<Tp>);
+    void operator()(BitInputRange auto, std::ranges::output_range<Tp> auto);
 };
 
 }  // namespace koda
