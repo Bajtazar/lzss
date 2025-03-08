@@ -9,16 +9,6 @@
 namespace koda {
 
 /**
- * Defines the category of the input bit iterators
- */
-struct BitInputIteratorTag : public std::input_iterator_tag {};
-
-/**
- * Defines the category of the input bit iterators
- */
-struct BitOutputIteratorTag : public std::output_iterator_tag {};
-
-/**
  * Checks whether the given iterator is the input bit iterator
  *
  * @tparam Iter the iterator type
@@ -26,8 +16,6 @@ struct BitOutputIteratorTag : public std::output_iterator_tag {};
 template <class Iter>
 concept BitInputIterator =
     std::input_iterator<Iter> &&
-    requires { typename Iter::iterator_category; } &&
-    std::derived_from<typename Iter::iterator_category, BitInputIteratorTag> &&
     requires(Iter iter) {
         { iter.ReadByte() } -> std::same_as<std::byte>;
         { iter.Position() } -> std::same_as<uint8_t>;
@@ -40,10 +28,8 @@ concept BitInputIterator =
  */
 template <class Iter>
 concept BitOutputIterator =
-    std::output_iterator<Iter, bool> &&
-    requires { typename Iter::iterator_category; } &&
-    std::derived_from<typename Iter::iterator_category, BitOutputIteratorTag> &&
-    requires(Iter iter, std::byte byte) {
+    std::output_iterator<Iter, uint8_t> &&
+    requires(Iter iter, uint8_t byte) {
         { iter.SaveByte(byte) } -> std::same_as<void>;
         { iter.Position() } -> std::same_as<uint8_t>;
     };
@@ -108,7 +94,6 @@ class LittleEndianInputBitIter {
     using bit = bool;
     using value_type = bit;
     using difference_type = std::ptrdiff_t;
-    using iterator_category = BitInputIteratorTag;
 
     /**
      * Constructs a new little endian bit input iterator from
@@ -225,7 +210,6 @@ class LittleEndianOutputBitIter {
     using bit = bool;
     using value_type = bit;
     using difference_type = std::ptrdiff_t;
-    using iterator_category = BitOutputIteratorTag;
 
     /**
      * Constructs a new little endian bit output iterator from
@@ -350,7 +334,6 @@ class BigEndianInputBitIter {
     using bit = bool;
     using value_type = bit;
     using difference_type = std::ptrdiff_t;
-    using iterator_category = BitInputIteratorTag;
 
     /**
      * Constructs a new big endian bit input iterator from
@@ -467,7 +450,6 @@ class BigEndianOutputBitIter {
     using bit = bool;
     using value_type = bit;
     using difference_type = std::ptrdiff_t;
-    using iterator_category = BitOutputIteratorTag;
 
     /**
      * Constructs a new big endian bit output iterator from
