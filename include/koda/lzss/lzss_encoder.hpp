@@ -2,20 +2,23 @@
 
 #include <koda/coder.hpp>
 #include <koda/lz/lz_distance_table.hpp>
+#include <koda/utils/concepts.hpp>
 
-#include <concepts>
 #include <memory>
 
 namespace koda {
 
-template <typename DistanteTable, Encoder<uint16_t> AuxiliaryEncoder>
+template <std::integral InputToken = uint8_t,
+          std::integral IntermediateToken = uint16_t, typename DistanteTable,
+          Encoder<IntermediateToken> AuxiliaryEncoder>
+    requires(sizeof(InputToken) <= sizeof(IntermediateToken))
 class LzssEncoder {
    public:
-    explicit LzssEncoder(DistanteTable distance_table,
-                         AuxiliaryEncoder auxiliary_encoder) noexcept;
+    constexpr explicit LzssEncoder(DistanteTable distance_table,
+                                   AuxiliaryEncoder auxiliary_encoder) noexcept;
 
-    void operator()(auto std::ranges::input_range&& input,
-                    auto BitOutputRange&& output) const;
+    constexpr void operator()(auto InputRange<InputToken>&& input,
+                              auto BitOutputRange&& output) const;
 
    private:
     DistanteTable distance_table_;
