@@ -18,7 +18,13 @@ FusedDictionaryAndBuffer::FusedDictionaryAndBuffer(
       buffer_iter_{cyclic_buffer_.begin()},
       buffer_sentinel_{buffer_iter_},
       left_telomere_tag_{std::next(cyclic_buffer_.begin(), buffer_size)},
-      right_telomere_tag_{std::prev(cyclic_buffer_.end(), buffer_size)} {}
+      right_telomere_tag_{std::prev(cyclic_buffer_.end(), buffer_size)} {
+    if (dictionary_size < buffer_size) [[unlikely]] {
+        throw std::logic_error{std::format(
+            "Dictionary size ({}) cannot be smaller than buffer size ({})",
+            dictionary_size, buffer_size)};
+    }
+}
 
 void FusedDictionaryAndBuffer::AddSymbolToBuffer(uint8_t symbol) {}
 
@@ -26,11 +32,19 @@ void FusedDictionaryAndBuffer::AddEndSymbolToBuffer() {}
 
 [[nodiscard]] size_t FusedDictionaryAndBuffer::dictionary_size()
     const noexcept {
-    return CalculateSectionSize(dictionary_iter_, dictionary_sentinel_);
+    std::ptrdiff_t difference = dictionary_iter_ - dictionary_sentinel_;
+    if (difference < 0) {
+        return static_cast<size_t>(right_telomere_tag_ - dictionary_sentinel_ +
+                                   dictionary_iter_ - cyclic_buffer_.begin());
+    }
+    return static_cast<size_t>(difference);
 }
 
 [[nodiscard]] size_t FusedDictionaryAndBuffer::buffer_size() const noexcept {
-    return CalculateSectionSize(buffer_iter_, buffer_sentinel_);
+    // Buffer is always contiguous so it cannot be splitted into two
+    // parts. In contrast dictionary can be
+    [[assume(buffer_sentinel_ <= buffer_sentinel_)]];
+    return static_cast<size_t>(buffer_iter_ - buffer_sentinel_);
 }
 
 [[nodiscard]] size_t FusedDictionaryAndBuffer::max_dictionary_size()
@@ -41,17 +55,6 @@ void FusedDictionaryAndBuffer::AddEndSymbolToBuffer() {}
 [[nodiscard]] size_t FusedDictionaryAndBuffer::max_buffer_size()
     const noexcept {
     return buffer_size_;
-}
-
-size_t FusedDictionaryAndBuffer::CalculateSectionSize(
-    const BufferIter& section_begin,
-    const BufferIter& section_end) const noexcept {
-    auto difference = section_end - section_begin;
-    if (difference < 0) {
-        return static_cast<size_t>(right_telomere_tag_ - section_end +
-                                   section_begin - cyclic_buffer_.begin());
-    }
-    return static_cast<size_t>(difference);
 }
 
 /*static*/ size_t FusedDictionaryAndBuffer::CalculateCyclicBufferSize(
