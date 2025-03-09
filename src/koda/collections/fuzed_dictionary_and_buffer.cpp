@@ -7,7 +7,18 @@ namespace koda {
 
 FusedDictionaryAndBuffer::FusedDictionaryAndBuffer(
     size_t dictionary_size, size_t buffer_size,
-    std::optional<size_t> cyclic_buffer_size) {}
+    std::optional<size_t> cyclic_buffer_size)
+    : cyclic_buffer_(CalculateCyclicBufferSize(dictionary_size, buffer_size,
+                                               cyclic_buffer_size),
+                     0),
+      dictionary_size_{dictionary_size},
+      buffer_size_{buffer_size},
+      dictionary_iter_{cyclic_buffer_.begin()},
+      dictionary_sentinel_{dictionary_iter_},
+      buffer_iter_{cyclic_buffer_.begin()},
+      buffer_sentinel_{buffer_iter_},
+      left_telomere_tag_{std::next(cyclic_buffer_.begin(), buffer_size)},
+      right_telomere_tag_{std::prev(cyclic_buffer_.end(), buffer_size)} {}
 
 [[nodiscard]] size_t FusedDictionaryAndBuffer::max_dictionary_size()
     const noexcept {
