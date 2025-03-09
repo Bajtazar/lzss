@@ -23,8 +23,10 @@ void SearchBinaryTree::RemoveString(StringView string) {
     auto iter = tree_.find(string);
 
     if (iter == tree_.end()) {
-        throw std::runtime_error{
-            std::format("Unknown string ({}) has been given", string)};
+        throw std::runtime_error{std::format(
+            "Unknown string ({}) has been given",
+            std::string_view{reinterpret_cast<const char*>(string.data()),
+                             string.size()})};
     }
 
     // If it is present only one time in the dictionary then delete
