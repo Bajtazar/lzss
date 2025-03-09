@@ -96,13 +96,30 @@ class SpecialRadixTree:
         self.__purge_symbol(self.__root, self.__start_idx)
         self.__start_idx += 1
 
+    def __get_position_aux(self, string: str, node: Node) -> int | None:
+        if not string:
+            return list(node.support)[0]
+        for children in node.children.values():
+            tag = children.expression
+            if len(tag) > len(string):
+                if string == tag[:len(string)]:
+                    return list(children.support)[0] - self.__start_idx
+            elif string[:len(tag)] == tag:
+                return self.__get_position_aux(string[len(tag):], children)
+        return None
+
+    def get_position_of_substring(self, string: str):
+        return self.__get_position_aux(string, self.__root)
+
 
 tree = SpecialRadixTree("ala ma kota a kot ma ale")
 tree.print_support()
 
-tree.pop_front()
+print(tree.get_position_of_substring("ma ale"))
 
-tree.print_support()
+# tree.pop_front()
+
+# tree.print_support()
 
 # tree = SpecialRadixTree("la ma kota a kot ma ale")
 # tree.print()
