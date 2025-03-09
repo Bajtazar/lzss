@@ -40,19 +40,43 @@ class [[nodiscard]] IntermediateToken {
 };
 
 template <std::integral InputToken = uint8_t,
-          std::integral IntermediateToken = uint16_t,
           Encoder<IntermediateToken> AuxiliaryEncoder>
     requires(sizeof(InputToken) <= sizeof(IntermediateToken))
 class LzssEncoder {
    public:
-    constexpr explicit LzssEncoder(AuxiliaryEncoder auxiliary_encoder) noexcept;
+    constexpr explicit LzssEncoder(
+        size_t dictionary_size,
+        // 1 << (CHAR_BIT * sizeof(InputToken))
+        AuxiliaryEncoder auxiliary_encoder = std::nullopt) noexcept;
 
-    constexpr void operator()(auto InputRange<InputToken>&& input,
-                              auto BitOutputRange&& output) const;
+    constexpr void operator()(InputRange<InputToken> auto&& input,
+                              BitOutputRange auto&& output) const;
 
    private:
+    size_t dictionary_size_;
     AuxiliaryEncoder auxiliary_encoder_;
 };
+
+template <std::integral InputTokenTp, Encoder<IntermediateToken> AuxiliaryEncoderTp>
+class LzssEncoderInstance {
+public:
+    constexpr explicit LzssEncoderInstance(
+        size_t dictionary_size,
+        AuxiliaryEncoder auxiliary_encoder
+    ) : dictionary_size_{dictionary_size},
+    auxiliary_encoder_{auxiliary_encoder} {}
+
+private:
+    size_t dictionary_size_;
+    AuxiliaryEncoder auxiliary_encoder_;
+};
+
+template <std::integral InputToken, Encoder<IntermediateToken> AuxiliaryEncoder>
+    requires(sizeof(InputToken) <= sizeof(IntermediateToken))
+constexpr void LzssEncoder<InputToken, AuxiliaryEncoder>::operator()(
+    InputRange<InputToken> auto&& input, BitOutputRange auto&& output) const {
+
+    }
 
 }  // namespace koda
 
