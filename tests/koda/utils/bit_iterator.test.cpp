@@ -1,5 +1,4 @@
 #include <koda/utils/bit_iterator.hpp>
-#include <koda/lzss/lzss_encoder.hpp>
 
 #include <gtest/gtest.h>
 
