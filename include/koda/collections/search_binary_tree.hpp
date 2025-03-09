@@ -16,6 +16,10 @@ class SearchBinaryTree {
     struct [[nodiscard]] RepeatitionMarker {
         size_t match_position;
         size_t match_length;
+
+        [[nodiscard]] inline constexpr operator bool() const noexcept {
+            return match_position == 0 && match_length == 0;
+        }
     };
 
     explicit SearchBinaryTree() noexcept = default;
