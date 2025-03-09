@@ -17,6 +17,5 @@ TEST(FuzedDictionaryAndBuffer, Creation) {
     ASSERT_EQ(dict.max_dictionary_size(), kDictSize);
 
     ASSERT_EQ(dict.get_buffer(), kBufferView);
-    ASSERT_EQ(dict.get_oldest_dictionary_full_match(),
-              std::basic_string_view<uint8_t>{});
+    ASSERT_EQ(dict.get_oldest_dictionary_full_match(), kBufferView);
 }

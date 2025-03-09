@@ -56,12 +56,8 @@ FusedDictionaryAndBuffer::get_buffer() const noexcept {
 [[nodiscard]] FusedDictionaryAndBuffer::SequenceView
 FusedDictionaryAndBuffer::get_oldest_dictionary_full_match() const noexcept {
     // Always contiguous
-    const auto max_buffer_size = this->max_buffer_size();
-    return SequenceView{
-        dictionary_iter_,
-        std::next(dictionary_iter_, max_buffer_size <= current_dictionary_size_
-                                        ? max_buffer_size
-                                        : current_dictionary_size_)};
+    return SequenceView{dictionary_iter_,
+                        std::next(dictionary_iter_, this->max_buffer_size())};
 }
 
 void FusedDictionaryAndBuffer::RelocateBuffer() {
