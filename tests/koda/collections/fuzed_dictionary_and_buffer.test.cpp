@@ -117,3 +117,49 @@ TEST(FuzedDictionaryAndBufferTest, LongRunBufferAndDict) {
         dict.AddSymbolToBuffer(elem);
     }
 }
+
+TEST(FuzedDictionaryAndBufferTest, AddEndSymbolTests) {
+    koda::FusedDictionaryAndBuffer dict{kDictSize, kBufferView};
+    // stress test
+    auto sequence = GeneratePseudoNumberSequence(kRepeatitons);
+    // Override buffer and dict
+    for (auto const& elem :
+         sequence | std::views::take(kDictSize + kBufferView.size())) {
+        dict.AddSymbolToBuffer(elem);
+    }
+    // Now N-last element of dict are N-last elements of the sequence!
+    dict.AddEndSymbolToBuffer();
+
+    ASSERT_EQ(dict.get_oldest_dictionary_full_match(),
+              AsString(sequence[1], sequence[2], sequence[3], sequence[4]));
+    ASSERT_EQ(dict.get_buffer(),
+              AsString(sequence[kDictSize + 1], sequence[kDictSize + 2],
+                       sequence[kDictSize + 3]));
+    ASSERT_EQ(dict.dictionary_size(), dict.max_dictionary_size());
+    ASSERT_EQ(dict.buffer_size(), dict.max_buffer_size() - 1);
+
+    dict.AddEndSymbolToBuffer();
+
+    ASSERT_EQ(dict.get_oldest_dictionary_full_match(),
+              AsString(sequence[2], sequence[3], sequence[4], sequence[5]));
+    ASSERT_EQ(dict.get_buffer(),
+              AsString(sequence[kDictSize + 2], sequence[kDictSize + 3]));
+    ASSERT_EQ(dict.dictionary_size(), dict.max_dictionary_size());
+    ASSERT_EQ(dict.buffer_size(), dict.max_buffer_size() - 2);
+
+    dict.AddEndSymbolToBuffer();
+
+    ASSERT_EQ(dict.get_oldest_dictionary_full_match(),
+              AsString(sequence[3], sequence[4], sequence[5], sequence[6]));
+    ASSERT_EQ(dict.get_buffer(), AsString(sequence[kDictSize + 3]));
+    ASSERT_EQ(dict.dictionary_size(), dict.max_dictionary_size());
+    ASSERT_EQ(dict.buffer_size(), dict.max_buffer_size() - 3);
+
+    dict.AddEndSymbolToBuffer();
+
+    ASSERT_EQ(dict.get_oldest_dictionary_full_match(),
+              AsString(sequence[4], sequence[5], sequence[6], sequence[7]));
+    ASSERT_EQ(dict.get_buffer(), std::basic_string_view<uint8_t>{});
+    ASSERT_EQ(dict.dictionary_size(), dict.max_dictionary_size());
+    ASSERT_EQ(dict.buffer_size(), 0);
+}
