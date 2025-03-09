@@ -24,10 +24,15 @@ class SpecialRadixTree:
                         nodes[seq] = self.Node(expression=seq)
                 elif level != 0:
                     preq = seq[:-1]
-                    print(list(nodes))
                     node = nodes[preq]
 
-                    token = seq[len(node.expression):]
+                    parent = node
+                    length = 0
+                    while parent is not None:
+                        length += len(parent.expression)
+                        parent = parent.parent
+
+                    token = seq[length:]
                     if token not in node.children:
                         node.children[token] = self.Node(expression=token, parent=node)
 
@@ -35,7 +40,11 @@ class SpecialRadixTree:
                 new_nodes = {}
                 for key, node in nodes.items():
                     if len(node.children) == 1:
-                        node.expression += list(node.children)[0]
+                        new_expr = node.expression + list(node.children)[0]
+                        if node.parent:
+                            del node.parent.children[node.expression]
+                            node.parent.children[new_expr] = node
+                        node.expression = new_expr
                         node.children = {}
                         new_nodes[key + node.expression[-1]] = node
                     else:
