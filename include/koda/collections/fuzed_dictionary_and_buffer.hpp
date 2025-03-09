@@ -48,9 +48,15 @@ class FusedDictionaryAndBuffer {
     size_t dictionary_size_;
     size_t buffer_size_;
     BufferIter dictionary_iter_;
-    BufferIter look_ahead_iter_;
+    BufferIter dictionary_sentinel_;
+    BufferIter buffer_iter_;
+    BufferIter buffer_sentinel_;
     BufferIter left_telomere_tag_;
     BufferIter right_telomere_tag_;
+
+    static size_t CalculateCyclicBufferSize(
+        size_t dictionary_size, size_t buffer_size,
+        std::optional<size_t> cyclic_buffer_size);
 };
 
 }  // namespace koda
