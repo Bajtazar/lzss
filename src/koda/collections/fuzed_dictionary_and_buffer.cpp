@@ -1,29 +1,31 @@
 #include <koda/collections/fuzed_dictionary_and_buffer.hpp>
 
+#include <cstring>
 #include <format>
 #include <stdexcept>
 
 namespace koda {
 
 FusedDictionaryAndBuffer::FusedDictionaryAndBuffer(
-    size_t dictionary_size, size_t buffer_size,
+    size_t dictionary_size, SequenceView buffer,
     std::optional<size_t> cyclic_buffer_size)
-    : cyclic_buffer_(CalculateCyclicBufferSize(dictionary_size, buffer_size,
+    : cyclic_buffer_(CalculateCyclicBufferSize(dictionary_size, buffer.size(),
                                                cyclic_buffer_size),
                      0),
       dictionary_size_{dictionary_size},
-      buffer_size_{buffer_size},
+      buffer_size_{buffer.size()},
       dictionary_iter_{cyclic_buffer_.begin()},
       dictionary_sentinel_{dictionary_iter_},
       buffer_iter_{cyclic_buffer_.begin()},
-      buffer_sentinel_{buffer_iter_},
-      left_telomere_tag_{std::next(cyclic_buffer_.begin(), buffer_size)},
-      right_telomere_tag_{std::prev(cyclic_buffer_.end(), buffer_size)} {
-    if (dictionary_size < buffer_size) [[unlikely]] {
+      buffer_sentinel_{std::next(buffer_iter_, buffer_size_)},
+      left_telomere_tag_{std::next(cyclic_buffer_.begin(), buffer_size_)},
+      right_telomere_tag_{std::prev(cyclic_buffer_.end(), buffer_size_)} {
+    if (dictionary_size < buffer_size_) [[unlikely]] {
         throw std::logic_error{std::format(
             "Dictionary size ({}) cannot be smaller than buffer size ({})",
-            dictionary_size, buffer_size)};
+            dictionary_size, buffer_size_)};
     }
+    std::memcpy(buffer_iter_.base(), buffer.data(), buffer.size());
 }
 
 void FusedDictionaryAndBuffer::AddSymbolToBuffer(uint8_t symbol) {}

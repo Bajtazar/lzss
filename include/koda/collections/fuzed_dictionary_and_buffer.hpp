@@ -13,7 +13,7 @@ class FusedDictionaryAndBuffer {
     using SequenceView = std::basic_string_view<uint8_t>;
 
     explicit FusedDictionaryAndBuffer(
-        size_t dictionary_size, size_t buffer_size,
+        size_t dictionary_size, SequenceView buffer,
         std::optional<size_t> cyclic_buffer_size = std::nullopt);
 
     FusedDictionaryAndBuffer(const FusedDictionaryAndBuffer&) = delete;
@@ -53,11 +53,6 @@ class FusedDictionaryAndBuffer {
     BufferIter buffer_sentinel_;
     BufferIter left_telomere_tag_;
     BufferIter right_telomere_tag_;
-
-    size_t CalculateSectionSize(
-        const BufferIter& section_begin,
-        const BufferIter& section_end
-    ) const noexcept;
 
     static size_t CalculateCyclicBufferSize(
         size_t dictionary_size, size_t buffer_size,
