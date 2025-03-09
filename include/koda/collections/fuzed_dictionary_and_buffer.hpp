@@ -13,6 +13,11 @@ namespace koda {
 /// class is optimized for the string accesses via the get_buffer and
 /// get_oldest_dictionary_full_match() methods.
 ///
+/// Invariants of this structure
+/// - Only additon of a new symbol can override an existing symbol
+/// - Nearest symbols won't be pruned
+/// - After AddEndSymbolToBuffer call the AddSymbolToBuffer cannot be called
+///
 /// Utilizes a special telomere structures at the beginning and the end of the
 /// circular buffer in ordet to minimize a number of heap allocations and string
 /// copying. This is done as follows (lets consider M as buffer_size and N as
@@ -118,8 +123,6 @@ class FusedDictionaryAndBuffer {
     void RelocateBuffer();
 
     void SlideDictionary();
-
-    void RelocateDictionaryTail();
 
     static size_t CalculateCyclicBufferSize(
         size_t dictionary_size, size_t buffer_size,
