@@ -1,5 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
+from pprint import pprint
 
 
 class SpecialRadixTree:
@@ -8,9 +9,11 @@ class SpecialRadixTree:
         parent: SpecialRadixTree.Node = None
         children: dict = field(default_factory=dict)
         expression: str = ""
+        support: list = field(default_factory=list)
 
     def __init__(self, sequence):
         self.__build_from_sequence(sequence)
+        self.__update_support_aux(self.__root)
 
     def __build_from_sequence(self, sequence):
         self.__root = self.Node()
@@ -21,7 +24,7 @@ class SpecialRadixTree:
 
                 if level == 0 and seq not in nodes:
                     if seq not in nodes:
-                        nodes[seq] = self.Node(expression=seq)
+                        nodes[seq] = self.Node(expression=seq, support=idx)
                 elif level != 0:
                     preq = seq[:-1]
                     node = nodes[preq]
@@ -34,7 +37,7 @@ class SpecialRadixTree:
 
                     token = seq[length:]
                     if token not in node.children:
-                        node.children[token] = self.Node(expression=token, parent=node)
+                        node.children[token] = self.Node(expression=token, parent=node, support=idx)
 
             if level != 0:
                 new_nodes = {}
@@ -53,7 +56,32 @@ class SpecialRadixTree:
                             **{key + kt[-1]: pt for kt, pt in node.children.items()}
                         }
                 nodes = new_nodes
-        print(self.__root)
+
+    def __update_support_aux(self, node: Node):
+        if not node.children:
+            return set((node.support,))
+        node.support = set.union(*[self.__update_support_aux(child) for child in node.children.values()])
+        return node.support
+
+    def __print_aux(self, node: Node, tabs: int):
+        print('\t' * tabs + f'"{node.expression}"')
+        for child in node.children.values():
+            self.__print_aux(child, tabs + 1)
+
+    def print(self):
+        self.__print_aux(self.__root, 0)
+
+    def __print_support_aux(self, node: Node, tabs: int):
+        print('\t' * tabs + f'"{node.support}"')
+        for child in node.children.values():
+            self.__print_support_aux(child, tabs + 1)
+
+    def print_support(self):
+        self.__print_support_aux(self.__root, 0)
 
 
 tree = SpecialRadixTree("ala ma kota a kot ma ale")
+tree.print_support()
+
+# tree = SpecialRadixTree("la ma kota a kot ma ale")
+# tree.print()
