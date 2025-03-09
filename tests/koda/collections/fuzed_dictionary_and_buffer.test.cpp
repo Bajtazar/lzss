@@ -11,6 +11,7 @@
 static constexpr size_t kDictSize = 32;
 static constexpr std::array<uint8_t, 4> kBuffer{0x12, 0x43, 0x55, 0x54};
 static constexpr std::basic_string_view<uint8_t> kBufferView{kBuffer};
+static constexpr size_t kRepeatitons = 10'000;
 
 template <std::integral... Ints>
 static std::basic_string<uint8_t> AsString(Ints... chars) {
@@ -22,7 +23,7 @@ static std::basic_string<uint8_t> AsString(Ints... chars) {
     return string;
 }
 
-TEST(FuzedDictionaryAndBuffer, Creation) {
+TEST(FuzedDictionaryAndBufferTest, Creation) {
     koda::FusedDictionaryAndBuffer dict{kDictSize, kBufferView};
 
     ASSERT_EQ(dict.buffer_size(), kBuffer.size());
@@ -34,7 +35,7 @@ TEST(FuzedDictionaryAndBuffer, Creation) {
     ASSERT_EQ(dict.get_oldest_dictionary_full_match(), kBufferView);
 }
 
-TEST(FuzedDictionaryAndBuffer, SimpleBufferAccomodation) {
+TEST(FuzedDictionaryAndBufferTest, SimpleBufferAccomodation) {
     koda::FusedDictionaryAndBuffer dict{kDictSize, kBufferView};
 
     ASSERT_EQ(dict.dictionary_size(), 0);
@@ -83,10 +84,10 @@ static std::vector<uint8_t> GeneratePseudoNumberSequence(size_t length) {
     return result;
 }
 
-TEST(FuzedDictionaryAndBuffer, LongRunBufferAndDict) {
+TEST(FuzedDictionaryAndBufferTest, LongRunBufferAndDict) {
     koda::FusedDictionaryAndBuffer dict{kDictSize, kBufferView};
     // stress test
-    auto sequence = GeneratePseudoNumberSequence(10'000);
+    auto sequence = GeneratePseudoNumberSequence(kRepeatitons);
     // Override buffer
     for (auto const& elem : sequence | std::views::take(kBufferView.size())) {
         dict.AddSymbolToBuffer(elem);
