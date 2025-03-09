@@ -8,17 +8,17 @@
 
 namespace koda {
 
-class [[nodiscard]] IntermediateToken {
+class [[nodiscard]] LzssIntermediateToken {
    public:
     struct RepeatitionMarker {
         size_t match_position;
         size_t match_length;
     };
 
-    constexpr explicit IntermediateToken(uint8_t symbol) noexcept;
+    constexpr explicit LzssIntermediateToken(uint8_t symbol) noexcept;
 
-    constexpr explicit IntermediateToken(size_t match_position,
-                                         size_t match_length) noexcept;
+    constexpr explicit LzssIntermediateToken(size_t match_position,
+                                             size_t match_length) noexcept;
 
     [[nodiscard]] constexpr bool holds_symbol() const noexcept;
 
@@ -40,8 +40,8 @@ class [[nodiscard]] IntermediateToken {
 };
 
 template <std::integral InputToken = uint8_t,
-          Encoder<IntermediateToken> AuxiliaryEncoder>
-    requires(sizeof(InputToken) <= sizeof(IntermediateToken))
+          Encoder<LzssIntermediateToken> AuxiliaryEncoder>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken))
 class LzssEncoder {
    public:
     constexpr explicit LzssEncoder(
@@ -57,26 +57,25 @@ class LzssEncoder {
     AuxiliaryEncoder auxiliary_encoder_;
 };
 
-template <std::integral InputTokenTp, Encoder<IntermediateToken> AuxiliaryEncoderTp>
+template <std::integral InputTokenTp,
+          Encoder<LzssIntermediateToken> AuxiliaryEncoderTp>
 class LzssEncoderInstance {
-public:
-    constexpr explicit LzssEncoderInstance(
-        size_t dictionary_size,
-        AuxiliaryEncoder auxiliary_encoder
-    ) : dictionary_size_{dictionary_size},
-    auxiliary_encoder_{auxiliary_encoder} {}
+   public:
+    constexpr explicit LzssEncoderInstance(size_t dictionary_size,
+                                           AuxiliaryEncoder auxiliary_encoder)
+        : dictionary_size_{dictionary_size},
+          auxiliary_encoder_{auxiliary_encoder} {}
 
-private:
+   private:
     size_t dictionary_size_;
     AuxiliaryEncoder auxiliary_encoder_;
 };
 
-template <std::integral InputToken, Encoder<IntermediateToken> AuxiliaryEncoder>
-    requires(sizeof(InputToken) <= sizeof(IntermediateToken))
+template <std::integral InputToken,
+          Encoder<LzssIntermediateToken> AuxiliaryEncoder>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken))
 constexpr void LzssEncoder<InputToken, AuxiliaryEncoder>::operator()(
-    InputRange<InputToken> auto&& input, BitOutputRange auto&& output) const {
-
-    }
+    InputRange<InputToken> auto&& input, BitOutputRange auto&& output) const {}
 
 }  // namespace koda
 
