@@ -121,7 +121,8 @@ TEST(FuzedDictionaryAndBufferTest, LongRunBufferAndDict) {
 TEST(FuzedDictionaryAndBufferTest, AddEndSymbolTests) {
     koda::FusedDictionaryAndBuffer dict{kDictSize, kBufferView};
     // stress test
-    auto sequence = GeneratePseudoNumberSequence(kRepeatitons);
+    auto sequence =
+        GeneratePseudoNumberSequence(kDictSize + kBufferView.size());
     // Override buffer and dict
     for (auto const& elem :
          sequence | std::views::take(kDictSize + kBufferView.size())) {
