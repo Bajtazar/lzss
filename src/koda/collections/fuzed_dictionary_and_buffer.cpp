@@ -31,20 +31,20 @@ FusedDictionaryAndBuffer::FusedDictionaryAndBuffer(
     std::memcpy(buffer_iter_.base(), buffer.data(), buffer.size());
 }
 
-void FusedDictionaryAndBuffer::AddSymbolToBuffer(uint8_t symbol) {
+bool FusedDictionaryAndBuffer::AddSymbolToBuffer(uint8_t symbol) {
     if (buffer_sentinel_ == cyclic_buffer_.end()) [[unlikely]] {
         RelocateBuffer();
     } else {
         ++buffer_iter_;
     }
     *buffer_sentinel_++ = symbol;
-    SlideDictionary();
+    return SlideDictionary();
 }
 
-void FusedDictionaryAndBuffer::AddEndSymbolToBuffer() {
+bool FusedDictionaryAndBuffer::AddEndSymbolToBuffer() {
     /// Relocation is not needed since no symbol is appended
     ++buffer_iter_;
-    SlideDictionary();
+    return SlideDictionary();
 }
 
 [[nodiscard]] FusedDictionaryAndBuffer::SequenceView
@@ -71,7 +71,7 @@ void FusedDictionaryAndBuffer::RelocateBuffer() {
     // First element will be a freashly inserted symbol
 }
 
-void FusedDictionaryAndBuffer::SlideDictionary() {
+bool FusedDictionaryAndBuffer::SlideDictionary() {
     // Follow buffer
     if (dictionary_sentinel_++ == cyclic_buffer_.end()) [[unlikely]] {
         dictionary_sentinel_ = left_telomere_tag_;
@@ -86,9 +86,10 @@ void FusedDictionaryAndBuffer::SlideDictionary() {
             // the last M-1 ones
             dictionary_iter_ = cyclic_buffer_.begin();
         }
-    } else {
-        ++current_dictionary_size_;
+        return true;
     }
+    ++current_dictionary_size_;
+    return false;
 }
 
 [[nodiscard]] size_t FusedDictionaryAndBuffer::dictionary_size()

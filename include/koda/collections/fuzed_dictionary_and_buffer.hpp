@@ -88,9 +88,9 @@ class FusedDictionaryAndBuffer {
         delete;
     FusedDictionaryAndBuffer& operator=(FusedDictionaryAndBuffer&&) = delete;
 
-    void AddSymbolToBuffer(uint8_t symbol);
+    bool AddSymbolToBuffer(uint8_t symbol);
 
-    void AddEndSymbolToBuffer();
+    bool AddEndSymbolToBuffer();
 
     [[nodiscard]] SequenceView get_buffer() const noexcept;
 
@@ -122,7 +122,7 @@ class FusedDictionaryAndBuffer {
 
     void RelocateBuffer();
 
-    void SlideDictionary();
+    bool SlideDictionary();
 
     static size_t CalculateCyclicBufferSize(
         size_t dictionary_size, size_t buffer_size,
