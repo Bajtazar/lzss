@@ -25,6 +25,9 @@ FusedDictionaryAndBuffer::FusedDictionaryAndBuffer(
             "Dictionary size ({}) cannot be smaller than buffer size ({})",
             dictionary_size, buffer_size_)};
     }
+    if (buffer_size_ < 1) [[unlikely]] {
+        throw std::logic_error{"Buffer size has to be greater than 0"};
+    }
     std::memcpy(buffer_iter_.base(), buffer.data(), buffer.size());
 }
 
@@ -44,26 +47,40 @@ void FusedDictionaryAndBuffer::AddEndSymbolToBuffer() {
     SlideDictionary();
 }
 
+[[nodiscard]] FusedDictionaryAndBuffer::SequenceView
+FusedDictionaryAndBuffer::get_buffer() const noexcept {
+    // Always contiguous
+    return SequenceView{buffer_sentinel_, buffer_iter_};
+}
+
+[[nodiscard]] FusedDictionaryAndBuffer::SequenceView
+FusedDictionaryAndBuffer::get_oldest_dictionary_full_match() const noexcept {
+    // Always contiguous
+    return SequenceView{dictionary_sentinel_,
+                        std::next(dictionary_sentinel_, max_buffer_size())};
+}
+
 void FusedDictionaryAndBuffer::RelocateBuffer() {
     // When end symbols are added then this class contract permits usage of
     // AddSymbolToBuffer method and thus buffer size won't be changed and so
     // when relocation is happening the buffer always has to have its max size
     std::memcpy(cyclic_buffer_.data(), right_telomere_tag_.base(),
                 buffer_size_ - 1);
-    buffer_sentinel_ = cyclic_buffer_.data();
+    buffer_sentinel_ = cyclic_buffer_.begin();
     buffer_iter_ = left_telomere_tag_;
     // First element will be a freashly inserted symbol
 }
 
 void FusedDictionaryAndBuffer::SlideDictionary() {
+    // Follow buffer
     if (dictionary_iter_++ == cyclic_buffer_.end()) [[unlikely]] {
-        dictionary_iter_ = cyclic_buffer_.begin();
+        dictionary_iter_ = left_telomere_tag_;
     }
 
-    // determine whether dictionary should prune it last symbol
+    // Determine whether dictionary should prune it last symbol
     if (current_dictionary_size_ == dictionary_size_) [[likely]] {
         // Prune the element if last buffer_size - 1 symbols of the dictionary
-        // are contiguous.
+        // are contiguous
         if (dictionary_sentinel_ == right_telomere_tag_) [[unlikely]] {
             // Otherwise the first M-1 element of the cyclic buffer are same as
             // the last M-1 ones
