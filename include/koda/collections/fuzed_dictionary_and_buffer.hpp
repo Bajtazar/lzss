@@ -46,6 +46,7 @@ class FusedDictionaryAndBuffer {
 
     Buffer cyclic_buffer_;
     size_t dictionary_size_;
+    size_t current_dictionary_size_ = 0;
     size_t buffer_size_;
     BufferIter dictionary_iter_;
     BufferIter dictionary_sentinel_;
@@ -53,6 +54,12 @@ class FusedDictionaryAndBuffer {
     BufferIter buffer_sentinel_;
     BufferIter left_telomere_tag_;
     BufferIter right_telomere_tag_;
+
+    void RelocateBuffer();
+
+    void SlideDictionary();
+
+    void RelocateDictionaryTail();
 
     static size_t CalculateCyclicBufferSize(
         size_t dictionary_size, size_t buffer_size,

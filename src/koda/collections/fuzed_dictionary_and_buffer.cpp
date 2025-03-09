@@ -18,7 +18,7 @@ FusedDictionaryAndBuffer::FusedDictionaryAndBuffer(
       dictionary_sentinel_{dictionary_iter_},
       buffer_iter_{cyclic_buffer_.begin()},
       buffer_sentinel_{std::next(buffer_iter_, buffer_size_)},
-      left_telomere_tag_{std::next(cyclic_buffer_.begin(), buffer_size_)},
+      left_telomere_tag_{std::next(cyclic_buffer_.begin(), buffer_size_ - 1)},
       right_telomere_tag_{std::prev(cyclic_buffer_.end(), buffer_size_)} {
     if (dictionary_size < buffer_size_) [[unlikely]] {
         throw std::logic_error{std::format(
@@ -28,9 +28,61 @@ FusedDictionaryAndBuffer::FusedDictionaryAndBuffer(
     std::memcpy(buffer_iter_.base(), buffer.data(), buffer.size());
 }
 
-void FusedDictionaryAndBuffer::AddSymbolToBuffer(uint8_t symbol) {}
+void FusedDictionaryAndBuffer::AddSymbolToBuffer(uint8_t symbol) {
+    if (buffer_iter_ == cyclic_buffer_.end()) [[unlikely]] {
+        return RelocateBuffer();
+    }
+    ++buffer_sentinel_;
+    *buffer_iter_++ = symbol;
+    SlideDictionary();
+}
 
-void FusedDictionaryAndBuffer::AddEndSymbolToBuffer() {}
+void FusedDictionaryAndBuffer::AddEndSymbolToBuffer() {
+    if (buffer_iter_ == cyclic_buffer_.end()) [[unlikely]] {
+        return RelocateBuffer();
+    }
+    ++buffer_sentinel_;
+    SlideDictionary();
+}
+
+void FusedDictionaryAndBuffer::RelocateBuffer() {
+    // When end symbols are added then this class contract permits usage of
+    // AddSymbolToBuffer method and thus buffer size won't be changed and so
+    // when relocation is happening the buffer always has to have its max size
+    std::memcpy(left_telomere_tag_.base(), right_telomere_tag_.base(),
+                buffer_size_);
+    buffer_sentinel_ = left_telomere_tag_;
+    buffer_iter_ = std::next(buffer_sentinel_, buffer_size_);
+}
+
+void FusedDictionaryAndBuffer::SlideDictionary() {
+    if (++dictionary_iter_ == cyclic_buffer_.end()) [[unlikely]] {
+        dictionary_iter_ = left_telomere_tag_;
+    }
+
+    // determine whether dictionary should prune it last symbol
+    if (current_dictionary_size_ == dictionary_size_) [[likely]] {
+        // Prune the element if last buffer_size - 1 symbols of the dictionary
+        // are contiguous.
+        if (dictionary_sentinel_ == right_telomere_tag_) [[unlikely]] {
+            // Otherwise rellocate last buffer_size - 1 symbols to a left
+            // telomere!
+            RelocateDictionaryTail();
+        } else {
+            ++dictionary_sentinel_;
+        }
+    } else {
+        ++current_dictionary_size_;
+    }
+}
+
+void FusedDictionaryAndBuffer::RelocateDictionaryTail() {
+    [[assume(buffer_size_ > 1)]];
+    std::memcpy(cyclic_buffer_.data(), std::next(right_telomere_tag_).base(),
+                buffer_size_ - 1);
+    dictionary_sentinel_ = cyclic_buffer_.begin();
+    // dictionary iterator should be corrected by now
+}
 
 [[nodiscard]] size_t FusedDictionaryAndBuffer::dictionary_size()
     const noexcept {
