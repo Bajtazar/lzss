@@ -33,7 +33,7 @@ FusedDictionaryAndBuffer::FusedDictionaryAndBuffer(
 
 void FusedDictionaryAndBuffer::AddSymbolToBuffer(uint8_t symbol) {
     if (buffer_sentinel_ == cyclic_buffer_.end()) [[unlikely]] {
-        return RelocateBuffer();
+        RelocateBuffer();
     } else {
         ++buffer_iter_;
     }
@@ -81,12 +81,10 @@ void FusedDictionaryAndBuffer::SlideDictionary() {
     if (current_dictionary_size_ == dictionary_size_) [[likely]] {
         // Prune the element if last buffer_size - 1 symbols of the dictionary
         // are contiguous
-        if (dictionary_iter_ == right_telomere_tag_) [[unlikely]] {
+        if (++dictionary_iter_ == right_telomere_tag_) [[unlikely]] {
             // Otherwise the first M-1 element of the cyclic buffer are same as
             // the last M-1 ones
             dictionary_iter_ = cyclic_buffer_.begin();
-        } else {
-            ++dictionary_iter_;
         }
     } else {
         ++current_dictionary_size_;
