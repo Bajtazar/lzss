@@ -1,7 +1,7 @@
 #include <koda/collections/search_binary_tree.hpp>
 
 #include <algorithm>
-#include <cassert>
+#include <format>
 #include <ranges>
 
 namespace koda {
@@ -21,8 +21,11 @@ void SearchBinaryTree::AddString(StringView string) {
 
 void SearchBinaryTree::RemoveString(StringView string) {
     auto iter = tree_.find(string);
-    assert(iter != tree_.end() &&
-           "String that is not part of the tree has been given");
+
+    if (iter == tree_.end()) {
+        throw std::runtime_error{
+            std::format("Unknown string ({}) has been given", string)};
+    }
 
     // If it is present only one time in the dictionary then delete
     if (iter->second.second == 1) {
