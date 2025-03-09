@@ -19,8 +19,8 @@ class BinaryTree:
         print(f'Index: {self.__idx}')
         print(f"Buf start idx: {self.__buf_start_idx}")
         pprint(self.__tree)
-        pprint(self.__look_ahead_buffer)
-        pprint(self.__dictionary)
+        pprint(f'Look ahead: "{self.__look_ahead_buffer}"')
+        pprint(f'Dictionary: "{self.__dictionary}"')
 
     @staticmethod
     def __find_overlap(left_str: str, right_str: str) -> int:
@@ -30,8 +30,10 @@ class BinaryTree:
         return len(left_str)
 
     def find_match(self) -> tuple[int, int]:
-        x = self.__tree.irange(minimum=self.__look_ahead_buffer)
-        nearest = list(x)[0]
+        keys = list(self.__tree.irange(minimum=self.__look_ahead_buffer))
+        if not keys:
+            return 0, 0
+        nearest = keys[0]
         common_length = self.__find_overlap(self.__look_ahead_buffer, nearest)
         if common_length == 0:
             return 0, 0
@@ -63,7 +65,6 @@ class BinaryTree:
 
         self.__shift_aux(old_buffer)
 
-
     def shift_empty(self) -> None:
         old_buffer = self.__look_ahead_buffer
         self.__dictionary += self.__look_ahead_buffer[0]
@@ -73,32 +74,16 @@ class BinaryTree:
 
 
 
-x = "ala ma kota a kot ma ale"
+x = "ala ma kota a kot"
 
 tree = BinaryTree(look_ahead_buffer=x[:8], dictionary_size=128, max_match_size=8)
 
-tree.print()
+for y in x[8:]:
+    tree.shift(y)
 
-tree.shift(x[8])
-
-tree.print()
-
-tree.shift(x[9])
+for _ in range(5):
+    tree.shift_empty()
 
 tree.print()
 
 print(tree.find_match())
-
-# tree.print()
-
-# tree.shift(x[10])
-
-# tree.print()
-
-# tree.shift_empty()
-
-# tree.print()
-
-# tree.shift_empty()
-
-# tree.print()
