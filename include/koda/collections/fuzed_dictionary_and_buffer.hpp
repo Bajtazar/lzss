@@ -54,6 +54,11 @@ class FusedDictionaryAndBuffer {
     BufferIter left_telomere_tag_;
     BufferIter right_telomere_tag_;
 
+    size_t CalculateSectionSize(
+        const BufferIter& section_begin,
+        const BufferIter& section_end
+    ) const noexcept;
+
     static size_t CalculateCyclicBufferSize(
         size_t dictionary_size, size_t buffer_size,
         std::optional<size_t> cyclic_buffer_size);

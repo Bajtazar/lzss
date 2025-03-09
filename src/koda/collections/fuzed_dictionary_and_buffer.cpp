@@ -20,6 +20,19 @@ FusedDictionaryAndBuffer::FusedDictionaryAndBuffer(
       left_telomere_tag_{std::next(cyclic_buffer_.begin(), buffer_size)},
       right_telomere_tag_{std::prev(cyclic_buffer_.end(), buffer_size)} {}
 
+void FusedDictionaryAndBuffer::AddSymbolToBuffer(uint8_t symbol) {}
+
+void FusedDictionaryAndBuffer::AddEndSymbolToBuffer() {}
+
+[[nodiscard]] size_t FusedDictionaryAndBuffer::dictionary_size()
+    const noexcept {
+    return CalculateSectionSize(dictionary_iter_, dictionary_sentinel_);
+}
+
+[[nodiscard]] size_t FusedDictionaryAndBuffer::buffer_size() const noexcept {
+    return CalculateSectionSize(buffer_iter_, buffer_sentinel_);
+}
+
 [[nodiscard]] size_t FusedDictionaryAndBuffer::max_dictionary_size()
     const noexcept {
     return dictionary_size_;
@@ -28,6 +41,17 @@ FusedDictionaryAndBuffer::FusedDictionaryAndBuffer(
 [[nodiscard]] size_t FusedDictionaryAndBuffer::max_buffer_size()
     const noexcept {
     return buffer_size_;
+}
+
+size_t FusedDictionaryAndBuffer::CalculateSectionSize(
+    const BufferIter& section_begin,
+    const BufferIter& section_end) const noexcept {
+    auto difference = section_end - section_begin;
+    if (difference < 0) {
+        return static_cast<size_t>(right_telomere_tag_ - section_end +
+                                   section_begin - cyclic_buffer_.begin());
+    }
+    return static_cast<size_t>(difference);
 }
 
 /*static*/ size_t FusedDictionaryAndBuffer::CalculateCyclicBufferSize(
