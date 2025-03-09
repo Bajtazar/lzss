@@ -53,7 +53,7 @@ SearchBinaryTree::RepeatitionMarker SearchBinaryTree::FindMatch(
 /*static*/ size_t SearchBinaryTree::FindCommonPrefixSize(
     StringView buffer, StringView node) noexcept {
     for (auto [index, comp] :
-         std::views::enumerate(std::views::zip(buffer, node))) {
+         std::views::zip(buffer, node) | std::views::enumerate) {
         const auto& [left, right] = comp;
         if (left != right) {
             return index;
