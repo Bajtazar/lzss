@@ -3,10 +3,10 @@ from dataclasses import dataclass, field
 from pprint import pprint
 
 
-class SpecialRadixTree:
+class SuperRadixTree:
     @dataclass
     class Node:
-        parent: SpecialRadixTree.Node = None
+        parent: SuperRadixTree.Node = None
         children: dict = field(default_factory=dict)
         expression: str = ""
         support: list = field(default_factory=list)
@@ -15,10 +15,12 @@ class SpecialRadixTree:
         self.__build_from_sequence(sequence)
         self.__update_support_aux(self.__root)
         self.__start_idx = 0
+        self.__end_idx = len(sequence)
+        self.__sequence = sequence
 
     def __build_from_sequence(self, sequence):
         self.__root = self.Node()
-        nodes: dict[str, SpecialRadixTree.Node] = self.__root.children
+        nodes: dict[str, SuperRadixTree.Node] = self.__root.children
         for level in range(len(sequence)):
             for idx in range(len(sequence) - level):
                 seq = sequence[idx:idx+level + 1]
@@ -111,15 +113,52 @@ class SpecialRadixTree:
     def get_position_of_substring(self, string: str):
         return self.__get_position_aux(string, self.__root)
 
+    @staticmethod
+    def __longest_common_prefix(left: str, right: str) -> tuple[str, str, str]:
+        for i, (a, b) in enumerate(zip(left, right)):
+            if a != b:
+                return left[:i], left[i:], right[i:]
 
-tree = SpecialRadixTree("ala ma kota a kot ma ale")
+    def __add_sequence(self, sequence: str, node: Node, position):
+        for children in node.children.values():
+            tag = children.expression
+            if len(sequence) > len(tag) and sequence[:len(tag)] == tag:
+                return self.__add_sequence(sequence[len(tag):], children, position)
+            elif tag[:len(sequence)] == sequence:
+                return children.support.union(set((position,)))
+            elif tag[0] == sequence[0]: # Ok now node have to be splitted
+                stem, left, right = self.__longest_common_prefix(tag, sequence)
+                children.expression = left
+                node = self.Node(parent=children.parent, children={
+                    left: children
+                }, expression=stem, support=set.union(children.support, set((position,))))
+                node.children[right] = self.Node(parent=node, expression=right, support=set((position,)))
+                del children.parent.children[tag]
+                children.parent.children[stem] = node
+                children.parent = node
+                return
+        node.children[sequence] = self.Node(parent=node, expression=sequence, support=set((position,)))
+
+    def push_back(self, letter: str) -> None:
+        assert len(letter) == 1
+        self.__sequence += letter
+        for idx in range(len(letter)):
+            sequence = self.__sequence[-idx-1:]
+            self.__add_sequence(sequence, self.__root, self.__end_idx)
+        self.__end_idx += 1
+
+tree = SuperRadixTree("ala ma kota a kot ma ale")
 tree.print_support()
 
-print(tree.get_position_of_substring("ma ale"))
+print(tree.get_position_of_substring("ala ma kota a kot ma ale"))
+
+tree.push_back("5")
+
+tree.print_support()
 
 # tree.pop_front()
 
 # tree.print_support()
 
-# tree = SpecialRadixTree("la ma kota a kot ma ale")
+# tree = SuperRadixTree("la ma kota a kot ma ale")
 # tree.print()
