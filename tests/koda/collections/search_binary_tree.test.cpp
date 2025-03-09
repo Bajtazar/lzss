@@ -36,4 +36,14 @@ static const auto kSampleString =
 
 static const auto kOneOfRepeated = ConvertToString(" kot");
 
-TEST(SearchBinaryTreeTest, Creation) { koda::SearchBinaryTree tree; }
+TEST(SearchBinaryTreeTest, Creation) {
+    koda::SearchBinaryTree tree;
+
+    for (auto const& element : kSampleString) {
+        tree.AddString(element);
+    }
+
+    for (auto const& element : kSampleString) {
+        ASSERT_TRUE(tree.FindMatch(element));
+    }
+}

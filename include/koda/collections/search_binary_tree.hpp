@@ -18,7 +18,7 @@ class SearchBinaryTree {
         size_t match_length;
 
         [[nodiscard]] inline constexpr operator bool() const noexcept {
-            return match_position == 0 && match_length == 0;
+            return match_length != 0;
         }
     };
 
