@@ -50,9 +50,13 @@ class SearchBinaryTree {
     size_t buffer_start_index_ = 0;
     size_t string_size_;
 
-    void RotateLeft(std::unique_ptr<Node> node);
+    void RotateLeft(std::unique_ptr<Node>& node);
 
-    void RotateRight(std::unique_ptr<Node> node);
+    void RotateRight(std::unique_ptr<Node>& node);
+
+    void RotateLeftRight(std::unique_ptr<Node>& node);
+
+    void RotateRightLeft(std::unique_ptr<Node>& node);
 
     static size_t FindCommonPrefixSize(StringView buffer,
                                        StringView node) noexcept;

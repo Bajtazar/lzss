@@ -62,20 +62,32 @@ SearchBinaryTree::RepeatitionMarker SearchBinaryTree::FindMatch(
 SearchBinaryTree::Node::Node(uint8_t* key, Node* parent)
     : key{std::move(key)}, parent{parent} {}
 
-void SearchBinaryTree::RotateLeft(std::unique_ptr<Node> node) {
+void SearchBinaryTree::RotateLeft(std::unique_ptr<Node>& node) {
     auto right = std::move(node->right);
     node->right = std::move(right->left);
     right->parent = node->parent;
     node->parent = right.get();
     right->left = std::move(node);
+    node = std::move(right);
 }
 
-void SearchBinaryTree::RotateRight(std::unique_ptr<Node> node) {
+void SearchBinaryTree::RotateRight(std::unique_ptr<Node>& node) {
     auto left = std::move(node->left);
     node->left = std::move(left->right);
     left->parent = node->parent;
     node->parent = left.get();
     left->right = std::move(node);
+    node = std::move(left);
+}
+
+void SearchBinaryTree::RotateLeftRight(std::unique_ptr<Node>& node) {
+    RotateLeft(node->left);
+    RotateRight(node);
+}
+
+void SearchBinaryTree::RotateRightLeft(std::unique_ptr<Node>& node) {
+    RotateRight(node->right);
+    RotateLeft(node);
 }
 
 /*static*/ size_t SearchBinaryTree::FindCommonPrefixSize(
