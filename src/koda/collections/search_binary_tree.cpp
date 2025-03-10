@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <format>
 #include <ranges>
+#include <iostream>
 
 namespace koda {
 
@@ -56,6 +57,25 @@ SearchBinaryTree::RepeatitionMarker SearchBinaryTree::FindMatch(
     }
     return {// Calculate relative offset from the start of the dictionary
             iter->second.first - dictionary_start_index_, common_length};
+}
+
+SearchBinaryTree::Node::Node(uint8_t* key, Node* parent)
+    : key{std::move(key)}, parent{parent} {}
+
+void SearchBinaryTree::RotateLeft(std::unique_ptr<Node> node) {
+    auto right = std::move(node->right);
+    node->right = std::move(right->left);
+    right->parent = node->parent;
+    node->parent = right.get();
+    right->left = std::move(node);
+}
+
+void SearchBinaryTree::RotateRight(std::unique_ptr<Node> node) {
+    auto left = std::move(node->left);
+    node->left = std::move(left->right);
+    left->parent = node->parent;
+    node->parent = left.get();
+    left->right = std::move(node);
 }
 
 /*static*/ size_t SearchBinaryTree::FindCommonPrefixSize(

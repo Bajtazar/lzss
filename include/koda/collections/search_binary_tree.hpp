@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <memory>
 
 namespace koda {
 
@@ -34,20 +35,24 @@ class SearchBinaryTree {
     RepeatitionMarker FindMatch(StringView buffer) const;
 
    private:
-    // Allows to search using string_view
-    struct TransparentComparator : public std::less<> {
-        using is_transparent = void;
+    struct Node {
+        explicit Node(uint8_t* key, Node* parent = nullptr);
 
-        using std::less<>::operator();
+        uint8_t* key;
+        size_t ref_counter = 1;
+        Node* parent = nullptr;
+        std::unique_ptr<Node> left = nullptr;
+        std::unique_ptr<Node> right = nullptr;
     };
 
-    using String = std::basic_string<uint8_t>;
-    using BinaryTree =
-        std::map<String, std::pair<size_t, size_t>, TransparentComparator>;
-
-    BinaryTree tree_;
+    std::unique_ptr<Node> tree_;
     size_t dictionary_start_index_ = 0;
     size_t buffer_start_index_ = 0;
+    size_t string_size_;
+
+    void RotateLeft(std::unique_ptr<Node> node);
+
+    void RotateRight(std::unique_ptr<Node> node);
 
     static size_t FindCommonPrefixSize(StringView buffer,
                                        StringView node) noexcept;
