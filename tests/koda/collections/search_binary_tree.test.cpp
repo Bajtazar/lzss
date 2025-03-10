@@ -7,6 +7,7 @@
 #include <bit>
 #include <cstring>
 #include <ranges>
+#include <set>
 
 template <std::ranges::input_range Range>
 static std::basic_string<uint8_t> ConvertToString(Range&& range) {
@@ -14,22 +15,23 @@ static std::basic_string<uint8_t> ConvertToString(Range&& range) {
     std::ranges::transform(
         std::forward<Range>(range), std::back_inserter(result),
         [](const char token) { return static_cast<uint8_t>(token); });
+    if (result.back() == 0) {
+        result.pop_back();
+    }
     return result;
 }
 
 template <size_t Window, size_t Length>
     requires(Length >= Window)
-static std::array<std::basic_string<uint8_t>, Length - Window>
+static std::array<std::basic_string<uint8_t>, Length - Window + 1>
 BuildSamplesFromString(const char (&sentence)[Length]) {
-    std::array<std::basic_string<uint8_t>, Length - Window> result;
+    std::array<std::basic_string<uint8_t>, Length - Window + 1> result;
     for (size_t i = 0; i < result.size(); ++i) {
         result[i] = ConvertToString(
             std::ranges::subrange{&sentence[i], &sentence[i + Window]});
     }
     return result;
 }
-
-#include <iostream>
 
 static const auto kSampleString =
     BuildSamplesFromString<4>("ala ma kota a kot ma ale");
@@ -46,4 +48,42 @@ TEST(SearchBinaryTreeTest, Creation) {
     for (auto const& element : kSampleString) {
         ASSERT_TRUE(tree.FindMatch(element));
     }
+
+    ASSERT_TRUE(tree.FindMatch(ConvertToString("abcd")));
+    ASSERT_TRUE(tree.FindMatch(ConvertToString("abc")));
+    ASSERT_TRUE(tree.FindMatch(ConvertToString("ab")));
+    ASSERT_TRUE(tree.FindMatch(ConvertToString("a")));
+    ASSERT_FALSE(tree.FindMatch(ConvertToString("xyzo")));
+    ASSERT_FALSE(tree.FindMatch(ConvertToString("xyz")));
+    ASSERT_FALSE(tree.FindMatch(ConvertToString("xy")));
+    ASSERT_FALSE(tree.FindMatch(ConvertToString("x")));
+    ASSERT_FALSE(tree.FindMatch(ConvertToString("")));
+}
+
+TEST(SearchBinaryTreeTest, Uniqueness) {
+    using Marker = koda::SearchBinaryTree::RepeatitionMarker;
+
+    koda::SearchBinaryTree tree;
+
+    for (auto const& element : kSampleString) {
+        tree.AddString(element);
+    }
+
+    const auto al_result = tree.FindMatch(ConvertToString("al"));
+
+    ASSERT_TRUE(al_result == Marker(0, 2) || al_result == Marker(22, 2));
+
+    ASSERT_EQ(tree.FindMatch(ConvertToString("abcd")), Marker(0, 1));
+    ASSERT_EQ(tree.FindMatch(ConvertToString("ala")), Marker(0, 3));
+    ASSERT_EQ(tree.FindMatch(ConvertToString("ale")), Marker(21, 3));
+
+    const auto kot_result = tree.FindMatch(ConvertToString("kot"));
+
+    ASSERT_TRUE(kot_result == Marker(14, 3) || kot_result == Marker(7, 3));
+    ASSERT_EQ(tree.FindMatch(ConvertToString("kota")), Marker(7, 4));
+    ASSERT_EQ(tree.FindMatch(ConvertToString("kot ")), Marker(14, 4));
+
+    const auto ma_result = tree.FindMatch(ConvertToString("ma"));
+
+    ASSERT_TRUE(ma_result == Marker(4, 2) || ma_result == Marker(18, 2));
 }

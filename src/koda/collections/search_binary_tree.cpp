@@ -9,6 +9,9 @@ namespace koda {
 void SearchBinaryTree::AddString(StringView string) {
     auto iter = tree_.find(string);
     if (iter != tree_.end()) {
+        // Referense youngest string so removal of the older references
+        // does not invalidate index
+        iter->second.first = buffer_start_index_;
         // Increase a reference counter of this string
         ++(iter->second.second);
     } else {

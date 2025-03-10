@@ -20,6 +20,9 @@ class SearchBinaryTree {
         [[nodiscard]] inline constexpr operator bool() const noexcept {
             return match_length != 0;
         }
+
+        [[nodiscard]] constexpr auto operator<=>(
+            const RepeatitionMarker&) const noexcept = default;
     };
 
     explicit SearchBinaryTree() noexcept = default;
