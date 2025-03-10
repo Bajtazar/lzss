@@ -2,8 +2,8 @@
 
 #include <algorithm>
 #include <format>
-#include <ranges>
 #include <iostream>
+#include <ranges>
 
 namespace koda {
 
@@ -88,6 +88,47 @@ void SearchBinaryTree::RotateLeftRight(std::unique_ptr<Node>& node) {
 void SearchBinaryTree::RotateRightLeft(std::unique_ptr<Node>& node) {
     RotateRight(node->right);
     RotateLeft(node);
+}
+
+// Node cannot exist in tree!!!!!!!!!!!!!
+void SearchBinaryTree::InsertNewNode(uint8_t* key) {
+    if (!root_) [[unlikely]] {
+        return root_.reset(new Node{.key = key});
+    }
+    if (auto inserted = TryToInserLeaf(key)) {
+        // build new node
+        // balance new node
+    }
+}
+
+void SearchBinaryTree::UpdateNodeReference(std::unique_ptr<Node>& node,
+                                           uint8_t* key) {
+    ++node->ref_counter;
+    node->key = key;
+}
+
+std::optional<SearchBinaryTree::NodeSpot> SearchBinaryTree::TryToInserLeaf(
+    uint8_t* key) {
+    const StringView key_view{key, string_size_};
+    auto node = std::ref(root_);
+    auto* parent = nullptr;
+    while (node.get()) {
+        parent = node.get().get();
+        switch (key_view <=> StringView{node->key, string_size_}) {
+            case std::weak_ordering::equivalent:
+                UpdateNodeReference(node.get(), key);
+                return std::nullopt;
+            case std::weak_ordering::less:
+                node = std::ref(node->left);
+                break;
+            case std::weak_ordering::greater:
+                node = std::ref(node->right);
+                break;
+            default:
+                std::unreachable();
+        };
+    }
+    return {std::in_place, node.get(), parent};
 }
 
 /*static*/ size_t SearchBinaryTree::FindCommonPrefixSize(
