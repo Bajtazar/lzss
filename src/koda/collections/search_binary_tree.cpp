@@ -131,7 +131,9 @@ void SearchBinaryTree::BuildNode(uint8_t* key, Node*& node, Node* parent) {
 std::optional<SearchBinaryTree::NodeSpot> SearchBinaryTree::TryToInserLeaf(
     uint8_t* key) {
     const StringView key_view{key, string_size_};
-    for (Node *node = root_.get(), parent = nullptr; node; parent = node) {
+    Node* node = root_.get();
+    Node* parent = nullptr;
+    for (; node; parent = node) {
         switch (key_view <=> StringView{node->key, string_size_}) {
             case std::weak_ordering::equivalent:
                 UpdateNodeReference(node, key);
@@ -147,7 +149,7 @@ std::optional<SearchBinaryTree::NodeSpot> SearchBinaryTree::TryToInserLeaf(
         };
     }
     [[asume(parent != nullptr)]];
-    return {std::in_place, node.get(), parent};
+    return {std::in_place, node, parent};
 }
 
 void SearchBinaryTree::FixInsertionImbalance(Node*& node) {
