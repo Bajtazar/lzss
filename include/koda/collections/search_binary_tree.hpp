@@ -26,7 +26,7 @@ class SearchBinaryTree {
             const RepeatitionMarker&) const noexcept = default;
     };
 
-    explicit SearchBinaryTree() noexcept = default;
+    explicit SearchBinaryTree(size_t string_size) noexcept;
 
     void AddString(StringView string);
 

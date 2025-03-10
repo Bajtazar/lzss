@@ -3,10 +3,12 @@
 
 #include <algorithm>
 #include <cassert>
-#include <format>
 #include <ranges>
 
 namespace koda {
+
+SearchBinaryTree::SearchBinaryTree(size_t string_size) noexcept
+    : string_size_{string_size} {}
 
 void SearchBinaryTree::AddString(StringView string) {
     assert(string.size() == string_size_ &&
