@@ -38,7 +38,7 @@ class SearchBinaryTree {
     struct Node {
         enum class Color : bool { kBlack = 0, kRed = 1 };
 
-        explicit Node(uint8_t* key, size_t insertion_index,
+        explicit Node(const uint8_t* key, size_t insertion_index,
                       Node* parent = nullptr, Color color = Color::kBlack);
 
         Node(Node&&) = delete;
@@ -47,10 +47,10 @@ class SearchBinaryTree {
         Node& operator=(Node&&) = delete;
         Node& operator=(const Node&) = delete;
 
-        uint8_t* key;
+        const uint8_t* key;
         size_t ref_counter = 1;
         size_t insertion_index;
-        Node* parent = nullptr;
+        Node* parent;
         Node* left = nullptr;
         Node* right = nullptr;
         Color color;
@@ -73,27 +73,27 @@ class SearchBinaryTree {
 
     void RotateRightLeft(Node*& node);
 
-    void InsertNewNode(uint8_t* key);
+    void InsertNewNode(const uint8_t* key);
 
-    void UpdateNodeReference(Node* node, uint8_t* key);
+    void UpdateNodeReference(Node* node, const uint8_t* key);
 
-    void BuildNode(uint8_t* key, Node*& node, Node* parent);
+    void BuildNode(const uint8_t* key, Node*& node, Node* parent);
 
-    std::optional<NodeSpot> TryToInserLeaf(uint8_t* key);
+    std::optional<NodeSpot> TryToInserLeaf(const uint8_t* key);
 
     void FixInsertionImbalance(Node*& node);
 
     void FixLocalInsertionImbalance(Node*& node, Node*& parent,
-                                    Node*& grandparent);
+                                    Node*& grand_parent);
 
-    void FixInsertionGrandparentNodeColoring(Node*& node, Node*& grandparent);
+    void FixInsertionGrandparentNodeColoring(Node*& node, Node*& grand_parent);
 
     void FixInsertionLeftGrandparentChildOrientation(Node*& node, Node*& parent,
-                                                     Node*& grandparent);
+                                                     Node*& grand_parent);
 
     void FixInsertionRightGrandparentChildOrientation(Node*& node,
                                                       Node*& parent,
-                                                      Node*& grandparent);
+                                                      Node*& grand_parent);
 
     std::pair<size_t, size_t> FindString(const uint8_t* buffer) const;
 
