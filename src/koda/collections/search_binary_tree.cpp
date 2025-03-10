@@ -155,38 +155,56 @@ void SearchBinaryTree::FixInsertionImbalance(Node*& node) {
     Node* grand_parent = parent->parent;
 
     while (parent->color == Node::Color::kRed) {
-        if (parent == grand_parent->left) {
-            if (grand_parent->right == Node::Color::kRed) {
-                grand_parent->right->color = Node::Color::kBlack;
-                grand_parent->left->color = Node::Color::kBlack;
-                grand_parent->color = Node::Color::kRed;
-                node = grand_parent;
-            } else {
-                if (node == parent->right) {
-                    RotateLeft(node = parent);
-                }
-                parent->color = Node::Color::kBlack;
-                grand_parent->color = Node::Color::kRed;
-                RotateRight(grand_parent);
-            }
-
-        } else {
-            if (grand_parent->left == Node::Color::kRed) {
-                grand_parent->right->color = Node::Color::kBlack;
-                grand_parent->left->color = Node::Color::kBlack;
-                grand_parent->color = Node::Color::kRed;
-                node = grand_parent;
-            } else {
-                if (node == parent->left) {
-                    RotateRight(node = parent);
-                }
-                parent->color = Node::Color::kBlack;
-                grand_parent->color = Node::Color::kRed;
-                RotateLeft(grand_parent);
-            }
-        }
+        FixLocalInsertionImbalance(node, parent, grand_parent);
     }
     root_->color = Node::Color::kBlack;
+}
+
+void SearchBinaryTree::FixLocalInsertionImbalance(Node*& node, Node*& parent,
+                                                  Node*& grandparent) {
+    if (parent == grand_parent->left) {
+        if (grand_parent->right == Node::Color::kRed) {
+            FixInsertionGrandparentNodeColoring(node, grandparent);
+        } else {
+            FixInsertionLeftGrandparentChildOrientation(node, parent,
+                                                        grandparent);
+        }
+    } else {
+        if (grand_parent->left == Node::Color::kRed) {
+            FixInsertionGrandparentNodeColoring(node, grandparent);
+        } else {
+            FixInsertionRightGrandparentChildOrientation(node, parent,
+                                                         grandparent);
+        }
+    }
+}
+
+void SearchBinaryTree::FixInsertionGrandparentNodeColoring(Node*& node,
+                                                           Node*& grandparent) {
+    grand_parent->right->color = Node::Color::kBlack;
+    grand_parent->left->color = Node::Color::kBlack;
+    grand_parent->color = Node::Color::kRed;
+    node = grand_parent;
+}
+
+void SearchBinaryTree::FixInsertionLeftGrandparentChildOrientation(
+    Node*& node, Node*& parent, Node*& grandparent) {
+    if (node == parent->right) {
+        RotateLeft(node = parent);
+    }
+    parent->color = Node::Color::kBlack;
+    grand_parent->color = Node::Color::kRed;
+    RotateRight(grand_parent);
+}
+
+void SearchBinaryTree::FixInsertionRightGrandparentChildOrientation(
+    Node*& node, Node*& parent, Node*& grandparent) {
+    if (node == parent->left) {
+        RotateRight(node = parent);
+    }
+    parent->color = Node::Color::kBlack;
+    grand_parent->color = Node::Color::kRed;
+    RotateLeft(grand_parent);
 }
 
 /*static*/ size_t SearchBinaryTree::FindCommonPrefixSize(

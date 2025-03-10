@@ -84,6 +84,18 @@ class SearchBinaryTree {
 
     void FixInsertionImbalance(Node*& node);
 
+    void FixLocalInsertionImbalance(Node*& node, Node*& parent,
+                                    Node*& grandparent);
+
+    void FixInsertionGrandparentNodeColoring(Node*& node, Node*& grandparent);
+
+    void FixInsertionLeftGrandparentChildOrientation(Node*& node, Node*& parent,
+                                                     Node*& grandparent);
+
+    void FixInsertionRightGrandparentChildOrientation(Node*& node,
+                                                      Node*& parent,
+                                                      Node*& grandparent);
+
     static size_t FindCommonPrefixSize(StringView buffer,
                                        StringView node) noexcept;
 };
