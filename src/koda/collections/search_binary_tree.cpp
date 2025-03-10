@@ -3,61 +3,52 @@
 #include <algorithm>
 #include <assert>
 #include <format>
-#include <iostream>
 #include <ranges>
 
 namespace koda {
 
 void SearchBinaryTree::AddString(StringView string) {
-    auto iter = tree_.find(string);
-    if (iter != tree_.end()) {
-        // Referense youngest string so removal of the older references
-        // does not invalidate index
-        iter->second.first = buffer_start_index_;
-        // Increase a reference counter of this string
-        ++(iter->second.second);
-    } else {
-        // String is copied here since it can outlive its creator in circular
-        // buffer
-        tree_.emplace(string, std::forward_as_tuple(buffer_start_index_, 1));
-    }
+    assert(string.size() == string_size_ &&
+           "Inserted string have to have fixed size equal to string_size_");
+
+    InsertNewNode(string.data());
     ++buffer_start_index_;
 }
 
 void SearchBinaryTree::RemoveString(StringView string) {
-    auto iter = tree_.find(string);
+    // auto iter = tree_.find(string);
 
-    if (iter == tree_.end()) {
-        throw std::runtime_error{std::format(
-            "Unknown string ({}) has been given",
-            std::string_view{reinterpret_cast<const char*>(string.data()),
-                             string.size()})};
-    }
+    // if (iter == tree_.end()) {
+    //     throw std::runtime_error{std::format(
+    //         "Unknown string ({}) has been given",
+    //         std::string_view{reinterpret_cast<const char*>(string.data()),
+    //                          string.size()})};
+    // }
 
-    // If it is present only one time in the dictionary then delete
-    if (iter->second.second == 1) {
-        tree_.erase(iter);
-    } else {
-        // Decrease a reference counter
-        ++(iter->second.second);
-    }
+    // // If it is present only one time in the dictionary then delete
+    // if (iter->second.second == 1) {
+    //     tree_.erase(iter);
+    // } else {
+    //     // Decrease a reference counter
+    //     ++(iter->second.second);
+    // }
 
     ++dictionary_start_index_;
 }
 
 SearchBinaryTree::RepeatitionMarker SearchBinaryTree::FindMatch(
     StringView buffer) const {
-    auto iter = tree_.lower_bound(buffer);
-    if (iter == tree_.end()) {
-        // No string has been found
-        return {0, 0};
+    assert(buffer.size() == string_size_ &&
+           "Inserted string have to have fixed size equal to string_size_");
+
+    auto [position, length] = FindString(buffer.data());
+
+    if (!length) {
+        return {0, 0}
     }
-    const auto common_length = FindCommonPrefixSize(buffer, iter->first);
-    if (common_length == 0) {
-        return {0, 0};
-    }
+
     return {// Calculate relative offset from the start of the dictionary
-            iter->second.first - dictionary_start_index_, common_length};
+            position - dictionary_start_index_, length};
 }
 
 SearchBinaryTree::Node::Node(uint8_t* key, size_t insertion_index, Node* parent,
@@ -209,17 +200,48 @@ void SearchBinaryTree::FixInsertionRightGrandparentChildOrientation(
     RotateLeft(grand_parent);
 }
 
-/*static*/ size_t SearchBinaryTree::FindCommonPrefixSize(
-    StringView buffer, StringView node) noexcept {
-    for (auto [index, comp] :
-         std::views::zip(buffer, node) | std::views::enumerate) {
-        const auto& [left, right] = comp;
-        if (left != right) {
-            return index;
+std::pair<size_t, size_t> SearchBinaryTree::FindString(
+    const uint8_t* buffer) const {
+    std::pair<size_t, size_t> match{};
+    for (const Node* node = root_.get(); node;) {
+        auto prefix_length = FindCommonPrefixSize(buffer, node->key);
+        if (prefix_length == string_size_) {
+            return {node->insertion_index, string_size_};
+        }
+        UpdateMatchInfo(match, node);
+
+        if (MakeView(buffer, prefix_length) <
+            MakeView(node->key, prefix_length)) {
+            node = node->left;
+        } else {
+            node = node->right;
         }
     }
-    [[assume(buffer.size() <= node.size())]];
-    return buffer.size();
+    return match;
+}
+
+StringView SearchBinaryTree::MakeView(const uint8_t* buffer,
+                                      size_t prefix_length) const {
+    return StringView{buffer + prefix_length, string_size_ - prefix_length};
+}
+
+/*static*/ void SearchBinaryTree::UpdateMatchInfo(
+    std::pair<size_t, size_t>& match_info, size_t prefix_length,
+    const Node* node) noexcept {
+    if (match_info.second < prefix_length) {
+        match_info.first = node->insertion_index;
+        match_info.second = prefix_length;
+    }
+}
+
+size_t SearchBinaryTree::FindCommonPrefixSize(
+    const uint8_t* buffer, const uint8_t* node) const noexcept {
+    for (size_t i = 0; i < string_size_; ++i) {
+        if (buffer[i] != node[i]) {
+            return i;
+        }
+    }
+    return string_size_;
 }
 
 }  // namespace koda

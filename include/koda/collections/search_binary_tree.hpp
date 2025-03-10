@@ -2,7 +2,6 @@
 
 #include <cinttypes>
 #include <cstdlib>
-#include <map>
 #include <memory>
 #include <optional>
 #include <string>
@@ -96,8 +95,16 @@ class SearchBinaryTree {
                                                       Node*& parent,
                                                       Node*& grandparent);
 
-    static size_t FindCommonPrefixSize(StringView buffer,
-                                       StringView node) noexcept;
+    std::pair<size_t, size_t> FindString(const uint8_t* buffer) const;
+
+    StringView MakeView(const uint8_t* buffer, size_t prefix_length) const;
+
+    static void UpdateMatchInfo(std::pair<size_t, size_t>& match_info,
+                                size_t prefix_length,
+                                const Node* node) noexcept;
+
+    size_t FindCommonPrefixSize(const uint8_t* buffer,
+                                const uint8_t* node) const noexcept;
 };
 
 }  // namespace koda
