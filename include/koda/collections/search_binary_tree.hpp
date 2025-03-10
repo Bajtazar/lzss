@@ -39,36 +39,50 @@ class SearchBinaryTree {
     struct Node {
         enum class Color : bool { kBlack = 0, kRed = 1 };
 
-        explicit Node(uint8_t* key, Node* parent = nullptr);
+        explicit Node(uint8_t* key, size_t insertion_index,
+                      Node* parent = nullptr, Color color = Color::kBlack);
+
+        Node(Node&&) = delete;
+        Node(const Node&) = delete;
+
+        Node& operator=(Node&&) = delete;
+        Node& operator=(const Node&) = delete;
 
         uint8_t* key;
         size_t ref_counter = 1;
+        size_t insertion_index;
         Node* parent = nullptr;
-        std::unique_ptr<Node> left = nullptr;
-        std::unique_ptr<Node> right = nullptr;
-        Color color_ = Color::kBlack;
+        Node* left = nullptr;
+        Node* right = nullptr;
+        Color color;
+
+        ~Node();
     };
 
-    using NodeSpot = std::pair<std::unique_ptr<Node>&, Node*>;
+    using NodeSpot = std::pair<Node*&, Node*>;
 
     std::unique_ptr<Node> root_ = nullptr;
     size_t dictionary_start_index_ = 0;
     size_t buffer_start_index_ = 0;
     size_t string_size_;
 
-    void RotateLeft(std::unique_ptr<Node>& node);
+    void RotateLeft(Node*& node);
 
-    void RotateRight(std::unique_ptr<Node>& node);
+    void RotateRight(Node*& node);
 
-    void RotateLeftRight(std::unique_ptr<Node>& node);
+    void RotateLeftRight(Node*& node);
 
-    void RotateRightLeft(std::unique_ptr<Node>& node);
+    void RotateRightLeft(Node*& node);
 
     void InsertNewNode(uint8_t* key);
 
-    void UpdateNodeReference(std::unique_ptr<Node>& node, uint8_t* key);
+    void UpdateNodeReference(Node* node, uint8_t* key);
+
+    void BuildNode(uint8_t* key, Node*& node, Node* parent);
 
     std::optional<NodeSpot> TryToInserLeaf(uint8_t* key);
+
+    void FixInsertionImbalance(Node*& node);
 
     static size_t FindCommonPrefixSize(StringView buffer,
                                        StringView node) noexcept;
