@@ -127,15 +127,17 @@ std::optional<SearchBinaryTree::NodeSpot> SearchBinaryTree::TryToInserLeaf(
     const StringView key_view{key, string_size_};
     Node* node = root_.get();
     Node* parent = nullptr;
-    for (; node; parent = node) {
+    while (node) {
         switch (OrderCast(key_view <=> StringView{node->key, string_size_})) {
             case WeakOrdering::kEquivalent:
                 UpdateNodeReference(node, key);
                 return std::nullopt;
             case WeakOrdering::kLess:
+                parent = node;
                 node = node->left;
                 break;
             case WeakOrdering::kGreater:
+                parent = node;
                 node = node->right;
                 break;
             default:
