@@ -11,6 +11,22 @@ namespace koda {
 SearchBinaryTree::SearchBinaryTree(size_t string_size) noexcept
     : string_size_{string_size} {}
 
+SearchBinaryTree::SearchBinaryTree(SearchBinaryTree&& other) noexcept
+    : root_{std::exchange(other.root_, nullptr)},
+      dictionary_start_index_{other.dictionary_start_index_},
+      buffer_start_index_{other.buffer_start_index_},
+      string_size_{other.string_size_} {}
+
+SearchBinaryTree& SearchBinaryTree::operator=(
+    SearchBinaryTree&& other) noexcept {
+    Destroy();
+    root_ = std::exchange(other.root_, nullptr);
+    dictionary_start_index_ = other.dictionary_start_index_;
+    buffer_start_index_ = other.buffer_start_index_;
+    string_size_ = other.string_size_;
+    return *this;
+}
+
 void SearchBinaryTree::AddString(StringView string) {
     assert(string.size() == string_size_ &&
            "Inserted string have to have fixed size equal to string_size_");
@@ -55,6 +71,8 @@ SearchBinaryTree::RepeatitionMarker SearchBinaryTree::FindMatch(
     return {// Calculate relative offset from the start of the dictionary
             position - dictionary_start_index_, length};
 }
+
+SearchBinaryTree::~SearchBinaryTree() { Destroy(); }
 
 SearchBinaryTree::Node::Node(const uint8_t* key, size_t insertion_index,
                              Node* parent, Color color)
@@ -298,6 +316,12 @@ size_t SearchBinaryTree::FindCommonPrefixSize(const uint8_t* buffer,
         }
     }
     return string_size_;
+}
+
+void SearchBinaryTree::Destroy() {
+    if (root_) {
+        delete root_;
+    }
 }
 
 }  // namespace koda

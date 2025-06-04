@@ -28,6 +28,12 @@ class SearchBinaryTree {
 
     explicit SearchBinaryTree(size_t string_size) noexcept;
 
+    explicit SearchBinaryTree(SearchBinaryTree&& other) noexcept;
+    explicit SearchBinaryTree(const SearchBinaryTree& other) = delete;
+
+    SearchBinaryTree& operator=(SearchBinaryTree&& other) noexcept;
+    SearchBinaryTree& operator=(const SearchBinaryTree& other) = delete;
+
     void AddString(StringView string);
 
     void RemoveString(StringView string);
@@ -35,6 +41,8 @@ class SearchBinaryTree {
     RepeatitionMarker FindMatch(StringView buffer) const;
 
     void dumpTree();
+
+    ~SearchBinaryTree();
 
    private:
     struct Node {
@@ -110,6 +118,8 @@ class SearchBinaryTree {
 
     size_t FindCommonPrefixSize(const uint8_t* buffer, const uint8_t* node,
                                 size_t length) const noexcept;
+
+    void Destroy();
 };
 
 }  // namespace koda
