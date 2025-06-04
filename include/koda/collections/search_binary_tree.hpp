@@ -87,17 +87,14 @@ class SearchBinaryTree {
 
     void FixInsertionImbalance(Node* node);
 
-    void FixLocalInsertionImbalance(Node*& node, Node*& parent,
+    bool FixLocalInsertionImbalance(Node*& node, Node*& parent,
                                     Node*& grand_parent);
 
-    void FixInsertionGrandparentNodeColoring(Node*& node, Node*& grand_parent);
+    bool FixLocalInsertionImbalanceRight(Node*& node, Node*& parent,
+                                         Node*& grand_parent, Node* uncle);
 
-    void FixInsertionLeftGrandparentChildOrientation(Node*& node, Node*& parent,
-                                                     Node*& grand_parent);
-
-    void FixInsertionRightGrandparentChildOrientation(Node*& node,
-                                                      Node*& parent,
-                                                      Node*& grand_parent);
+    bool FixLocalInsertionImbalanceLeft(Node*& node, Node*& parent,
+                                        Node*& grand_parent, Node* uncle);
 
     std::pair<size_t, size_t> FindString(const uint8_t* buffer) const;
 
