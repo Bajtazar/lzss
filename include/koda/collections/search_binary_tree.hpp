@@ -34,6 +34,8 @@ class SearchBinaryTree {
 
     RepeatitionMarker FindMatch(StringView buffer) const;
 
+    void dumpTree();
+
    private:
     struct Node {
         enum class Color : bool { kBlack = 0, kRed = 1 };
@@ -47,9 +49,9 @@ class SearchBinaryTree {
         Node& operator=(Node&&) = delete;
         Node& operator=(const Node&) = delete;
 
-        const uint8_t* key;
         size_t ref_counter = 1;
         size_t insertion_index;
+        const uint8_t* key;
         Node* parent;
         Node* left = nullptr;
         Node* right = nullptr;
@@ -58,9 +60,11 @@ class SearchBinaryTree {
         ~Node();
     };
 
+    void dumpTree(Node* parent, std::string view);
+
     using NodeSpot = std::pair<Node*&, Node*>;
 
-    std::unique_ptr<Node> root_ = nullptr;
+    Node* root_ = nullptr;
     size_t dictionary_start_index_ = 0;
     size_t buffer_start_index_ = 0;
     size_t string_size_;
@@ -81,7 +85,7 @@ class SearchBinaryTree {
 
     std::optional<NodeSpot> TryToInserLeaf(const uint8_t* key);
 
-    void FixInsertionImbalance(Node*& node);
+    void FixInsertionImbalance(Node* node);
 
     void FixLocalInsertionImbalance(Node*& node, Node*& parent,
                                     Node*& grand_parent);

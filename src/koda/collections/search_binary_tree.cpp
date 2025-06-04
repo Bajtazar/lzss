@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <ranges>
+#include <iostream>
 
 namespace koda {
 
@@ -100,7 +101,8 @@ void SearchBinaryTree::RotateRightLeft(Node*& node) {
 
 void SearchBinaryTree::InsertNewNode(const uint8_t* key) {
     if (!root_) [[unlikely]] {
-        return root_.reset(new Node{key, buffer_start_index_});
+        root_ = new Node{key, buffer_start_index_, nullptr};
+        return;
     }
     if (auto inserted = TryToInserLeaf(key)) {
         BuildNode(key, inserted->first, inserted->second);
@@ -122,39 +124,117 @@ void SearchBinaryTree::BuildNode(const uint8_t* key, Node*& node,
     node = new Node{key, buffer_start_index_, parent, Node::Color::kRed};
 }
 
+void SearchBinaryTree::dumpTree() {
+    if (root_) {
+        std::cout << root_ << "]\t";
+        dumpTree(root_, "");
+    }
+}
+
+void SearchBinaryTree::dumpTree(Node* parent, std::string view) {
+    if (parent->left) {
+        dumpTree(parent->left, view + "\t");
+    }
+    std::cout << parent << "]\t";
+    std::cout << view << "|" << std::string_view{reinterpret_cast<const char*>(parent->key), 4} << "\n";
+    if (parent->right) {
+        dumpTree(parent->right, view + "\t");
+    }
+}
+
 std::optional<SearchBinaryTree::NodeSpot> SearchBinaryTree::TryToInserLeaf(
     const uint8_t* key) {
     const StringView key_view{key, string_size_};
-    Node* node = root_.get();
+    Node** node = &root_;
     Node* parent = nullptr;
-    while (node) {
-        switch (OrderCast(key_view <=> StringView{node->key, string_size_})) {
+    while (*node) {
+        switch (OrderCast(key_view <=> StringView{(*node)->key, string_size_})) {
             case WeakOrdering::kEquivalent:
-                UpdateNodeReference(node, key);
+                UpdateNodeReference(*node, key);
                 return std::nullopt;
             case WeakOrdering::kLess:
-                parent = node;
-                node = node->left;
+                parent = *node;
+                node = &(*node)->left;
                 break;
             case WeakOrdering::kGreater:
-                parent = node;
-                node = node->right;
+                parent = *node;
+                node = &(*node)->right;
                 break;
             default:
                 std::unreachable();
         };
     }
-    return NodeSpot{node, parent};
+    return NodeSpot{*node, parent};
 }
 
-void SearchBinaryTree::FixInsertionImbalance(Node*& node) {
-    Node* parent = node->parent;
-    Node* grand_parent = parent->parent;
+void SearchBinaryTree::FixInsertionImbalance(Node* node) {
 
-    while (parent->color == Node::Color::kRed) {
-        FixLocalInsertionImbalance(node, parent, grand_parent);
+    if (!node->parent) {
+        root_ = node;
+        return;
     }
-    root_->color = Node::Color::kBlack;
+
+    while (Node* parent = node->parent) {
+        if (parent->color == Node::Color::kBlack) {
+            return;
+        }
+
+        Node* grandparent = parent->parent;
+
+        if (!grandparent) {
+            parent->color = Node::Color::kBlack;
+            return;
+        }
+
+        if (parent->parent->right) {
+            // dir == right
+            Node* uncle = grandparent->left;
+
+            if (!uncle || uncle->color == Node::Color::kBlack) {
+                if (node == parent->left) {
+                    RotateRight(parent);
+                    node = parent;
+                    parent = grandparent->right;
+                }
+
+                RotateLeft(grandparent);
+                parent->color = Node::Color::kBlack;
+                grandparent->color = Node::Color::kRed;
+                return;
+            }
+            uncle->color = Node::Color::kBlack;
+        } else {
+            // dir == left
+            Node* uncle = grandparent->right;
+
+            if (!uncle || uncle->color == Node::Color::kBlack) {
+                if (node == parent->right) {
+                    RotateLeft(parent);
+                    node = parent;
+                    parent = grandparent->left;
+                }
+
+                RotateRight(grandparent);
+                parent->color = Node::Color::kBlack;
+                grandparent->color = Node::Color::kRed;
+                return;
+            }
+            uncle->color = Node::Color::kBlack;
+        }
+
+        parent->color = Node::Color::kBlack;
+        grandparent->color = Node::Color::kRed;
+        node = grandparent;
+    };
+
+
+    // Node* parent = node->parent;
+    // Node* grand_parent = parent->parent;
+
+    // while (parent->color == Node::Color::kRed) {
+    //     FixLocalInsertionImbalance(node, parent, grand_parent);
+    // }
+    // root_->color = Node::Color::kBlack;
 }
 
 void SearchBinaryTree::FixLocalInsertionImbalance(Node*& node, Node*& parent,
@@ -207,7 +287,7 @@ void SearchBinaryTree::FixInsertionRightGrandparentChildOrientation(
 std::pair<size_t, size_t> SearchBinaryTree::FindString(
     const uint8_t* buffer) const {
     std::pair<size_t, size_t> match{};
-    for (const Node* node = root_.get(); node;) {
+    for (const Node* node = root_; node;) {
         auto prefix_length = FindCommonPrefixSize(buffer, node->key);
         if (prefix_length == string_size_) {
             return {node->insertion_index, string_size_};
