@@ -58,7 +58,8 @@ TEST(SearchBinaryTreeTest, Creation) {
     ASSERT_FALSE(tree.FindMatch(ConvertToString("xyz")));
     ASSERT_FALSE(tree.FindMatch(ConvertToString("xy")));
     ASSERT_FALSE(tree.FindMatch(ConvertToString("x")));
-    ASSERT_FALSE(tree.FindMatch(ConvertToString("")));
+    // Empty string is always inside!
+    ASSERT_TRUE(tree.FindMatch(ConvertToString("")));
 }
 
 // TEST(SearchBinaryTreeTest, Uniqueness) {
