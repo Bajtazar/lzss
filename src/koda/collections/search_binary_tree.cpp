@@ -188,50 +188,44 @@ void SearchBinaryTree::FixInsertionImbalance(Node* node) {
 
 bool SearchBinaryTree::FixLocalInsertionImbalance(Node*& node, Node*& parent,
                                                   Node*& grand_parent) {
-    if (grand_parent->right) {
-        return FixLocalInsertionImbalanceRight(node, parent, grand_parent,
-                                               grand_parent->left);
+    Node* uncle =
+        grand_parent->right ? grand_parent->left : grand_parent->right;
+    if (!uncle || uncle->color == Node::Color::kBlack) {
+        if (grand_parent->right) {
+            FixLocalInsertionImbalanceRight(node, parent, grand_parent, uncle);
+        } else {
+            FixLocalInsertionImbalanceLeft(node, parent, grand_parent, uncle);
+        }
+        parent->color = Node::Color::kBlack;
+        grand_parent->color = Node::Color::kRed;
+        return true;
     }
-    return FixLocalInsertionImbalanceLeft(node, parent, grand_parent,
-                                          grand_parent->right);
+    uncle->color = Node::Color::kBlack;
+    return false;
 }
 
-bool SearchBinaryTree::FixLocalInsertionImbalanceRight(Node*& node,
+void SearchBinaryTree::FixLocalInsertionImbalanceRight(Node*& node,
                                                        Node*& parent,
                                                        Node*& grand_parent,
                                                        Node* uncle) {
-    if (!uncle || uncle->color == Node::Color::kBlack) {
-        if (node == parent->left) {
-            RotateRight(parent);
-            node = parent;
-            parent = grand_parent->right;
-        }
-        RotateLeft(grand_parent);
-        parent->color = Node::Color::kBlack;
-        grand_parent->color = Node::Color::kRed;
-        return true;
+    if (node == parent->left) {
+        RotateRight(parent);
+        node = parent;
+        parent = grand_parent->right;
     }
-    uncle->color = Node::Color::kBlack;
-    return false;
+    RotateLeft(grand_parent);
 }
 
-bool SearchBinaryTree::FixLocalInsertionImbalanceLeft(Node*& node,
+void SearchBinaryTree::FixLocalInsertionImbalanceLeft(Node*& node,
                                                       Node*& parent,
                                                       Node*& grand_parent,
                                                       Node* uncle) {
-    if (!uncle || uncle->color == Node::Color::kBlack) {
-        if (node == parent->right) {
-            RotateLeft(parent);
-            node = parent;
-            parent = grand_parent->left;
-        }
-        RotateRight(grand_parent);
-        parent->color = Node::Color::kBlack;
-        grand_parent->color = Node::Color::kRed;
-        return true;
+    if (node == parent->right) {
+        RotateLeft(parent);
+        node = parent;
+        parent = grand_parent->left;
     }
-    uncle->color = Node::Color::kBlack;
-    return false;
+    RotateRight(grand_parent);
 }
 
 std::pair<size_t, size_t> SearchBinaryTree::FindString(

@@ -90,10 +90,10 @@ class SearchBinaryTree {
     bool FixLocalInsertionImbalance(Node*& node, Node*& parent,
                                     Node*& grand_parent);
 
-    bool FixLocalInsertionImbalanceRight(Node*& node, Node*& parent,
+    void FixLocalInsertionImbalanceRight(Node*& node, Node*& parent,
                                          Node*& grand_parent, Node* uncle);
 
-    bool FixLocalInsertionImbalanceLeft(Node*& node, Node*& parent,
+    void FixLocalInsertionImbalanceLeft(Node*& node, Node*& parent,
                                         Node*& grand_parent, Node* uncle);
 
     std::pair<size_t, size_t> FindString(const uint8_t* buffer) const;
