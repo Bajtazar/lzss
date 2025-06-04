@@ -69,9 +69,9 @@ class SearchBinaryTree {
     size_t buffer_start_index_ = 0;
     size_t string_size_;
 
-    void RotateLeft(Node*& node);
+    void RotateLeft(Node* node);
 
-    void RotateRight(Node*& node);
+    void RotateRight(Node* node);
 
     void RotateLeftRight(Node*& node);
 

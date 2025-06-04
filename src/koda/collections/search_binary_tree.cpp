@@ -71,22 +71,52 @@ SearchBinaryTree::Node::~Node() {
     }
 }
 
-void SearchBinaryTree::RotateLeft(Node*& node) {
-    Node* right = node->right;
-    node->right = right->left;
-    right->parent = node->parent;
-    node->parent = right;
-    right->left = node;
-    node = right;
+void SearchBinaryTree::RotateLeft(Node* node) {
+    Node* parent = node->parent;
+    Node* new_root = node->right;
+    Node* new_child = new_root->left;
+
+    node->right = new_child;
+    if (new_child) {
+        new_child->parent = node;
+    }
+    new_root->left = node;
+    new_root->parent = parent;
+    node->parent = new_root;
+
+    if (parent) {
+        if (node == parent->right) {
+            parent->right = new_root;
+        } else {
+            parent->left = new_root;
+        }
+    } else {
+        root_ = new_root;
+    }
 }
 
-void SearchBinaryTree::RotateRight(Node*& node) {
-    Node* left = node->left;
-    node->left = left->right;
-    left->parent = node->parent;
-    node->parent = left;
-    left->right = node;
-    node = left;
+void SearchBinaryTree::RotateRight(Node* node) {
+    Node* parent = node->parent;
+    Node* new_root = node->left;
+    Node* new_child = new_root->right;
+
+    node->left = new_child;
+    if (new_child) {
+        new_child->parent = node;
+    }
+    new_root->right = node;
+    new_root->parent = parent;
+    node->parent = new_root;
+
+    if (parent) {
+        if (node == parent->right) {
+            parent->right = new_root;
+        } else {
+            parent->left = new_root;
+        }
+    } else {
+        root_ = new_root;
+    }
 }
 
 void SearchBinaryTree::RotateLeftRight(Node*& node) {
@@ -172,19 +202,23 @@ std::optional<SearchBinaryTree::NodeSpot> SearchBinaryTree::TryToInserLeaf(
 
 void SearchBinaryTree::FixInsertionImbalance(Node* node) {
     Node* parent = node->parent;
-    Node* grand_parent = parent->parent;
 
-    for (; parent && parent->color == Node::Color::kRed;
-         grand_parent = parent, parent = node->parent) {
+    for (; parent && parent->color == Node::Color::kRed;) {
+        Node* grand_parent = parent->parent;
+
         if (!grand_parent) {
             parent->color = Node::Color::kBlack;
             return;
         }
+
         if (FixLocalInsertionImbalance(node, parent, grand_parent)) {
             return;
         }
+
         parent->color = Node::Color::kBlack;
         grand_parent->color = Node::Color::kRed;
+        node = grand_parent;
+        parent = node->parent;
     }
 }
 
