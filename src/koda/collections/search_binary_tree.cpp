@@ -183,6 +183,8 @@ void SearchBinaryTree::FixInsertionImbalance(Node* node) {
         if (FixLocalInsertionImbalance(node, parent, grand_parent)) {
             return;
         }
+        parent->color = Node::Color::kBlack;
+        grand_parent->color = Node::Color::kRed;
     }
 }
 
