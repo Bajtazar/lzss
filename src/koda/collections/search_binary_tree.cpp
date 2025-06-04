@@ -42,10 +42,11 @@ void SearchBinaryTree::RemoveString(StringView string) {
 
 SearchBinaryTree::RepeatitionMarker SearchBinaryTree::FindMatch(
     StringView buffer) const {
-    assert(buffer.size() == string_size_ &&
-           "Inserted string have to have fixed size equal to string_size_");
+    assert(
+        buffer.size() <= string_size_ &&
+        "Inserted string have to have fixed size not bigger than string_size_");
 
-    auto [position, length] = FindString(buffer.data());
+    auto [position, length] = FindString(buffer.data(), buffer.size());
 
     if (!length) {
         return {0, 0};
@@ -254,11 +255,11 @@ void SearchBinaryTree::FixLocalInsertionImbalanceLeft(Node*& node,
     RotateRight(grand_parent);
 }
 
-std::pair<size_t, size_t> SearchBinaryTree::FindString(
-    const uint8_t* buffer) const {
+std::pair<size_t, size_t> SearchBinaryTree::FindString(const uint8_t* buffer,
+                                                       size_t length) const {
     std::pair<size_t, size_t> match{};
     for (const Node* node = root_; node;) {
-        auto prefix_length = FindCommonPrefixSize(buffer, node->key);
+        auto prefix_length = FindCommonPrefixSize(buffer, node->key, length);
         if (prefix_length == string_size_) {
             return {node->insertion_index, string_size_};
         }
@@ -288,9 +289,10 @@ SearchBinaryTree::StringView SearchBinaryTree::MakeView(
     }
 }
 
-size_t SearchBinaryTree::FindCommonPrefixSize(
-    const uint8_t* buffer, const uint8_t* node) const noexcept {
-    for (size_t i = 0; i < string_size_; ++i) {
+size_t SearchBinaryTree::FindCommonPrefixSize(const uint8_t* buffer,
+                                              const uint8_t* node,
+                                              size_t length) const noexcept {
+    for (size_t i = 0; i < length; ++i) {
         if (buffer[i] != node[i]) {
             return i;
         }
