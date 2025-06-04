@@ -98,17 +98,18 @@ class SearchBinaryTree {
     void FixLocalInsertionImbalanceLeft(Node*& node, Node*& parent,
                                         Node*& grand_parent, Node* uncle);
 
-    std::pair<size_t, size_t> FindString(const uint8_t* buffer, size_t length) const;
+    std::pair<size_t, size_t> FindString(const uint8_t* buffer,
+                                         size_t length) const;
 
-    StringView MakeView(const uint8_t* buffer, size_t prefix_length) const;
+    StringView MakeSuffixView(const uint8_t* buffer,
+                              size_t prefix_length) const;
 
     static void UpdateMatchInfo(std::pair<size_t, size_t>& match_info,
                                 size_t prefix_length,
                                 const Node* node) noexcept;
 
-    size_t FindCommonPrefixSize(const uint8_t* buffer,
-                                const uint8_t* node,
-                            size_t length) const noexcept;
+    size_t FindCommonPrefixSize(const uint8_t* buffer, const uint8_t* node,
+                                size_t length) const noexcept;
 };
 
 }  // namespace koda

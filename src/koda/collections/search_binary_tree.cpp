@@ -265,8 +265,8 @@ std::pair<size_t, size_t> SearchBinaryTree::FindString(const uint8_t* buffer,
         }
         UpdateMatchInfo(match, prefix_length, node);
 
-        if (MakeView(buffer, prefix_length) <
-            MakeView(node->key, prefix_length)) {
+        if (MakeSuffixView(buffer, prefix_length) <
+            MakeSuffixView(node->key, prefix_length)) {
             node = node->left;
         } else {
             node = node->right;
@@ -275,7 +275,7 @@ std::pair<size_t, size_t> SearchBinaryTree::FindString(const uint8_t* buffer,
     return match;
 }
 
-SearchBinaryTree::StringView SearchBinaryTree::MakeView(
+SearchBinaryTree::StringView SearchBinaryTree::MakeSuffixView(
     const uint8_t* buffer, size_t prefix_length) const {
     return StringView{buffer + prefix_length, string_size_ - prefix_length};
 }
