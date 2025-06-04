@@ -73,6 +73,8 @@ class SearchBinaryTree {
 
     void RotateRight(Node* node);
 
+    void RotateHelper(Node* node, Node* child, Node* root);
+
     void RotateLeftRight(Node*& node);
 
     void RotateRightLeft(Node*& node);

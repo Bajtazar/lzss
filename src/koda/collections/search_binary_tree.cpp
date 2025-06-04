@@ -72,50 +72,40 @@ SearchBinaryTree::Node::~Node() {
 }
 
 void SearchBinaryTree::RotateLeft(Node* node) {
-    Node* parent = node->parent;
-    Node* new_root = node->right;
-    Node* new_child = new_root->left;
+    Node* right = node->right;
+    Node* right_left = right->left;
 
-    node->right = new_child;
-    if (new_child) {
-        new_child->parent = node;
-    }
-    new_root->left = node;
-    new_root->parent = parent;
-    node->parent = new_root;
+    node->right = right_left;
+    right->left = node;
 
-    if (parent) {
-        if (node == parent->right) {
-            parent->right = new_root;
-        } else {
-            parent->left = new_root;
-        }
-    } else {
-        root_ = new_root;
-    }
+    RotateHelper(node, right_left, right);
 }
 
 void SearchBinaryTree::RotateRight(Node* node) {
+    Node* left = node->left;
+    Node* left_right = left->right;
+
+    node->left = left_right;
+    left->right = node;
+
+    RotateHelper(node, left_right, left);
+}
+
+void SearchBinaryTree::RotateHelper(Node* node, Node* child, Node* root) {
     Node* parent = node->parent;
-    Node* new_root = node->left;
-    Node* new_child = new_root->right;
-
-    node->left = new_child;
-    if (new_child) {
-        new_child->parent = node;
+    root->parent = parent;
+    node->parent = root;
+    if (child) {
+        child->parent = node;
     }
-    new_root->right = node;
-    new_root->parent = parent;
-    node->parent = new_root;
-
     if (parent) {
         if (node == parent->right) {
-            parent->right = new_root;
+            parent->right = root;
         } else {
-            parent->left = new_root;
+            parent->left = root;
         }
     } else {
-        root_ = new_root;
+        root_ = root;
     }
 }
 
