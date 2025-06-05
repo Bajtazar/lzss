@@ -86,18 +86,18 @@ TEST(SearchBinaryTreeTest, Uniqueness) {
     ASSERT_TRUE(ma_result == Marker(4, 2) || ma_result == Marker(18, 2));
 }
 
-// TEST(SearchBinaryTreeTest, Removal) {
-//     koda::SearchBinaryTree tree{4};
+TEST(SearchBinaryTreeTest, Removal) {
+    koda::SearchBinaryTree tree{4};
 
-//     for (auto const& element : kSampleString) {
-//         tree.AddString(element);
-//     }
+    for (auto const& element : kSampleString) {
+        tree.AddString(element);
+    }
 
-//     for (auto const& element : kSampleString) {
-//         std::cout << std::string_view{reinterpret_cast<const
-//         char*>(element.data()), 4}
-//               << "\n";
-//         tree.dumpTree();
-//         ASSERT_TRUE(tree.RemoveString(element));
-//     }
-// }
+    for (auto const& element : kSampleString) {
+        std::cout << std::string_view{reinterpret_cast<const
+        char*>(element.data()), 4}
+              << "\n";
+        tree.dumpTree();
+        ASSERT_TRUE(tree.RemoveString(element));
+    }
+}
