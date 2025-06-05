@@ -227,9 +227,9 @@ void SearchBinaryTree::FixInsertionImbalance(Node* node) {
 bool SearchBinaryTree::FixLocalInsertionImbalance(Node*& node, Node*& parent,
                                                   Node*& grand_parent) {
     Node* uncle =
-        grand_parent->right == node ? grand_parent->left : grand_parent->right;
+        grand_parent->right == parent ? grand_parent->left : grand_parent->right;
     if (!uncle || uncle->color == Node::Color::kBlack) {
-        if (grand_parent->right) {
+        if (grand_parent->right == parent) {
             FixLocalInsertionImbalanceRight(node, parent, grand_parent, uncle);
         } else {
             FixLocalInsertionImbalanceLeft(node, parent, grand_parent, uncle);
