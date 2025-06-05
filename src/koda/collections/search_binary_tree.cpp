@@ -75,6 +75,50 @@ SearchBinaryTree::Node::Node(const uint8_t* key, size_t insertion_index,
       parent{parent},
       color{color} {}
 
+SearchBinaryTree::NodePool::Scheduler::~Scheduler() { pool.ReturnNode(node); }
+
+SearchBinaryTree::NodePool::NodePool(NodePool&& other) noexcept
+    : handle_{std::exchange(other.handle_, nullptr)} {}
+
+SearchBinaryTree::NodePool& SearchBinaryTree::NodePool::operator=(
+    NodePool&& other) noexcept {
+    Destroy();
+    handle_ = std::exchange(other.handle_, nullptr);
+    return *this;
+}
+
+void SearchBinaryTree::NodePool::ReturnNode(Node* handle) {
+    handle->left = handle_;
+    handle_ = handle;
+}
+
+SearchBinaryTree::NodePool::Scheduler
+SearchBinaryTree::NodePool::ScheduleForReturn(Node* node) {
+    return Scheduler{*this, node};
+}
+
+SearchBinaryTree::Node* SearchBinaryTree::NodePool::GetNode(
+    const uint8_t* key, size_t insertion_index, Node* parent,
+    Node::Color color) {
+    if (!handle_) {
+        return new Node{key, insertion_index, parent, color};
+    }
+    Node* node = handle_;
+    handle_ = node->left;
+
+    *node = Node{key, insertion_index, parent, color};
+    return node;
+}
+
+SearchBinaryTree::NodePool::~NodePool() { Destroy(); }
+
+void SearchBinaryTree::NodePool::Destroy() {
+    for (Node* node = handle_; node;) {
+        std::unique_ptr<Node> handle{node};
+        node = node->left;
+    }
+}
+
 void SearchBinaryTree::RotateLeft(Node* node) {
     Node* right = node->right;
     Node* right_left = right->left;
@@ -113,19 +157,9 @@ void SearchBinaryTree::RotateHelper(Node* node, Node* child, Node* root) {
     }
 }
 
-void SearchBinaryTree::RotateLeftRight(Node*& node) {
-    RotateLeft(node->left);
-    RotateRight(node);
-}
-
-void SearchBinaryTree::RotateRightLeft(Node*& node) {
-    RotateRight(node->right);
-    RotateLeft(node);
-}
-
 void SearchBinaryTree::InsertNewNode(const uint8_t* key) {
     if (!root_) [[unlikely]] {
-        root_ = new Node{key, buffer_start_index_};
+        root_ = pool_.GetNode(key, buffer_start_index_);
         return;
     }
     if (auto inserted = TryToInserLeaf(key)) {
@@ -145,7 +179,7 @@ void SearchBinaryTree::UpdateNodeReference(Node* node, const uint8_t* key) {
 
 void SearchBinaryTree::BuildNode(const uint8_t* key, Node*& node,
                                  Node* parent) {
-    node = new Node{key, buffer_start_index_, parent, Node::Color::kRed};
+    node = pool_.GetNode(key, buffer_start_index_, parent, Node::Color::kRed);
 }
 
 void SearchBinaryTree::dumpTree() {
@@ -355,11 +389,11 @@ void SearchBinaryTree::RemoveNodeWithOneChildren(Node* node, Node* children) {
         root_ = children;
     }
 
-    delete node;
+    pool_.ReturnNode(node);
 }
 
 void SearchBinaryTree::RemoveRootNode() {
-    delete std::exchange(root_, nullptr);
+    pool_.ReturnNode(std::exchange(root_, nullptr));
 }
 
 void SearchBinaryTree::PrepareToRemoveRedChildlessNode(Node* node) {
@@ -507,7 +541,7 @@ void SearchBinaryTree::RemoveChildlessNode(Node* node) {
     }
 
     // will deallocate node after all logic has been handled
-    std::unique_ptr<Node> node_handle{node};
+    auto handle = pool_.ScheduleForReturn(node);
 
     if (node->color == Node::Color::kRed) {
         return PrepareToRemoveRedChildlessNode(node);

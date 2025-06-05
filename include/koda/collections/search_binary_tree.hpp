@@ -51,10 +51,10 @@ class SearchBinaryTree {
         explicit Node(const uint8_t* key, size_t insertion_index,
                       Node* parent = nullptr, Color color = Color::kBlack);
 
-        Node(Node&&) = delete;
+        Node(Node&&) noexcept = default;
         Node(const Node&) = delete;
 
-        Node& operator=(Node&&) = delete;
+        Node& operator=(Node&&) noexcept = default;
         Node& operator=(const Node&) = delete;
 
         size_t ref_counter = 1;
@@ -66,24 +66,54 @@ class SearchBinaryTree {
         Color color;
     };
 
+    class NodePool {
+       public:
+        struct Scheduler {
+            NodePool& pool;
+            Node* node;
+
+            ~Scheduler();
+        };
+
+        explicit NodePool() noexcept = default;
+
+        NodePool(NodePool&& pool) noexcept;
+        NodePool(const NodePool& pool) = delete;
+
+        NodePool& operator=(NodePool&& pool) noexcept;
+        NodePool& operator=(const NodePool& pool) = delete;
+
+        void ReturnNode(Node* handle);
+
+        Scheduler ScheduleForReturn(Node* node);
+
+        Node* GetNode(const uint8_t* key, size_t insertion_index,
+                      Node* parent = nullptr,
+                      Node::Color color = Node::Color::kBlack);
+
+        ~NodePool();
+
+       private:
+        Node* handle_ = nullptr;
+
+        void Destroy();
+    };
+
     void dumpTree(Node* parent, std::string view);
 
     using NodeSpot = std::pair<Node*&, Node*>;
 
-    Node* root_ = nullptr;
     size_t dictionary_start_index_ = 0;
     size_t buffer_start_index_ = 0;
     size_t string_size_;
+    NodePool pool_;
+    Node* root_ = nullptr;
 
     void RotateLeft(Node* node);
 
     void RotateRight(Node* node);
 
     void RotateHelper(Node* node, Node* child, Node* root);
-
-    void RotateLeftRight(Node*& node);
-
-    void RotateRightLeft(Node*& node);
 
     void InsertNewNode(const uint8_t* key);
 
