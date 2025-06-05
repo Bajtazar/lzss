@@ -368,6 +368,110 @@ void SearchBinaryTree::RemoveRedChildlessNode(Node* node) {
     delete node;
 }
 
+void SearchBinaryTree::RemoveBlackChildlessNodeRightPathSiblingIsRed(
+    Node* node, Node* parent, Node* sibling, Node* left_nephew,
+    Node* right_nephew) {
+    RotateRight(parent);
+    parent->color = Node::Color::kRed;
+    sibling->color = Node::Color::kBlack;
+    sibling = right_nephew;
+
+    left_nephew = right_nephew->left;
+    if (left_nephew && left_nephew->color == Node::Color::kRed) {
+        return RemoveNodeRotateParentRightPath(parent, sibling, left_nephew);
+    }
+    right_nephew = right_nephew->right;
+    if (right_nephew && right_nephew->color == Node::Color::kRed) {
+        return RemoveNodeRotateSiblingRightPath(parent, sibling, right_nephew);
+    }
+
+    sibling->color = Node::Color::kRed;
+    parent->color = Node::Color::kBlack;
+}
+
+bool SearchBinaryTree::RemoveBlackChildlessNodeRightPath(Node* node,
+                                                         Node* parent) {
+    Node* sibling = parent->left;
+    Node* left_nephew = sibling->left;
+    Node* right_nephew = sibling->right;
+
+    if (sibling->color == Node::Color::kRed) {
+        RemoveBlackChildlessNodeRightPathSiblingIsRed(
+            node, parent, sibling, left_nephew, right_nephew);
+        return true;
+    }
+
+    if (left_nephew && left_nephew->color == Node::Color::kRed) {
+        RemoveNodeRotateParentRightPath(parent, sibling, left_nephew);
+        return true;
+    }
+
+    if (right_nephew && right_nephew->color == Node::Color::kRed) {
+        RemoveNodeRotateSiblingRightPath(parent, sibling, right_nephew);
+        return true;
+    }
+
+    sibling->color = Node::Color::kRed;
+
+    if (parent->color == Node::Color::kRed) {
+        parent->color = Node::Color::kBlack;
+        return true;
+    }
+    return false;
+}
+
+void SearchBinaryTree::RemoveBlackChildlessNodeLeftPathSiblingIsRed(
+    Node* node, Node* parent, Node* sibling, Node* left_nephew,
+    Node* right_nephew) {
+    RotateLeft(parent);
+    parent->color = Node::Color::kRed;
+    sibling->color = Node::Color::kBlack;
+    sibling = left_nephew;
+
+    right_nephew = left_nephew->right;
+    if (right_nephew && right_nephew->color == Node::Color::kRed) {
+        RemoveNodeRotateParentLeftPath(parent, sibling, right_nephew);
+    }
+    left_nephew = left_nephew->left;
+    if (left_nephew && left_nephew->color == Node::Color::kRed) {
+        RemoveNodeRotateSiblingLeftPath(parent, sibling, left_nephew);
+    }
+
+    sibling->color = Node::Color::kRed;
+    parent->color = Node::Color::kBlack;
+}
+
+bool SearchBinaryTree::RemoveBlackChildlessNodeLeftPath(Node* node,
+                                                        Node* parent) {
+    Node* sibling = parent->right;
+    Node* left_nephew = sibling->left;
+    Node* right_nephew = sibling->right;
+
+    if (sibling->color == Node::Color::kRed) {
+        RemoveBlackChildlessNodeLeftPathSiblingIsRed(node, parent, sibling,
+                                                     left_nephew, right_nephew);
+        return true;
+    }
+
+    if (right_nephew && right_nephew->color == Node::Color::kRed) {
+        RemoveNodeRotateParentLeftPath(parent, sibling, right_nephew);
+        return true;
+    }
+
+    if (left_nephew && left_nephew->color == Node::Color::kRed) {
+        RemoveNodeRotateSiblingLeftPath(parent, sibling, left_nephew);
+        return true;
+    }
+
+    sibling->color = Node::Color::kRed;
+
+    if (parent->color == Node::Color::kRed) {
+        parent->color = Node::Color::kBlack;
+        return true;
+    }
+    return false;
+}
+
 void SearchBinaryTree::RemoveNode(Node* node) {
     if (node->left && node->right) {
         return RemoveNodeWithTwoChildren(node);
@@ -399,95 +503,13 @@ void SearchBinaryTree::RemoveNode(Node* node) {
 
     for (; Node* parent = node->parent; start = false) {
         if ((start && direction) || (!start && parent->right == node)) {
-            // Right path
-            Node* sibling = parent->left;
-            Node* left_nephew = sibling->left;
-            Node* right_nephew = sibling->right;
-
-            if (sibling->color == Node::Color::kRed) {
-                RotateRight(parent);
-                parent->color = Node::Color::kRed;
-                sibling->color = Node::Color::kBlack;
-                sibling = right_nephew;
-
-                left_nephew = right_nephew->left;
-                if (left_nephew && left_nephew->color == Node::Color::kRed) {
-                    return RemoveNodeRotateParentRightPath(parent, sibling,
-                                                           left_nephew);
-                }
-                right_nephew = right_nephew->right;
-                if (right_nephew && right_nephew->color == Node::Color::kRed) {
-                    return RemoveNodeRotateSiblingRightPath(parent, sibling,
-                                                            right_nephew);
-                }
-
-                sibling->color = Node::Color::kRed;
-                parent->color = Node::Color::kBlack;
-                return;
+            if (RemoveBlackChildlessNodeRightPath(node, parent)) {
+                break;
             }
-
-            if (left_nephew && left_nephew->color == Node::Color::kRed) {
-                return RemoveNodeRotateParentRightPath(parent, sibling,
-                                                       left_nephew);
-            }
-
-            if (right_nephew && right_nephew->color == Node::Color::kRed) {
-                return RemoveNodeRotateSiblingRightPath(parent, sibling,
-                                                        right_nephew);
-            }
-
-            if (parent->color == Node::Color::kRed) {
-                sibling->color = Node::Color::kRed;
-                parent->color = Node::Color::kBlack;
-                return;
-            }
-
-            sibling->color = Node::Color::kRed;
         } else {
-            // Left path
-            Node* sibling = parent->right;
-            Node* right_nephew = sibling->right;
-            Node* left_nephew = sibling->left;
-
-            if (sibling->color == Node::Color::kRed) {
-                RotateLeft(parent);
-                parent->color = Node::Color::kRed;
-                sibling->color = Node::Color::kBlack;
-                sibling = left_nephew;
-
-                right_nephew = left_nephew->right;
-                if (right_nephew && right_nephew->color == Node::Color::kRed) {
-                    return RemoveNodeRotateParentLeftPath(parent, sibling,
-                                                          right_nephew);
-                }
-                left_nephew = left_nephew->left;
-                if (left_nephew && left_nephew->color == Node::Color::kRed) {
-                    return RemoveNodeRotateSiblingLeftPath(parent, sibling,
-                                                           left_nephew);
-                }
-
-                sibling->color = Node::Color::kRed;
-                parent->color = Node::Color::kBlack;
-                return;
+            if (RemoveBlackChildlessNodeLeftPath(node, parent)) {
+                break;
             }
-
-            if (right_nephew && right_nephew->color == Node::Color::kRed) {
-                return RemoveNodeRotateParentLeftPath(parent, sibling,
-                                                      right_nephew);
-            }
-
-            if (left_nephew && left_nephew->color == Node::Color::kRed) {
-                return RemoveNodeRotateSiblingLeftPath(parent, sibling,
-                                                       left_nephew);
-            }
-
-            if (parent->color == Node::Color::kRed) {
-                sibling->color = Node::Color::kRed;
-                parent->color = Node::Color::kBlack;
-                return;
-            }
-
-            sibling->color = Node::Color::kRed;
         }
         node = parent;
     }
