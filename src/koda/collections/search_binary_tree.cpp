@@ -35,25 +35,19 @@ void SearchBinaryTree::AddString(StringView string) {
     ++buffer_start_index_;
 }
 
-void SearchBinaryTree::RemoveString(StringView string) {
-    // auto iter = tree_.find(string);
+bool SearchBinaryTree::RemoveString(StringView string) {
+    Node* node = FindNodeToRemoval(string);
 
-    // if (iter == tree_.end()) {
-    //     throw std::runtime_error{std::format(
-    //         "Unknown string ({}) has been given",
-    //         std::string_view{reinterpret_cast<const char*>(string.data()),
-    //                          string.size()})};
-    // }
+    if (!node) [[unlikely]] {
+        return false;
+    }
 
-    // // If it is present only one time in the dictionary then delete
-    // if (iter->second.second == 1) {
-    //     tree_.erase(iter);
-    // } else {
-    //     // Decrease a reference counter
-    //     ++(iter->second.second);
-    // }
+    if (!--node->ref_counter) {
+        RemoveNode(node);
+    }
 
     ++dictionary_start_index_;
+    return true;
 }
 
 SearchBinaryTree::RepeatitionMarker SearchBinaryTree::FindMatch(
@@ -318,8 +312,25 @@ size_t SearchBinaryTree::FindCommonPrefixSize(const uint8_t* buffer,
     return string_size_;
 }
 
-void SearchBinaryTree::Destroy() {
-    delete root_;
+SearchBinaryTree::Node* SearchBinaryTree::FindNodeToRemoval(
+    StringView key_view) {
+    for (Node* node = root_; node;) {
+        switch (OrderCast(key_view <=> StringView{node->key, string_size_})) {
+            case WeakOrdering::kEquivalent:
+                return node;
+            case WeakOrdering::kLess:
+                node = node->left;
+                break;
+            case WeakOrdering::kGreater:
+                node = node->right;
+                break;
+            default:
+                std::unreachable();
+        };
+    }
+    return nullptr;
 }
+
+void SearchBinaryTree::Destroy() { delete root_; }
 
 }  // namespace koda

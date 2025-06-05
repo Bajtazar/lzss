@@ -36,7 +36,7 @@ class SearchBinaryTree {
 
     void AddString(StringView string);
 
-    void RemoveString(StringView string);
+    bool RemoveString(StringView string);
 
     RepeatitionMarker FindMatch(StringView buffer) const;
 
@@ -118,6 +118,10 @@ class SearchBinaryTree {
 
     size_t FindCommonPrefixSize(const uint8_t* buffer, const uint8_t* node,
                                 size_t length) const noexcept;
+
+    Node* FindNodeToRemoval(StringView key_view);
+
+    void RemoveNode(Node* node);
 
     void Destroy();
 };
