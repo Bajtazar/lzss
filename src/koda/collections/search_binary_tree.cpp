@@ -565,6 +565,25 @@ void SearchBinaryTree::RemoveNodeRotateParentLeftPath(Node* parent,
     nephew->color = Node::Color::kBlack;
 }
 
-void SearchBinaryTree::Destroy() { /*delete root_;*/ }
+void SearchBinaryTree::Destroy() {
+    for (Node* node = root_; root_;) {
+        if (node->left != nullptr) {
+            node = std::exchange(node->left, nullptr);
+            continue;
+        }
+
+        if (node->right != nullptr) {
+            node = std::exchange(node->right, nullptr);
+            continue;
+        }
+
+        // We're leaving - destroy node !
+        std::unique_ptr<Node> destroy_handle{node};
+        if (!node->parent) {
+            return;  // root can be left with dangling pointer
+        }
+        node = node->parent;
+    }
+}
 
 }  // namespace koda
