@@ -566,6 +566,8 @@ void SearchBinaryTree::RemoveNodeRotateParentLeftPath(Node* parent,
 }
 
 void SearchBinaryTree::Destroy() {
+    // Instead of calling a recursive destructor call, deallocate tree in place
+    // in order to avoid stack overflow for large structures!
     for (Node* node = root_; root_;) {
         if (node->left != nullptr) {
             node = std::exchange(node->left, nullptr);
