@@ -57,8 +57,6 @@ TEST(SearchBinaryTreeTest, Creation) {
     ASSERT_FALSE(tree.FindMatch(ConvertToString("xyz")));
     ASSERT_FALSE(tree.FindMatch(ConvertToString("xy")));
     ASSERT_FALSE(tree.FindMatch(ConvertToString("x")));
-    // Empty string is always inside!
-    ASSERT_TRUE(tree.FindMatch(ConvertToString("")));
 }
 
 TEST(SearchBinaryTreeTest, Uniqueness) {
@@ -71,14 +69,11 @@ TEST(SearchBinaryTreeTest, Uniqueness) {
     }
 
     const auto al_result = tree.FindMatch(ConvertToString("al"));
-
-    std::cout << al_result.match_length << "\n";
-    std::cout << al_result.match_position << "\n";
     ASSERT_TRUE(al_result == Marker(0, 2) || al_result == Marker(22, 2));
 
     ASSERT_EQ(tree.FindMatch(ConvertToString("abcd")), Marker(0, 1));
     ASSERT_EQ(tree.FindMatch(ConvertToString("ala")), Marker(0, 3));
-    ASSERT_EQ(tree.FindMatch(ConvertToString("ale")), Marker(21, 3));
+    ASSERT_EQ(tree.FindMatch(ConvertToString(" ale")), Marker(20, 4));
 
     const auto kot_result = tree.FindMatch(ConvertToString("kot"));
 

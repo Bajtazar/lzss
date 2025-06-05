@@ -190,11 +190,11 @@ std::optional<SearchBinaryTree::NodeSpot> SearchBinaryTree::TryToInserLeaf(
                 return std::nullopt;
             case WeakOrdering::kLess:
                 parent = *node;
-                node = &(*node)->left;
+                node = &(*node)->right;
                 break;
             case WeakOrdering::kGreater:
                 parent = *node;
-                node = &(*node)->right;
+                node = &(*node)->left;
                 break;
             default:
                 std::unreachable();
@@ -272,24 +272,23 @@ std::pair<size_t, size_t> SearchBinaryTree::FindString(const uint8_t* buffer,
     std::pair<size_t, size_t> match{};
     for (const Node* node = root_; node;) {
         auto prefix_length = FindCommonPrefixSize(buffer, node->key, length);
-        if (prefix_length == string_size_) {
-            return {node->insertion_index, string_size_};
+        if (prefix_length == length) {
+            return {node->insertion_index, length};
         }
         UpdateMatchInfo(match, prefix_length, node);
 
-        if (MakeSuffixView(buffer, prefix_length) <
-            MakeSuffixView(node->key, prefix_length)) {
-            node = node->left;
-        } else {
+        if (StringView{buffer, length} < StringView{node->key, string_size_}) {
             node = node->right;
+        } else {
+            node = node->left;
         }
     }
     return match;
 }
 
 SearchBinaryTree::StringView SearchBinaryTree::MakeSuffixView(
-    const uint8_t* buffer, size_t prefix_length) const {
-    return StringView{buffer + prefix_length, string_size_ - prefix_length};
+    const uint8_t* buffer, size_t prefix_length, size_t length) const {
+    return StringView{buffer + prefix_length, length - prefix_length};
 }
 
 /*static*/ void SearchBinaryTree::UpdateMatchInfo(
@@ -309,7 +308,7 @@ size_t SearchBinaryTree::FindCommonPrefixSize(const uint8_t* buffer,
             return i;
         }
     }
-    return string_size_;
+    return length;
 }
 
 SearchBinaryTree::Node* SearchBinaryTree::FindNodeToRemoval(
@@ -434,7 +433,6 @@ void SearchBinaryTree::RemoveNode(Node* node) {
             }
 
             sibling->color = Node::Color::kRed;
-
         }
         node = parent;
         direction = parent->right == node;

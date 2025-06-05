@@ -109,8 +109,8 @@ class SearchBinaryTree {
     std::pair<size_t, size_t> FindString(const uint8_t* buffer,
                                          size_t length) const;
 
-    StringView MakeSuffixView(const uint8_t* buffer,
-                              size_t prefix_length) const;
+    StringView MakeSuffixView(const uint8_t* buffer, size_t prefix_length,
+                              size_t length) const;
 
     static void UpdateMatchInfo(std::pair<size_t, size_t>& match_info,
                                 size_t prefix_length,
