@@ -138,7 +138,7 @@ class SearchBinaryTree {
 
     void RemoveRootNode();
 
-    void RemoveRedChildlessNode(Node* node);
+    void PrepareToRemoveRedChildlessNode(Node* node);
 
     void RemoveBlackChildlessNodeRightPathSiblingIsRed(Node* node, Node* parent,
                                                        Node* sibling,
@@ -153,6 +153,8 @@ class SearchBinaryTree {
                                                       Node* right_nephew);
 
     bool RemoveBlackChildlessNodeLeftPath(Node* node, Node* parent);
+
+    void RemoveChildlessNode(Node* node);
 
     void Destroy();
 };

@@ -334,8 +334,11 @@ void SearchBinaryTree::RemoveNodeWithTwoChildren(Node* node) {
     node->key = succesor->key;
     node->ref_counter = succesor->ref_counter;
     node->insertion_index = succesor->insertion_index;
-    return RemoveNode(
-        succesor);  // will call one of the special functions - swap later
+
+    if (succesor->right) {
+        return RemoveNodeWithOneChildren(succesor, succesor->right);
+    }
+    RemoveChildlessNode(succesor);
 }
 
 void SearchBinaryTree::RemoveNodeWithOneChildren(Node* node, Node* children) {
@@ -359,13 +362,12 @@ void SearchBinaryTree::RemoveRootNode() {
     delete std::exchange(root_, nullptr);
 }
 
-void SearchBinaryTree::RemoveRedChildlessNode(Node* node) {
+void SearchBinaryTree::PrepareToRemoveRedChildlessNode(Node* node) {
     if (node->parent->right == node) {
         node->parent->right = nullptr;
     } else {
         node->parent->left = nullptr;
     }
-    delete node;
 }
 
 void SearchBinaryTree::RemoveBlackChildlessNodeRightPathSiblingIsRed(
@@ -472,6 +474,44 @@ bool SearchBinaryTree::RemoveBlackChildlessNodeLeftPath(Node* node,
     return false;
 }
 
+void SearchBinaryTree::RemoveChildlessNode(Node* node) {
+    if (node == root_) {
+        return RemoveRootNode();
+    }
+
+    // will deallocate node after all logic has been handled
+    std::unique_ptr<Node> node_handle{node};
+
+    if (node->color == Node::Color::kRed) {
+        return PrepareToRemoveRedChildlessNode(node);
+    }
+
+    if (node->parent->right == node) {
+        node->parent->right = nullptr;
+        if (RemoveBlackChildlessNodeRightPath(node, node->parent)) {
+            return;
+        }
+    } else {
+        node->parent->left = nullptr;
+        if (RemoveBlackChildlessNodeLeftPath(node, node->parent)) {
+            return;
+        }
+    }
+
+    for (node = node->parent; Node* parent = node->parent;
+         node = node->parent) {
+        if (parent->right == node) {
+            if (RemoveBlackChildlessNodeRightPath(node, parent)) {
+                return;
+            }
+        } else {
+            if (RemoveBlackChildlessNodeLeftPath(node, parent)) {
+                return;
+            }
+        }
+    }
+}
+
 void SearchBinaryTree::RemoveNode(Node* node) {
     if (node->left && node->right) {
         return RemoveNodeWithTwoChildren(node);
@@ -482,37 +522,7 @@ void SearchBinaryTree::RemoveNode(Node* node) {
                                          node->left ? node->left : node->right);
     }
 
-    if (node == root_) {
-        return RemoveRootNode();
-    }
-
-    if (node->color == Node::Color::kRed) {
-        return RemoveRedChildlessNode(node);
-    }
-
-    std::unique_ptr<Node> to_remove_node{node};
-    bool direction, start = true;
-
-    if (node->parent->right == node) {
-        node->parent->right = nullptr;
-        direction = true;
-    } else {
-        node->parent->left = nullptr;
-        direction = false;
-    }
-
-    for (; Node* parent = node->parent; start = false) {
-        if ((start && direction) || (!start && parent->right == node)) {
-            if (RemoveBlackChildlessNodeRightPath(node, parent)) {
-                break;
-            }
-        } else {
-            if (RemoveBlackChildlessNodeLeftPath(node, parent)) {
-                break;
-            }
-        }
-        node = parent;
-    }
+    RemoveChildlessNode(node);
 }
 
 void SearchBinaryTree::RemoveNodeRotateSiblingRightPath(Node* parent,
