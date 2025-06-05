@@ -156,6 +156,8 @@ class SearchBinaryTree {
 
     void RemoveChildlessNode(Node* node);
 
+    void RemoveBlackChildlessNode(Node* node);
+
     void Destroy();
 };
 
