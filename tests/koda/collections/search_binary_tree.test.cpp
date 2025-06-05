@@ -61,30 +61,32 @@ TEST(SearchBinaryTreeTest, Creation) {
     ASSERT_TRUE(tree.FindMatch(ConvertToString("")));
 }
 
-// TEST(SearchBinaryTreeTest, Uniqueness) {
-//     using Marker = koda::SearchBinaryTree::RepeatitionMarker;
+TEST(SearchBinaryTreeTest, Uniqueness) {
+    using Marker = koda::SearchBinaryTree::RepeatitionMarker;
 
-//     koda::SearchBinaryTree tree{4};
+    koda::SearchBinaryTree tree{4};
 
-//     for (auto const& element : kSampleString) {
-//         tree.AddString(element);
-//     }
+    for (auto const& element : kSampleString) {
+        tree.AddString(element);
+    }
 
-//     const auto al_result = tree.FindMatch(ConvertToString("al"));
+    const auto al_result = tree.FindMatch(ConvertToString("al"));
 
-//     ASSERT_TRUE(al_result == Marker(0, 2) || al_result == Marker(22, 2));
+    std::cout << al_result.match_length << "\n";
+    std::cout << al_result.match_position << "\n";
+    ASSERT_TRUE(al_result == Marker(0, 2) || al_result == Marker(22, 2));
 
-//     ASSERT_EQ(tree.FindMatch(ConvertToString("abcd")), Marker(0, 1));
-//     ASSERT_EQ(tree.FindMatch(ConvertToString("ala")), Marker(0, 3));
-//     ASSERT_EQ(tree.FindMatch(ConvertToString("ale")), Marker(21, 3));
+    ASSERT_EQ(tree.FindMatch(ConvertToString("abcd")), Marker(0, 1));
+    ASSERT_EQ(tree.FindMatch(ConvertToString("ala")), Marker(0, 3));
+    ASSERT_EQ(tree.FindMatch(ConvertToString("ale")), Marker(21, 3));
 
-//     const auto kot_result = tree.FindMatch(ConvertToString("kot"));
+    const auto kot_result = tree.FindMatch(ConvertToString("kot"));
 
-//     ASSERT_TRUE(kot_result == Marker(14, 3) || kot_result == Marker(7, 3));
-//     ASSERT_EQ(tree.FindMatch(ConvertToString("kota")), Marker(7, 4));
-//     ASSERT_EQ(tree.FindMatch(ConvertToString("kot ")), Marker(14, 4));
+    ASSERT_TRUE(kot_result == Marker(14, 3) || kot_result == Marker(7, 3));
+    ASSERT_EQ(tree.FindMatch(ConvertToString("kota")), Marker(7, 4));
+    ASSERT_EQ(tree.FindMatch(ConvertToString("kot ")), Marker(14, 4));
 
-//     const auto ma_result = tree.FindMatch(ConvertToString("ma"));
+    const auto ma_result = tree.FindMatch(ConvertToString("ma"));
 
-//     ASSERT_TRUE(ma_result == Marker(4, 2) || ma_result == Marker(18, 2));
-// }
+    ASSERT_TRUE(ma_result == Marker(4, 2) || ma_result == Marker(18, 2));
+}

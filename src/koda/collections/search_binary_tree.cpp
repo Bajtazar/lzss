@@ -332,8 +332,19 @@ SearchBinaryTree::Node* SearchBinaryTree::FindNodeToRemoval(
 }
 
 void SearchBinaryTree::RemoveNode(Node* node) {
+    auto* to_remove_node = node;
+    bool direction;
+
+    if (node->parent->right == node) {
+        node->parent->right = nullptr;
+        direction = true;
+    } else {
+        node->parent->left = nullptr;
+        direction = false;
+    }
+
     while (Node* parent = node->parent) {
-        if (node->right) {
+        if (direction) {
             // Right path
             Node* sibling = node->left;
             Node* left_nephew = sibling->left;
@@ -378,7 +389,6 @@ void SearchBinaryTree::RemoveNode(Node* node) {
             }
 
             sibling->color = Node::Color::kRed;
-            node = parent;
         } else {
             // Left path
             Node* sibling = node->right;
@@ -424,9 +434,13 @@ void SearchBinaryTree::RemoveNode(Node* node) {
             }
 
             sibling->color = Node::Color::kRed;
-            node = parent;
+
         }
+        node = parent;
+        direction = parent->right == node;
     }
+
+    delete to_remove_node;
 }
 
 void SearchBinaryTree::RemoveNodeRotateSiblingRightPath(Node* parent,
