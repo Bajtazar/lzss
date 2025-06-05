@@ -132,6 +132,10 @@ class SearchBinaryTree {
     void RemoveNodeRotateParentLeftPath(Node* parent, Node* sibling,
                                         Node* nephew);
 
+    void RemoveNodeWithTwoChildren(Node* node);
+
+    void RemoveNodeWithOneChildren(Node* node, Node* children);
+
     void Destroy();
 };
 

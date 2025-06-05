@@ -226,8 +226,8 @@ void SearchBinaryTree::FixInsertionImbalance(Node* node) {
 
 bool SearchBinaryTree::FixLocalInsertionImbalance(Node*& node, Node*& parent,
                                                   Node*& grand_parent) {
-    Node* uncle =
-        grand_parent->right == parent ? grand_parent->left : grand_parent->right;
+    Node* uncle = grand_parent->right == parent ? grand_parent->left
+                                                : grand_parent->right;
     if (!uncle || uncle->color == Node::Color::kBlack) {
         if (grand_parent->right == parent) {
             FixLocalInsertionImbalanceRight(node, parent, grand_parent, uncle);
@@ -329,48 +329,40 @@ SearchBinaryTree::Node* SearchBinaryTree::FindSuccessor(Node* node) {
     return node;
 }
 
+void SearchBinaryTree::RemoveNodeWithTwoChildren(Node* node) {
+    Node* succesor = FindSuccessor(node->right);
+    node->key = succesor->key;
+    node->ref_counter = succesor->ref_counter;
+    node->insertion_index = succesor->insertion_index;
+    return RemoveNode(
+        succesor);  // will call one of the special functions - swap later
+}
+
+void SearchBinaryTree::RemoveNodeWithOneChildren(Node* node, Node* children) {
+    children->color = Node::Color::kBlack;
+    children->parent = node->parent;
+
+    if (node->parent) {
+        if (node == node->parent->left) {
+            node->parent->left = children;
+        } else {
+            node->parent->right = children;
+        }
+    } else {
+        root_ = children;
+    }
+
+    delete node;
+}
+
 void SearchBinaryTree::RemoveNode(Node* node) {
     if (node->left && node->right) {
-        Node* succesor = FindSuccessor(node->right);
-        node->key = succesor->key;
-        node->ref_counter = succesor->ref_counter;
-        node->insertion_index = succesor->insertion_index;
-        return RemoveNode(
-            succesor);  // will call one of the special functions - swap later
+        return RemoveNodeWithTwoChildren(node);
     }
 
     if (node->left || node->right) {
-        if (node->left) {
-            node->left->color = Node::Color::kBlack;
-            node->left->parent = node->parent;
-            if (node->parent) {
-                if (node == node->parent->left) {
-                    node->parent->left = node->left;
-                } else {
-                    node->parent->right = node->left;
-                }
-            } else {
-                root_ = node->left;
-            }
-
-            delete node;
-            return;
-        } else {
-            node->right->color = Node::Color::kBlack;
-            node->right->parent = node->parent;
-            if (node->parent) {
-                if (node == node->parent->left) {
-                    node->parent->left = node->right;
-                } else {
-                    node->parent->right = node->right;
-                }
-            } else {
-                root_ = node->right;
-            }
-
-            delete node;
-            return;
-        }
+        return RemoveNodeWithOneChildren(node,
+                                         node->left ? node->left : node->right);
     }
 
     if (node == root_) {
@@ -400,7 +392,7 @@ void SearchBinaryTree::RemoveNode(Node* node) {
         direction = false;
     }
 
-    for (; Node* parent = node->parent ; start = false) {
+    for (; Node* parent = node->parent; start = false) {
         if ((start && direction) || (!start && parent->right == node)) {
             // Right path
             Node* sibling = parent->left;
