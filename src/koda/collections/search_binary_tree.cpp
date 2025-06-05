@@ -319,9 +319,7 @@ size_t SearchBinaryTree::FindCommonPrefixSize(const uint8_t* buffer,
 }
 
 void SearchBinaryTree::Destroy() {
-    if (root_) {
-        delete root_;
-    }
+    delete root_;
 }
 
 }  // namespace koda
