@@ -155,7 +155,7 @@ void SearchBinaryTree::InsertNewNode(const uint8_t* key) {
 void SearchBinaryTree::UpdateNodeReference(Node* node, const uint8_t* key) {
     ++node->ref_counter;
     node->key = key;
-    node->insertion_index = buffer_start_index_;
+    node->insertion_index = buffer_start_index_ - dictionary_start_index_;
 }
 
 void SearchBinaryTree::BuildNode(const uint8_t* key, Node*& node,
