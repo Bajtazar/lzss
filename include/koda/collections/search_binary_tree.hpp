@@ -64,8 +64,6 @@ class SearchBinaryTree {
         Node* left = nullptr;
         Node* right = nullptr;
         Color color;
-
-        ~Node();
     };
 
     void dumpTree(Node* parent, std::string view);
@@ -109,9 +107,6 @@ class SearchBinaryTree {
     std::pair<size_t, size_t> FindString(const uint8_t* buffer,
                                          size_t length) const;
 
-    StringView MakeSuffixView(const uint8_t* buffer, size_t prefix_length,
-                              size_t length) const;
-
     static void UpdateMatchInfo(std::pair<size_t, size_t>& match_info,
                                 size_t prefix_length,
                                 const Node* node) noexcept;
@@ -120,6 +115,8 @@ class SearchBinaryTree {
                                 size_t length) const noexcept;
 
     Node* FindNodeToRemoval(StringView key_view);
+
+    Node* FindSuccessor(Node* node);
 
     void RemoveNode(Node* node);
 
