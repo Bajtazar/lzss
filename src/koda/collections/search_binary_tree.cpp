@@ -355,6 +355,19 @@ void SearchBinaryTree::RemoveNodeWithOneChildren(Node* node, Node* children) {
     delete node;
 }
 
+void SearchBinaryTree::RemoveRootNode() {
+    delete std::exchange(root_, nullptr);
+}
+
+void SearchBinaryTree::RemoveRedChildlessNode(Node* node) {
+    if (node->parent->right == node) {
+        node->parent->right = nullptr;
+    } else {
+        node->parent->left = nullptr;
+    }
+    delete node;
+}
+
 void SearchBinaryTree::RemoveNode(Node* node) {
     if (node->left && node->right) {
         return RemoveNodeWithTwoChildren(node);
@@ -366,17 +379,11 @@ void SearchBinaryTree::RemoveNode(Node* node) {
     }
 
     if (node == root_) {
-        return delete std::exchange(root_, nullptr);
+        return RemoveRootNode();
     }
 
     if (node->color == Node::Color::kRed) {
-        if (node->parent->right == node) {
-            node->parent->right = nullptr;
-        } else {
-            node->parent->left = nullptr;
-        }
-        delete node;
-        return;
+        return RemoveRedChildlessNode(node);
     }
 
     std::unique_ptr<Node> to_remove_node{node};

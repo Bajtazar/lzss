@@ -136,6 +136,10 @@ class SearchBinaryTree {
 
     void RemoveNodeWithOneChildren(Node* node, Node* children);
 
+    void RemoveRootNode();
+
+    void RemoveRedChildlessNode(Node* node);
+
     void Destroy();
 };
 
