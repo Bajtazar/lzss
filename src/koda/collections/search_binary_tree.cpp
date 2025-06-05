@@ -331,6 +331,102 @@ SearchBinaryTree::Node* SearchBinaryTree::FindNodeToRemoval(
     return nullptr;
 }
 
+void SearchBinaryTree::RemoveNode(Node* node) {
+    while (Node* parent = node->parent) {
+        if (node->right) {
+            // Right path
+            Node* sibling = node->left;
+            Node* left_nephew = sibling->left;
+            Node* right_nephew = sibling->right;
+
+            if (sibling->color == Node::Color::kRed) {
+                RotateRight(parent);
+                parent->color = Node::Color::kRed;
+                sibling->color = Node::Color::kBlack;
+                sibling = right_nephew;
+
+                left_nephew = right_nephew->left;
+                if (left_nephew && left_nephew->color == Node::Color::kRed) {
+                    // Case 6
+                    return;
+                }
+                right_nephew = right_nephew->right;
+                if (right_nephew && right_nephew->color == Node::Color::kRed) {
+                    // Case 5
+                    return;
+                }
+
+                sibling->color = Node::Color::kRed;
+                parent->color = Node::Color::kBlack;
+                return;
+            }
+
+
+
+        } else {
+            // Left path
+            Node* sibling = node->right;
+            Node* right_nephew = sibling->right;
+            Node* left_nephew = sibling->left;
+
+            if (sibling->color == Node::Color::kRed) {
+                RotateLeft(parent);
+                parent->color = Node::Color::kRed;
+                sibling->color = Node::Color::kBlack;
+                sibling = left_nephew;
+
+                right_nephew = left_nephew->right;
+                if (right_nephew && right_nephew->color == Node::Color::kRed) {
+                    // case 6
+                    return;
+                }
+                left_nephew = left_nephew->left;
+                if (left_nephew && left_nephew->color == Node::Color::kRed) {
+                    // case 5
+                    return;
+                }
+
+                sibling->color = Node::Color::kRed;
+                parent->color = Node::Color::kBlack;
+                return;
+            }
+
+        }
+    }
+
+
+
+
+}
+
+void SearchBinaryTree::RemoveNodeRotateSiblingRightPath(Node* parent, Node* sibling, Node* nephew) {
+    RotateLeft(sibling);
+    sibling->color = Node::Color::kRed;
+    nephew->color = Node::Color::kBlack;
+    RemoveNodeRotateParentRightPath(parent, nephew, sibling);
+}
+
+void SearchBinaryTree::RemoveNodeRotateSiblingLeftPath(Node* parent, Node* sibling, Node* nephew) {
+    RotateRight(sibling);
+    sibling->color = Node::Color::kRed;
+    nephew->color = Node::Color::kBlack;
+    RemoveNodeRotateParentLeftPath(parent, nephew, sibling);
+}
+
+void SearchBinaryTree::RemoveNodeRotateParentRightPath(Node* parent, Node* sibling, Node* nephew) {
+    RotateRight(parent);
+    sibling->color = parent->color;
+    parent->color = Node::Color::kBlack;
+    nephew->color = Node::Color::kBlack;
+}
+
+void SearchBinaryTree::RemoveNodeRotateParentLeftPath(Node* parent, Node* sibling, Node* nephew) {
+    RotateLeft(parent);
+    sibling->color = parent->color;
+    parent->color = Node::Color::kBlack;
+    nephew->color = Node::Color::kBlack;
+}
+
 void SearchBinaryTree::Destroy() { delete root_; }
 
 }  // namespace koda
