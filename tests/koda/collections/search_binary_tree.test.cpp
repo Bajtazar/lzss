@@ -94,10 +94,6 @@ TEST(SearchBinaryTreeTest, Removal) {
     }
 
     for (auto const& element : kSampleString) {
-        std::cout << std::string_view{reinterpret_cast<const
-        char*>(element.data()), 4}
-              << "\n";
-        tree.dumpTree();
         ASSERT_TRUE(tree.RemoveString(element));
     }
 }
