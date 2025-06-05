@@ -347,13 +347,11 @@ void SearchBinaryTree::RemoveNode(Node* node) {
 
                 left_nephew = right_nephew->left;
                 if (left_nephew && left_nephew->color == Node::Color::kRed) {
-                    // Case 6
-                    return;
+                    return RemoveNodeRotateParentRightPath(parent, sibling, left_nephew);
                 }
                 right_nephew = right_nephew->right;
                 if (right_nephew && right_nephew->color == Node::Color::kRed) {
-                    // Case 5
-                    return;
+                    return RemoveNodeRotateSiblingRightPath(parent, sibling, right_nephew);
                 }
 
                 sibling->color = Node::Color::kRed;
@@ -377,13 +375,11 @@ void SearchBinaryTree::RemoveNode(Node* node) {
 
                 right_nephew = left_nephew->right;
                 if (right_nephew && right_nephew->color == Node::Color::kRed) {
-                    // case 6
-                    return;
+                    return RemoveNodeRotateParentLeftPath(parent, sibling, right_nephew);
                 }
                 left_nephew = left_nephew->left;
                 if (left_nephew && left_nephew->color == Node::Color::kRed) {
-                    // case 5
-                    return;
+                    return RemoveNodeRotateSiblingLeftPath(parent, sibling, left_nephew);
                 }
 
                 sibling->color = Node::Color::kRed;
