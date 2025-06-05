@@ -125,7 +125,7 @@ void SearchBinaryTree::RotateRightLeft(Node*& node) {
 
 void SearchBinaryTree::InsertNewNode(const uint8_t* key) {
     if (!root_) [[unlikely]] {
-        root_ = new Node{key, buffer_start_index_, nullptr};
+        root_ = new Node{key, buffer_start_index_};
         return;
     }
     if (auto inserted = TryToInserLeaf(key)) {
@@ -150,21 +150,29 @@ void SearchBinaryTree::BuildNode(const uint8_t* key, Node*& node,
 
 void SearchBinaryTree::dumpTree() {
     if (root_) {
-        std::cout << root_ << "]\t";
+        std::cout << "===================\n";
         dumpTree(root_, "");
+        std::cout << "===================\n";
     }
 }
 
 void SearchBinaryTree::dumpTree(Node* parent, std::string view) {
     if (parent->left) {
-        dumpTree(parent->left, view + "\t");
+        dumpTree(parent->left, view + "|\t");
     }
-    std::cout << parent << "]\t";
-    std::cout << view << "|"
-              << std::string_view{reinterpret_cast<const char*>(parent->key), 4}
-              << "\n";
+
+    std::cout << parent << "]\t" << view << "|------->";
+
+    if (parent->color == Node::Color::kRed) {
+        std::cout << "\033[0;31m";
+    } else {
+        std::cout << "\033[1;30m";
+    }
+
+    std::cout << std::string_view{reinterpret_cast<const char*>(parent->key), 4}
+              << "<\033[0m\n";
     if (parent->right) {
-        dumpTree(parent->right, view + "\t");
+        dumpTree(parent->right, view + "|\t");
     }
 }
 
@@ -181,11 +189,11 @@ std::optional<SearchBinaryTree::NodeSpot> SearchBinaryTree::TryToInserLeaf(
                 return std::nullopt;
             case WeakOrdering::kLess:
                 parent = *node;
-                node = &(*node)->right;
+                node = &(*node)->left;
                 break;
             case WeakOrdering::kGreater:
                 parent = *node;
-                node = &(*node)->left;
+                node = &(*node)->right;
                 break;
             default:
                 std::unreachable();
@@ -219,7 +227,7 @@ void SearchBinaryTree::FixInsertionImbalance(Node* node) {
 bool SearchBinaryTree::FixLocalInsertionImbalance(Node*& node, Node*& parent,
                                                   Node*& grand_parent) {
     Node* uncle =
-        grand_parent->right ? grand_parent->left : grand_parent->right;
+        grand_parent->right == node ? grand_parent->left : grand_parent->right;
     if (!uncle || uncle->color == Node::Color::kBlack) {
         if (grand_parent->right) {
             FixLocalInsertionImbalanceRight(node, parent, grand_parent, uncle);
@@ -269,9 +277,9 @@ std::pair<size_t, size_t> SearchBinaryTree::FindString(const uint8_t* buffer,
         UpdateMatchInfo(match, prefix_length, node);
 
         if (StringView{buffer, length} < StringView{node->key, string_size_}) {
-            node = node->right;
-        } else {
             node = node->left;
+        } else {
+            node = node->right;
         }
     }
     return match;
@@ -317,25 +325,22 @@ SearchBinaryTree::Node* SearchBinaryTree::FindNodeToRemoval(
 }
 
 SearchBinaryTree::Node* SearchBinaryTree::FindSuccessor(Node* node) {
-    for (; node->left; node = node->left) ;
+    for (; node->left; node = node->left);
     return node;
 }
 
 void SearchBinaryTree::RemoveNode(Node* node) {
-
     if (node->left && node->right) {
-
-        Node* succesor = FindSuccessor(node);
+        Node* succesor = FindSuccessor(node->right);
         node->key = succesor->key;
         node->ref_counter = succesor->ref_counter;
         node->insertion_index = succesor->insertion_index;
-        return RemoveNode(succesor); // will call one of the special functions - swap later
-
+        return RemoveNode(
+            succesor);  // will call one of the special functions - swap later
     }
 
     if (node->left || node->right) {
         if (node->left) {
-
             node->left->color = Node::Color::kBlack;
             if (node->parent) {
                 if (node == node->parent->left) {
@@ -350,7 +355,6 @@ void SearchBinaryTree::RemoveNode(Node* node) {
             delete node;
             return;
         } else {
-
             node->right->color = Node::Color::kBlack;
             if (node->parent) {
                 if (node == node->parent->left) {
@@ -364,7 +368,6 @@ void SearchBinaryTree::RemoveNode(Node* node) {
 
             delete node;
             return;
-
         }
     }
 
@@ -530,6 +533,6 @@ void SearchBinaryTree::RemoveNodeRotateParentLeftPath(Node* parent,
     nephew->color = Node::Color::kBlack;
 }
 
-void SearchBinaryTree::Destroy() { /*delete root_;*/  }
+void SearchBinaryTree::Destroy() { /*delete root_;*/ }
 
 }  // namespace koda
