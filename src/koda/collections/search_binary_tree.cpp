@@ -366,9 +366,7 @@ void SearchBinaryTree::RemoveNode(Node* node) {
     }
 
     if (node == root_) {
-        delete root_;
-        root_ = nullptr;
-        return;
+        return delete std::exchange(root_, nullptr);
     }
 
     if (node->color == Node::Color::kRed) {
