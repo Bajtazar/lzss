@@ -121,5 +121,9 @@ BeginConstexprTest(SearchBinaryTreeTest, Removal) {
     for (auto const& element : vector) {
         ConstexprAssertTrue(tree.RemoveString(element));
     }
+
+    for (auto const& element : vector) {
+        ConstexprAssertFalse(tree.RemoveString(element));
+    }
 }
 EndConstexprTest(SearchBinaryTreeTest, Removal);
