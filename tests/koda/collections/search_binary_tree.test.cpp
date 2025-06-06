@@ -70,16 +70,16 @@ BeginConstexprTest(SearchBinaryTreeTest, Uniqueness) {
     ConstexprAssertTrue(al_result == Marker(0, 2) ||
                         al_result == Marker(22, 2));
 
-    ConstexprEqual(tree.FindMatch("abcd"_u8), Marker(0, 1));
-    ConstexprEqual(tree.FindMatch("ala"_u8), Marker(0, 3));
-    ConstexprEqual(tree.FindMatch(" ale"_u8), Marker(20, 4));
+    ConstexprAssertEqual(tree.FindMatch("abcd"_u8), Marker(0, 1));
+    ConstexprAssertEqual(tree.FindMatch("ala"_u8), Marker(0, 3));
+    ConstexprAssertEqual(tree.FindMatch(" ale"_u8), Marker(20, 4));
 
     const auto kot_result = tree.FindMatch("kot"_u8);
 
     ConstexprAssertTrue(kot_result == Marker(14, 3) ||
                         kot_result == Marker(7, 3));
-    ConstexprEqual(tree.FindMatch("kota"_u8), Marker(7, 4));
-    ConstexprEqual(tree.FindMatch("kot "_u8), Marker(14, 4));
+    ConstexprAssertEqual(tree.FindMatch("kota"_u8), Marker(7, 4));
+    ConstexprAssertEqual(tree.FindMatch("kot "_u8), Marker(14, 4));
 
     const auto ma_result = tree.FindMatch("ma"_u8);
 

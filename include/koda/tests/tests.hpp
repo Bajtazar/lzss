@@ -40,25 +40,25 @@ constexpr bool compare(Tp&& t1, Up&& t2) noexcept {
         ge_test_assertions = __LINE__;        \
     }
 
-#define ConstexprEqual(left, right)                                      \
+#define ConstexprAssertEqual(left, right)                                \
     if (!ge_test_assertions && !koda::tests::compare((left), (right))) { \
         ge_test_assertions = __LINE__;                                   \
     }
 
-#define ConstexprEqualIter(leftIter, leftSent, rightIter, rightSent) \
-    if (!ge_test_assertions &&                                       \
-        !koda::tests::compare((leftIter), (leftSent), (rightIter),   \
-                              (rightSent))) {                        \
-        ge_test_assertions = __LINE__;                               \
+#define ConstexprAssertEqualIter(leftIter, leftSent, rightIter, rightSent) \
+    if (!ge_test_assertions &&                                             \
+        !koda::tests::compare((leftIter), (leftSent), (rightIter),         \
+                              (rightSent))) {                              \
+        ge_test_assertions = __LINE__;                                     \
     }
 
-#define ConstexprOnThrow(assertion, exception) \
-    try {                                      \
-        (assertion);                           \
-        if (!ge_test_assertions) {             \
-            ge_test_assertions = __LINE__;     \
-        }                                      \
-    } catch (exception const&) {               \
+#define ConstexprAssertOnThrow(assertion, exception) \
+    try {                                            \
+        (assertion);                                 \
+        if (!ge_test_assertions) {                   \
+            ge_test_assertions = __LINE__;           \
+        }                                            \
+    } catch (exception const&) {                     \
     }
 
 #define EndConstexprTest(TestCase, TestName) \

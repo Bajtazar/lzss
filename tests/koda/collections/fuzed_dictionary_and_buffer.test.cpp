@@ -25,50 +25,50 @@ static constexpr ViewableVector<uint8_t> AsString(Ints... chars) {
 BeginConstexprTest(FuzedDictionaryAndBufferTest, Creation) {
     koda::FusedDictionaryAndBuffer dict{kDictSize, kBufferView};
 
-    ConstexprEqual(dict.buffer_size(), kBuffer.size());
-    ConstexprEqual(dict.max_buffer_size(), kBuffer.size());
-    ConstexprEqual(dict.dictionary_size(), 0);
-    ConstexprEqual(dict.max_dictionary_size(), kDictSize);
+    ConstexprAssertEqual(dict.buffer_size(), kBuffer.size());
+    ConstexprAssertEqual(dict.max_buffer_size(), kBuffer.size());
+    ConstexprAssertEqual(dict.dictionary_size(), 0);
+    ConstexprAssertEqual(dict.max_dictionary_size(), kDictSize);
 
-    ConstexprEqual(dict.get_buffer(), kBufferView);
-    ConstexprEqual(dict.get_oldest_dictionary_full_match(), kBufferView);
+    ConstexprAssertEqual(dict.get_buffer(), kBufferView);
+    ConstexprAssertEqual(dict.get_oldest_dictionary_full_match(), kBufferView);
 }
 EndConstexprTest(FuzedDictionaryAndBufferTest, Creation);
 
 BeginConstexprTest(FuzedDictionaryAndBufferTest, SimpleBufferAccomodation) {
     koda::FusedDictionaryAndBuffer dict{kDictSize, kBufferView};
 
-    ConstexprEqual(dict.dictionary_size(), 0);
+    ConstexprAssertEqual(dict.dictionary_size(), 0);
 
     dict.AddSymbolToBuffer(0x78);
 
-    ConstexprEqual(dict.get_buffer(), AsString(0x43, 0x55, 0x54, 0x78));
-    ConstexprEqual(dict.get_oldest_dictionary_full_match(), kBufferView);
-    ConstexprEqual(dict.dictionary_size(), 1);
+    ConstexprAssertEqual(dict.get_buffer(), AsString(0x43, 0x55, 0x54, 0x78));
+    ConstexprAssertEqual(dict.get_oldest_dictionary_full_match(), kBufferView);
+    ConstexprAssertEqual(dict.dictionary_size(), 1);
 
     dict.AddSymbolToBuffer(0x54);
 
-    ConstexprEqual(dict.get_buffer(), AsString(0x55, 0x54, 0x78, 0x54));
-    ConstexprEqual(dict.get_oldest_dictionary_full_match(), kBufferView);
-    ConstexprEqual(dict.dictionary_size(), 2);
+    ConstexprAssertEqual(dict.get_buffer(), AsString(0x55, 0x54, 0x78, 0x54));
+    ConstexprAssertEqual(dict.get_oldest_dictionary_full_match(), kBufferView);
+    ConstexprAssertEqual(dict.dictionary_size(), 2);
 
     dict.AddSymbolToBuffer(0x67);
 
-    ConstexprEqual(dict.get_buffer(), AsString(0x54, 0x78, 0x54, 0x67));
-    ConstexprEqual(dict.get_oldest_dictionary_full_match(), kBufferView);
-    ConstexprEqual(dict.dictionary_size(), 3);
+    ConstexprAssertEqual(dict.get_buffer(), AsString(0x54, 0x78, 0x54, 0x67));
+    ConstexprAssertEqual(dict.get_oldest_dictionary_full_match(), kBufferView);
+    ConstexprAssertEqual(dict.dictionary_size(), 3);
 
     dict.AddSymbolToBuffer(0x93);
 
-    ConstexprEqual(dict.get_buffer(), AsString(0x78, 0x54, 0x67, 0x93));
-    ConstexprEqual(dict.get_oldest_dictionary_full_match(), kBufferView);
-    ConstexprEqual(dict.dictionary_size(), 4);
+    ConstexprAssertEqual(dict.get_buffer(), AsString(0x78, 0x54, 0x67, 0x93));
+    ConstexprAssertEqual(dict.get_oldest_dictionary_full_match(), kBufferView);
+    ConstexprAssertEqual(dict.dictionary_size(), 4);
 
     dict.AddSymbolToBuffer(0x66);
 
-    ConstexprEqual(dict.get_buffer(), AsString(0x54, 0x67, 0x93, 0x66));
-    ConstexprEqual(dict.get_oldest_dictionary_full_match(), kBufferView);
-    ConstexprEqual(dict.dictionary_size(), 5);
+    ConstexprAssertEqual(dict.get_buffer(), AsString(0x54, 0x67, 0x93, 0x66));
+    ConstexprAssertEqual(dict.get_oldest_dictionary_full_match(), kBufferView);
+    ConstexprAssertEqual(dict.dictionary_size(), 5);
 }
 EndConstexprTest(FuzedDictionaryAndBufferTest, SimpleBufferAccomodation);
 
@@ -101,7 +101,7 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, LongRunBufferAndDict) {
     auto buff_iter = 0;
     for (auto const& elem : sequence | std::views::drop(kBufferView.size()) |
                                 std::views::take(kDictSize)) {
-        ConstexprEqual(
+        ConstexprAssertEqual(
             dict.get_buffer(),
             AsString(sequence[buff_iter], sequence[buff_iter + 1],
                      sequence[buff_iter + 2], sequence[buff_iter + 3]));
@@ -112,13 +112,13 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, LongRunBufferAndDict) {
     auto iter = 0;
     for (auto const& elem :
          sequence | std::views::drop(kDictSize + kBufferView.size())) {
-        ConstexprEqual(
+        ConstexprAssertEqual(
             dict.get_buffer(),
             AsString(sequence[buff_iter], sequence[buff_iter + 1],
                      sequence[buff_iter + 2], sequence[buff_iter + 3]));
-        ConstexprEqual(dict.get_oldest_dictionary_full_match(),
-                       AsString(sequence[iter], sequence[iter + 1],
-                                sequence[iter + 2], sequence[iter + 3]));
+        ConstexprAssertEqual(dict.get_oldest_dictionary_full_match(),
+                             AsString(sequence[iter], sequence[iter + 1],
+                                      sequence[iter + 2], sequence[iter + 3]));
         ++iter;
         ++buff_iter;
         dict.AddSymbolToBuffer(elem);
@@ -139,41 +139,41 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, AddEndSymbolTests) {
     // Now N-last element of dict are N-last elements of the sequence!
     dict.AddEndSymbolToBuffer();
 
-    ConstexprEqual(
+    ConstexprAssertEqual(
         dict.get_oldest_dictionary_full_match(),
         AsString(sequence[1], sequence[2], sequence[3], sequence[4]));
-    ConstexprEqual(dict.get_buffer(),
-                   AsString(sequence[kDictSize + 1], sequence[kDictSize + 2],
-                            sequence[kDictSize + 3]));
-    ConstexprEqual(dict.dictionary_size(), dict.max_dictionary_size());
-    ConstexprEqual(dict.buffer_size(), dict.max_buffer_size() - 1);
+    ConstexprAssertEqual(dict.get_buffer(), AsString(sequence[kDictSize + 1],
+                                                     sequence[kDictSize + 2],
+                                                     sequence[kDictSize + 3]));
+    ConstexprAssertEqual(dict.dictionary_size(), dict.max_dictionary_size());
+    ConstexprAssertEqual(dict.buffer_size(), dict.max_buffer_size() - 1);
 
     dict.AddEndSymbolToBuffer();
 
-    ConstexprEqual(
+    ConstexprAssertEqual(
         dict.get_oldest_dictionary_full_match(),
         AsString(sequence[2], sequence[3], sequence[4], sequence[5]));
-    ConstexprEqual(dict.get_buffer(),
-                   AsString(sequence[kDictSize + 2], sequence[kDictSize + 3]));
-    ConstexprEqual(dict.dictionary_size(), dict.max_dictionary_size());
-    ConstexprEqual(dict.buffer_size(), dict.max_buffer_size() - 2);
+    ConstexprAssertEqual(dict.get_buffer(), AsString(sequence[kDictSize + 2],
+                                                     sequence[kDictSize + 3]));
+    ConstexprAssertEqual(dict.dictionary_size(), dict.max_dictionary_size());
+    ConstexprAssertEqual(dict.buffer_size(), dict.max_buffer_size() - 2);
 
     dict.AddEndSymbolToBuffer();
 
-    ConstexprEqual(
+    ConstexprAssertEqual(
         dict.get_oldest_dictionary_full_match(),
         AsString(sequence[3], sequence[4], sequence[5], sequence[6]));
-    ConstexprEqual(dict.get_buffer(), AsString(sequence[kDictSize + 3]));
-    ConstexprEqual(dict.dictionary_size(), dict.max_dictionary_size());
-    ConstexprEqual(dict.buffer_size(), dict.max_buffer_size() - 3);
+    ConstexprAssertEqual(dict.get_buffer(), AsString(sequence[kDictSize + 3]));
+    ConstexprAssertEqual(dict.dictionary_size(), dict.max_dictionary_size());
+    ConstexprAssertEqual(dict.buffer_size(), dict.max_buffer_size() - 3);
 
     dict.AddEndSymbolToBuffer();
 
-    ConstexprEqual(
+    ConstexprAssertEqual(
         dict.get_oldest_dictionary_full_match(),
         AsString(sequence[4], sequence[5], sequence[6], sequence[7]));
-    ConstexprEqual(dict.get_buffer(), std::basic_string_view<uint8_t>{});
-    ConstexprEqual(dict.dictionary_size(), dict.max_dictionary_size());
-    ConstexprEqual(dict.buffer_size(), 0);
+    ConstexprAssertEqual(dict.get_buffer(), std::basic_string_view<uint8_t>{});
+    ConstexprAssertEqual(dict.dictionary_size(), dict.max_dictionary_size());
+    ConstexprAssertEqual(dict.buffer_size(), 0);
 }
 EndConstexprTest(FuzedDictionaryAndBufferTest, AddEndSymbolTests);
