@@ -57,7 +57,7 @@ constexpr auto MakeSamples() {
 
 BeginConstexprTest(SearchBinaryTreeTest, Creation) {
     auto vector = MakeSamples<4>();
-    koda::SearchBinaryTree tree{4};
+    koda::SearchBinaryTree<uint8_t> tree{4};
 
     for (auto const& element : vector) {
         tree.AddString(element);
@@ -79,10 +79,10 @@ BeginConstexprTest(SearchBinaryTreeTest, Creation) {
 EndConstexprTest(SearchBinaryTreeTest, Creation);
 
 BeginConstexprTest(SearchBinaryTreeTest, Uniqueness) {
-    using Marker = koda::SearchBinaryTree::RepeatitionMarker;
+    using Marker = koda::SearchBinaryTree<uint8_t>::RepeatitionMarker;
 
     auto vector = MakeSamples<4>();
-    koda::SearchBinaryTree tree{4};
+    koda::SearchBinaryTree<uint8_t> tree{4};
 
     for (auto const& element : vector) {
         tree.AddString(element);
@@ -112,7 +112,7 @@ EndConstexprTest(SearchBinaryTreeTest, Uniqueness);
 
 BeginConstexprTest(SearchBinaryTreeTest, Removal) {
     auto vector = MakeSamples<4>();
-    koda::SearchBinaryTree tree{4};
+    koda::SearchBinaryTree<uint8_t> tree{4};
 
     for (auto const& element : vector) {
         tree.AddString(element);

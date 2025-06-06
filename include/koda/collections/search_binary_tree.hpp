@@ -10,9 +10,11 @@
 
 namespace koda {
 
+template <typename Tp, typename AllocatorTp = std::allocator<Tp>>
 class SearchBinaryTree {
    public:
-    using StringView = std::basic_string_view<uint8_t>;
+    using ValueType = Tp;
+    using StringView = std::basic_string_view<ValueType>;
 
     struct [[nodiscard]] RepeatitionMarker {
         size_t match_position;
@@ -47,7 +49,7 @@ class SearchBinaryTree {
     struct Node {
         enum class Color : bool { kBlack = 0, kRed = 1 };
 
-        constexpr explicit Node(const uint8_t* key, size_t insertion_index,
+        constexpr explicit Node(const ValueType* key, size_t insertion_index,
                                 Node* parent = nullptr,
                                 Color color = Color::kBlack);
 
@@ -59,7 +61,7 @@ class SearchBinaryTree {
 
         size_t ref_counter = 1;
         size_t insertion_index;
-        const uint8_t* key;
+        const ValueType* key;
         Node* parent;
         Node* left = nullptr;
         Node* right = nullptr;
@@ -87,7 +89,7 @@ class SearchBinaryTree {
 
         constexpr Scheduler ScheduleForReturn(Node* node);
 
-        constexpr Node* GetNode(const uint8_t* key, size_t insertion_index,
+        constexpr Node* GetNode(const ValueType* key, size_t insertion_index,
                                 Node* parent = nullptr,
                                 Node::Color color = Node::Color::kBlack);
 
@@ -113,13 +115,13 @@ class SearchBinaryTree {
 
     constexpr void RotateHelper(Node* node, Node* child, Node* root);
 
-    constexpr void InsertNewNode(const uint8_t* key);
+    constexpr void InsertNewNode(const ValueType* key);
 
-    constexpr void UpdateNodeReference(Node* node, const uint8_t* key);
+    constexpr void UpdateNodeReference(Node* node, const ValueType* key);
 
-    constexpr void BuildNode(const uint8_t* key, Node*& node, Node* parent);
+    constexpr void BuildNode(const ValueType* key, Node*& node, Node* parent);
 
-    constexpr std::optional<NodeSpot> TryToInserLeaf(const uint8_t* key);
+    constexpr std::optional<NodeSpot> TryToInserLeaf(const ValueType* key);
 
     constexpr void FixInsertionImbalance(Node* node);
 
@@ -134,15 +136,15 @@ class SearchBinaryTree {
                                                   Node*& grand_parent,
                                                   Node* uncle);
 
-    constexpr std::pair<size_t, size_t> FindString(const uint8_t* buffer,
+    constexpr std::pair<size_t, size_t> FindString(const ValueType* buffer,
                                                    size_t length) const;
 
     constexpr static void UpdateMatchInfo(std::pair<size_t, size_t>& match_info,
                                           size_t prefix_length,
                                           const Node* node) noexcept;
 
-    constexpr size_t FindCommonPrefixSize(const uint8_t* buffer,
-                                          const uint8_t* node,
+    constexpr size_t FindCommonPrefixSize(const ValueType* buffer,
+                                          const ValueType* node,
                                           size_t length) const noexcept;
 
     constexpr Node* FindNodeToRemoval(StringView key_view);

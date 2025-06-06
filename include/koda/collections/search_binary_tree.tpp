@@ -6,26 +6,35 @@
 
 namespace koda {
 
-constexpr SearchBinaryTree::SearchBinaryTree(size_t string_size) noexcept
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>::SearchBinaryTree(
+    size_t string_size) noexcept
     : string_size_{string_size} {}
 
-constexpr SearchBinaryTree::SearchBinaryTree(SearchBinaryTree&& other) noexcept
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>::SearchBinaryTree(
+    SearchBinaryTree&& other) noexcept
     : root_{std::exchange(other.root_, nullptr)},
+      pool_{std::move(other.pool_)},
       dictionary_start_index_{other.dictionary_start_index_},
       buffer_start_index_{other.buffer_start_index_},
       string_size_{other.string_size_} {}
 
-constexpr SearchBinaryTree& SearchBinaryTree::operator=(
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>&
+SearchBinaryTree<Tp, AllocatorTp>::operator=(
     SearchBinaryTree&& other) noexcept {
     Destroy();
     root_ = std::exchange(other.root_, nullptr);
+    pool_ = std::move(other.pool_);
     dictionary_start_index_ = other.dictionary_start_index_;
     buffer_start_index_ = other.buffer_start_index_;
     string_size_ = other.string_size_;
     return *this;
 }
 
-constexpr void SearchBinaryTree::AddString(StringView string) {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::AddString(StringView string) {
     assert(string.size() == string_size_ &&
            "Inserted string have to have fixed size equal to string_size_");
 
@@ -33,7 +42,9 @@ constexpr void SearchBinaryTree::AddString(StringView string) {
     ++buffer_start_index_;
 }
 
-constexpr bool SearchBinaryTree::RemoveString(StringView string) {
+template <typename Tp, typename AllocatorTp>
+constexpr bool SearchBinaryTree<Tp, AllocatorTp>::RemoveString(
+    StringView string) {
     Node* node = FindNodeToRemoval(string);
 
     if (!node) [[unlikely]] {
@@ -48,8 +59,9 @@ constexpr bool SearchBinaryTree::RemoveString(StringView string) {
     return true;
 }
 
-constexpr SearchBinaryTree::RepeatitionMarker SearchBinaryTree::FindMatch(
-    StringView buffer) const {
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>::RepeatitionMarker
+SearchBinaryTree<Tp, AllocatorTp>::FindMatch(StringView buffer) const {
     assert(
         buffer.size() <= string_size_ &&
         "Inserted string have to have fixed size not bigger than string_size_");
@@ -64,43 +76,59 @@ constexpr SearchBinaryTree::RepeatitionMarker SearchBinaryTree::FindMatch(
             position - dictionary_start_index_, length};
 }
 
-constexpr SearchBinaryTree::~SearchBinaryTree() { Destroy(); }
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>::~SearchBinaryTree() {
+    Destroy();
+}
 
-constexpr SearchBinaryTree::Node::Node(const uint8_t* key,
-                                       size_t insertion_index, Node* parent,
-                                       Color color)
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>::Node::Node(const ValueType* key,
+                                                        size_t insertion_index,
+                                                        Node* parent,
+                                                        Color color)
     : key{std::move(key)},
       insertion_index{insertion_index},
       parent{parent},
       color{color} {}
 
-constexpr SearchBinaryTree::NodePool::Scheduler::~Scheduler() {
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>::NodePool::Scheduler::~Scheduler() {
     pool.ReturnNode(node);
 }
 
-constexpr SearchBinaryTree::NodePool::NodePool(NodePool&& other) noexcept
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>::NodePool::NodePool(
+    NodePool&& other) noexcept
     : handle_{std::exchange(other.handle_, nullptr)} {}
 
-constexpr SearchBinaryTree::NodePool& SearchBinaryTree::NodePool::operator=(
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>::NodePool&
+SearchBinaryTree<Tp, AllocatorTp>::NodePool::operator=(
     NodePool&& other) noexcept {
     Destroy();
     handle_ = std::exchange(other.handle_, nullptr);
     return *this;
 }
 
-constexpr void SearchBinaryTree::NodePool::ReturnNode(Node* handle) {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::NodePool::ReturnNode(
+    Node* handle) {
     handle->left = handle_;
     handle_ = handle;
 }
 
-constexpr SearchBinaryTree::NodePool::Scheduler
-SearchBinaryTree::NodePool::ScheduleForReturn(Node* node) {
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>::NodePool::Scheduler
+SearchBinaryTree<Tp, AllocatorTp>::NodePool::ScheduleForReturn(Node* node) {
     return Scheduler{*this, node};
 }
 
-constexpr SearchBinaryTree::Node* SearchBinaryTree::NodePool::GetNode(
-    const uint8_t* key, size_t insertion_index, Node* parent,
-    Node::Color color) {
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>::Node*
+SearchBinaryTree<Tp, AllocatorTp>::NodePool::GetNode(const ValueType* key,
+                                                     size_t insertion_index,
+                                                     Node* parent,
+                                                     Node::Color color) {
     if (!handle_) {
         return new Node{key, insertion_index, parent, color};
     }
@@ -111,16 +139,21 @@ constexpr SearchBinaryTree::Node* SearchBinaryTree::NodePool::GetNode(
     return node;
 }
 
-constexpr SearchBinaryTree::NodePool::~NodePool() { Destroy(); }
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>::NodePool::~NodePool() {
+    Destroy();
+}
 
-constexpr void SearchBinaryTree::NodePool::Destroy() {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::NodePool::Destroy() {
     for (Node* node = handle_; node;) {
         std::unique_ptr<Node> handle{node};
         node = node->left;
     }
 }
 
-constexpr void SearchBinaryTree::RotateLeft(Node* node) {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::RotateLeft(Node* node) {
     Node* right = node->right;
     Node* right_left = right->left;
 
@@ -130,7 +163,8 @@ constexpr void SearchBinaryTree::RotateLeft(Node* node) {
     RotateHelper(node, right_left, right);
 }
 
-constexpr void SearchBinaryTree::RotateRight(Node* node) {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::RotateRight(Node* node) {
     Node* left = node->left;
     Node* left_right = left->right;
 
@@ -140,8 +174,10 @@ constexpr void SearchBinaryTree::RotateRight(Node* node) {
     RotateHelper(node, left_right, left);
 }
 
-constexpr void SearchBinaryTree::RotateHelper(Node* node, Node* child,
-                                              Node* root) {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::RotateHelper(Node* node,
+                                                               Node* child,
+                                                               Node* root) {
     Node* parent = node->parent;
     root->parent = parent;
     node->parent = root;
@@ -159,7 +195,9 @@ constexpr void SearchBinaryTree::RotateHelper(Node* node, Node* child,
     }
 }
 
-constexpr void SearchBinaryTree::InsertNewNode(const uint8_t* key) {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::InsertNewNode(
+    const ValueType* key) {
     if (!root_) [[unlikely]] {
         root_ = pool_.GetNode(key, buffer_start_index_);
         return;
@@ -173,20 +211,23 @@ constexpr void SearchBinaryTree::InsertNewNode(const uint8_t* key) {
     }
 }
 
-constexpr void SearchBinaryTree::UpdateNodeReference(Node* node,
-                                                     const uint8_t* key) {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::UpdateNodeReference(
+    Node* node, const ValueType* key) {
     ++node->ref_counter;
     node->key = key;
     node->insertion_index = buffer_start_index_ - dictionary_start_index_;
 }
 
-constexpr void SearchBinaryTree::BuildNode(const uint8_t* key, Node*& node,
-                                           Node* parent) {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::BuildNode(
+    const ValueType* key, Node*& node, Node* parent) {
     node = pool_.GetNode(key, buffer_start_index_, parent, Node::Color::kRed);
 }
 
-constexpr std::optional<SearchBinaryTree::NodeSpot>
-SearchBinaryTree::TryToInserLeaf(const uint8_t* key) {
+template <typename Tp, typename AllocatorTp>
+constexpr std::optional<typename SearchBinaryTree<Tp, AllocatorTp>::NodeSpot>
+SearchBinaryTree<Tp, AllocatorTp>::TryToInserLeaf(const ValueType* key) {
     const StringView key_view{key, string_size_};
     Node** node = &root_;
     Node* parent = nullptr;
@@ -211,7 +252,9 @@ SearchBinaryTree::TryToInserLeaf(const uint8_t* key) {
     return NodeSpot{*node, parent};
 }
 
-constexpr void SearchBinaryTree::FixInsertionImbalance(Node* node) {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::FixInsertionImbalance(
+    Node* node) {
     Node* parent = node->parent;
 
     for (; parent && parent->color == Node::Color::kRed;) {
@@ -233,7 +276,8 @@ constexpr void SearchBinaryTree::FixInsertionImbalance(Node* node) {
     }
 }
 
-constexpr bool SearchBinaryTree::FixLocalInsertionImbalance(
+template <typename Tp, typename AllocatorTp>
+constexpr bool SearchBinaryTree<Tp, AllocatorTp>::FixLocalInsertionImbalance(
     Node*& node, Node*& parent, Node*& grand_parent) {
     Node* uncle = grand_parent->right == parent ? grand_parent->left
                                                 : grand_parent->right;
@@ -251,7 +295,9 @@ constexpr bool SearchBinaryTree::FixLocalInsertionImbalance(
     return false;
 }
 
-constexpr void SearchBinaryTree::FixLocalInsertionImbalanceRight(
+template <typename Tp, typename AllocatorTp>
+constexpr void
+SearchBinaryTree<Tp, AllocatorTp>::FixLocalInsertionImbalanceRight(
     Node*& node, Node*& parent, Node*& grand_parent, Node* uncle) {
     if (node == parent->left) {
         RotateRight(parent);
@@ -261,7 +307,9 @@ constexpr void SearchBinaryTree::FixLocalInsertionImbalanceRight(
     RotateLeft(grand_parent);
 }
 
-constexpr void SearchBinaryTree::FixLocalInsertionImbalanceLeft(
+template <typename Tp, typename AllocatorTp>
+constexpr void
+SearchBinaryTree<Tp, AllocatorTp>::FixLocalInsertionImbalanceLeft(
     Node*& node, Node*& parent, Node*& grand_parent, Node* uncle) {
     if (node == parent->right) {
         RotateLeft(parent);
@@ -271,8 +319,10 @@ constexpr void SearchBinaryTree::FixLocalInsertionImbalanceLeft(
     RotateRight(grand_parent);
 }
 
-constexpr std::pair<size_t, size_t> SearchBinaryTree::FindString(
-    const uint8_t* buffer, size_t length) const {
+template <typename Tp, typename AllocatorTp>
+constexpr std::pair<size_t, size_t>
+SearchBinaryTree<Tp, AllocatorTp>::FindString(const ValueType* buffer,
+                                              size_t length) const {
     std::pair<size_t, size_t> match{};
     for (const Node* node = root_; node;) {
         auto prefix_length = FindCommonPrefixSize(buffer, node->key, length);
@@ -290,7 +340,8 @@ constexpr std::pair<size_t, size_t> SearchBinaryTree::FindString(
     return match;
 }
 
-/*static*/ constexpr void SearchBinaryTree::UpdateMatchInfo(
+template <typename Tp, typename AllocatorTp>
+/*static*/ constexpr void SearchBinaryTree<Tp, AllocatorTp>::UpdateMatchInfo(
     std::pair<size_t, size_t>& match_info, size_t prefix_length,
     const Node* node) noexcept {
     if (match_info.second < prefix_length) {
@@ -299,8 +350,10 @@ constexpr std::pair<size_t, size_t> SearchBinaryTree::FindString(
     }
 }
 
-constexpr size_t SearchBinaryTree::FindCommonPrefixSize(
-    const uint8_t* buffer, const uint8_t* node, size_t length) const noexcept {
+template <typename Tp, typename AllocatorTp>
+constexpr size_t SearchBinaryTree<Tp, AllocatorTp>::FindCommonPrefixSize(
+    const ValueType* buffer, const ValueType* node,
+    size_t length) const noexcept {
     for (size_t i = 0; i < length; ++i) {
         if (buffer[i] != node[i]) {
             return i;
@@ -309,8 +362,9 @@ constexpr size_t SearchBinaryTree::FindCommonPrefixSize(
     return length;
 }
 
-constexpr SearchBinaryTree::Node* SearchBinaryTree::FindNodeToRemoval(
-    StringView key_view) {
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>::Node*
+SearchBinaryTree<Tp, AllocatorTp>::FindNodeToRemoval(StringView key_view) {
     for (Node* node = root_; node;) {
         switch (OrderCast(key_view <=> StringView{node->key, string_size_})) {
             case WeakOrdering::kEquivalent:
@@ -328,12 +382,16 @@ constexpr SearchBinaryTree::Node* SearchBinaryTree::FindNodeToRemoval(
     return nullptr;
 }
 
-constexpr SearchBinaryTree::Node* SearchBinaryTree::FindSuccessor(Node* node) {
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>::Node*
+SearchBinaryTree<Tp, AllocatorTp>::FindSuccessor(Node* node) {
     for (; node->left; node = node->left);
     return node;
 }
 
-constexpr void SearchBinaryTree::RemoveNodeWithTwoChildren(Node* node) {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::RemoveNodeWithTwoChildren(
+    Node* node) {
     Node* succesor = FindSuccessor(node->right);
     node->key = succesor->key;
     node->ref_counter = succesor->ref_counter;
@@ -345,8 +403,9 @@ constexpr void SearchBinaryTree::RemoveNodeWithTwoChildren(Node* node) {
     RemoveChildlessNode(succesor);
 }
 
-constexpr void SearchBinaryTree::RemoveNodeWithOneChildren(Node* node,
-                                                           Node* children) {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::RemoveNodeWithOneChildren(
+    Node* node, Node* children) {
     children->color = Node::Color::kBlack;
     children->parent = node->parent;
 
@@ -363,11 +422,14 @@ constexpr void SearchBinaryTree::RemoveNodeWithOneChildren(Node* node,
     pool_.ReturnNode(node);
 }
 
-constexpr void SearchBinaryTree::RemoveRootNode() {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::RemoveRootNode() {
     pool_.ReturnNode(std::exchange(root_, nullptr));
 }
 
-constexpr void SearchBinaryTree::PrepareToRemoveRedChildlessNode(Node* node) {
+template <typename Tp, typename AllocatorTp>
+constexpr void
+SearchBinaryTree<Tp, AllocatorTp>::PrepareToRemoveRedChildlessNode(Node* node) {
     if (node->parent->right == node) {
         node->parent->right = nullptr;
     } else {
@@ -375,9 +437,12 @@ constexpr void SearchBinaryTree::PrepareToRemoveRedChildlessNode(Node* node) {
     }
 }
 
-constexpr void SearchBinaryTree::RemoveBlackChildlessNodeRightPathSiblingIsRed(
-    Node* node, Node* parent, Node* sibling, Node* left_nephew,
-    Node* right_nephew) {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::
+    RemoveBlackChildlessNodeRightPathSiblingIsRed(Node* node, Node* parent,
+                                                  Node* sibling,
+                                                  Node* left_nephew,
+                                                  Node* right_nephew) {
     RotateRight(parent);
     parent->color = Node::Color::kRed;
     sibling->color = Node::Color::kBlack;
@@ -396,7 +461,9 @@ constexpr void SearchBinaryTree::RemoveBlackChildlessNodeRightPathSiblingIsRed(
     parent->color = Node::Color::kBlack;
 }
 
-constexpr bool SearchBinaryTree::RemoveBlackChildlessNodeRightPath(
+template <typename Tp, typename AllocatorTp>
+constexpr bool
+SearchBinaryTree<Tp, AllocatorTp>::RemoveBlackChildlessNodeRightPath(
     Node* node, Node* parent) {
     Node* sibling = parent->left;
     Node* left_nephew = sibling->left;
@@ -427,7 +494,9 @@ constexpr bool SearchBinaryTree::RemoveBlackChildlessNodeRightPath(
     return false;
 }
 
-constexpr void SearchBinaryTree::RemoveBlackChildlessNodeLeftPathSiblingIsRed(
+template <typename Tp, typename AllocatorTp>
+constexpr void
+SearchBinaryTree<Tp, AllocatorTp>::RemoveBlackChildlessNodeLeftPathSiblingIsRed(
     Node* node, Node* parent, Node* sibling, Node* left_nephew,
     Node* right_nephew) {
     RotateLeft(parent);
@@ -448,7 +517,9 @@ constexpr void SearchBinaryTree::RemoveBlackChildlessNodeLeftPathSiblingIsRed(
     parent->color = Node::Color::kBlack;
 }
 
-constexpr bool SearchBinaryTree::RemoveBlackChildlessNodeLeftPath(
+template <typename Tp, typename AllocatorTp>
+constexpr bool
+SearchBinaryTree<Tp, AllocatorTp>::RemoveBlackChildlessNodeLeftPath(
     Node* node, Node* parent) {
     Node* sibling = parent->right;
     Node* left_nephew = sibling->left;
@@ -479,7 +550,9 @@ constexpr bool SearchBinaryTree::RemoveBlackChildlessNodeLeftPath(
     return false;
 }
 
-constexpr void SearchBinaryTree::RemoveBlackChildlessNode(Node* node) {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::RemoveBlackChildlessNode(
+    Node* node) {
     if (node->parent->right == node) {
         node->parent->right = nullptr;
         if (RemoveBlackChildlessNodeRightPath(node, node->parent)) {
@@ -506,7 +579,9 @@ constexpr void SearchBinaryTree::RemoveBlackChildlessNode(Node* node) {
     }
 }
 
-constexpr void SearchBinaryTree::RemoveChildlessNode(Node* node) {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::RemoveChildlessNode(
+    Node* node) {
     if (node == root_) {
         return RemoveRootNode();
     }
@@ -521,7 +596,8 @@ constexpr void SearchBinaryTree::RemoveChildlessNode(Node* node) {
     RemoveBlackChildlessNode(node);
 }
 
-constexpr void SearchBinaryTree::RemoveNode(Node* node) {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::RemoveNode(Node* node) {
     if (node->left && node->right) {
         return RemoveNodeWithTwoChildren(node);
     }
@@ -534,7 +610,9 @@ constexpr void SearchBinaryTree::RemoveNode(Node* node) {
     RemoveChildlessNode(node);
 }
 
-constexpr void SearchBinaryTree::RemoveNodeRotateSiblingRightPath(
+template <typename Tp, typename AllocatorTp>
+constexpr void
+SearchBinaryTree<Tp, AllocatorTp>::RemoveNodeRotateSiblingRightPath(
     Node* parent, Node* sibling, Node* nephew) {
     RotateLeft(sibling);
     sibling->color = Node::Color::kRed;
@@ -542,34 +620,38 @@ constexpr void SearchBinaryTree::RemoveNodeRotateSiblingRightPath(
     RemoveNodeRotateParentRightPath(parent, nephew, sibling);
 }
 
-constexpr void SearchBinaryTree::RemoveNodeRotateSiblingLeftPath(Node* parent,
-                                                                 Node* sibling,
-                                                                 Node* nephew) {
+template <typename Tp, typename AllocatorTp>
+constexpr void
+SearchBinaryTree<Tp, AllocatorTp>::RemoveNodeRotateSiblingLeftPath(
+    Node* parent, Node* sibling, Node* nephew) {
     RotateRight(sibling);
     sibling->color = Node::Color::kRed;
     nephew->color = Node::Color::kBlack;
     RemoveNodeRotateParentLeftPath(parent, nephew, sibling);
 }
 
-constexpr void SearchBinaryTree::RemoveNodeRotateParentRightPath(Node* parent,
-                                                                 Node* sibling,
-                                                                 Node* nephew) {
+template <typename Tp, typename AllocatorTp>
+constexpr void
+SearchBinaryTree<Tp, AllocatorTp>::RemoveNodeRotateParentRightPath(
+    Node* parent, Node* sibling, Node* nephew) {
     RotateRight(parent);
     sibling->color = parent->color;
     parent->color = Node::Color::kBlack;
     nephew->color = Node::Color::kBlack;
 }
 
-constexpr void SearchBinaryTree::RemoveNodeRotateParentLeftPath(Node* parent,
-                                                                Node* sibling,
-                                                                Node* nephew) {
+template <typename Tp, typename AllocatorTp>
+constexpr void
+SearchBinaryTree<Tp, AllocatorTp>::RemoveNodeRotateParentLeftPath(
+    Node* parent, Node* sibling, Node* nephew) {
     RotateLeft(parent);
     sibling->color = parent->color;
     parent->color = Node::Color::kBlack;
     nephew->color = Node::Color::kBlack;
 }
 
-constexpr void SearchBinaryTree::Destroy() {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::Destroy() {
     // Instead of calling a recursive destructor call, deallocate tree in place
     // in order to avoid stack overflow for large structures!
     for (Node* node = root_; root_;) {
