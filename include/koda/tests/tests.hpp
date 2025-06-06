@@ -5,12 +5,9 @@
 
 namespace koda::tests {
 
-template <typename Tp>
-constexpr bool compare(Tp&& t1, Tp&& t2) noexcept
-    requires requires(Tp t1) {
-        { t1 == t2 } -> std::same_as<bool>;
-    }
-{
+template <typename Tp, typename Up>
+    requires std::equality_comparable_with<Tp, Up>
+constexpr bool compare(Tp&& t1, Up&& t2) noexcept {
     return t1 == t2;
 }
 
@@ -22,6 +19,7 @@ constexpr bool compare(LeftIter leftIter, LeftSent leftSent,
 }
 
 template <std::ranges::input_range Tp, std::ranges::input_range Up>
+    requires(!std::equality_comparable_with<Tp, Up>)
 constexpr bool compare(Tp&& t1, Up&& t2) noexcept {
     return std::ranges::equal(std::forward<Tp>(t1), std::forward<Up>(t2));
 }
