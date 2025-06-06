@@ -73,9 +73,11 @@ namespace koda {
 /// 0 heap allocations and 2M symbols copied per N operations. Symbols
 /// are also copied in 2 * M size batches which allows for SIMD-optimized
 /// copying
+template <typename Tp, typename AllocatorTp = std::allocator<Tp>>
 class FusedDictionaryAndBuffer {
    public:
-    using SequenceView = std::basic_string_view<uint8_t>;
+    using ValueType = Tp;
+    using SequenceView = std::basic_string_view<ValueType>;
 
     constexpr explicit FusedDictionaryAndBuffer(
         size_t dictionary_size, SequenceView buffer,
@@ -91,7 +93,7 @@ class FusedDictionaryAndBuffer {
     constexpr FusedDictionaryAndBuffer& operator=(FusedDictionaryAndBuffer&&) =
         delete;
 
-    constexpr bool AddSymbolToBuffer(uint8_t symbol);
+    constexpr bool AddSymbolToBuffer(ValueType symbol);
 
     constexpr bool AddEndSymbolToBuffer();
 
@@ -109,8 +111,8 @@ class FusedDictionaryAndBuffer {
     [[nodiscard]] constexpr size_t buffer_size() const noexcept;
 
    private:
-    using Buffer = std::vector<uint8_t>;
-    using BufferIter = typename std::vector<uint8_t>::iterator;
+    using Buffer = std::vector<ValueType>;
+    using BufferIter = typename std::vector<ValueType>::iterator;
 
     Buffer cyclic_buffer_;
     size_t dictionary_size_;

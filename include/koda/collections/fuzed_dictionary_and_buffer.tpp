@@ -9,7 +9,8 @@
 
 namespace koda {
 
-constexpr FusedDictionaryAndBuffer::FusedDictionaryAndBuffer(
+template <typename Tp, typename AllocatorTp>
+constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::FusedDictionaryAndBuffer(
     size_t dictionary_size, SequenceView buffer,
     std::optional<size_t> cyclic_buffer_size)
     : cyclic_buffer_(CalculateCyclicBufferSize(dictionary_size, buffer.size(),
@@ -42,7 +43,9 @@ constexpr FusedDictionaryAndBuffer::FusedDictionaryAndBuffer(
     MemoryCopy(buffer_iter_, buffer);
 }
 
-constexpr bool FusedDictionaryAndBuffer::AddSymbolToBuffer(uint8_t symbol) {
+template <typename Tp, typename AllocatorTp>
+constexpr bool FusedDictionaryAndBuffer<Tp, AllocatorTp>::AddSymbolToBuffer(
+    ValueType symbol) {
     if (buffer_sentinel_ == cyclic_buffer_.end()) [[unlikely]] {
         RelocateBuffer();
     } else {
@@ -52,26 +55,32 @@ constexpr bool FusedDictionaryAndBuffer::AddSymbolToBuffer(uint8_t symbol) {
     return SlideDictionary();
 }
 
-constexpr bool FusedDictionaryAndBuffer::AddEndSymbolToBuffer() {
+template <typename Tp, typename AllocatorTp>
+constexpr bool
+FusedDictionaryAndBuffer<Tp, AllocatorTp>::AddEndSymbolToBuffer() {
     /// Relocation is not needed since no symbol is appended
     ++buffer_iter_;
     return SlideDictionary();
 }
 
-[[nodiscard]] constexpr FusedDictionaryAndBuffer::SequenceView
-FusedDictionaryAndBuffer::get_buffer() const noexcept {
+template <typename Tp, typename AllocatorTp>
+[[nodiscard]] constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::SequenceView
+FusedDictionaryAndBuffer<Tp, AllocatorTp>::get_buffer() const noexcept {
     // Always contiguous
     return SequenceView{buffer_iter_, buffer_sentinel_};
 }
 
-[[nodiscard]] constexpr FusedDictionaryAndBuffer::SequenceView
-FusedDictionaryAndBuffer::get_oldest_dictionary_full_match() const noexcept {
+template <typename Tp, typename AllocatorTp>
+[[nodiscard]] constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::SequenceView
+FusedDictionaryAndBuffer<Tp, AllocatorTp>::get_oldest_dictionary_full_match()
+    const noexcept {
     // Always contiguous
     return SequenceView{dictionary_iter_,
                         std::next(dictionary_iter_, this->max_buffer_size())};
 }
 
-constexpr void FusedDictionaryAndBuffer::RelocateBuffer() {
+template <typename Tp, typename AllocatorTp>
+constexpr void FusedDictionaryAndBuffer<Tp, AllocatorTp>::RelocateBuffer() {
     // When end symbols are added then this class contract permits usage of
     // AddSymbolToBuffer method and thus buffer size won't be changed and so
     // when relocation is happening the buffer always has to have its max size
@@ -81,7 +90,8 @@ constexpr void FusedDictionaryAndBuffer::RelocateBuffer() {
     // First element will be a freashly inserted symbol
 }
 
-constexpr bool FusedDictionaryAndBuffer::SlideDictionary() {
+template <typename Tp, typename AllocatorTp>
+constexpr bool FusedDictionaryAndBuffer<Tp, AllocatorTp>::SlideDictionary() {
     // Follow buffer
     if (dictionary_sentinel_++ == cyclic_buffer_.end()) [[unlikely]] {
         dictionary_sentinel_ = left_telomere_tag_;
@@ -102,8 +112,9 @@ constexpr bool FusedDictionaryAndBuffer::SlideDictionary() {
     return false;
 }
 
-[[nodiscard]] constexpr size_t FusedDictionaryAndBuffer::dictionary_size()
-    const noexcept {
+template <typename Tp, typename AllocatorTp>
+[[nodiscard]] constexpr size_t
+FusedDictionaryAndBuffer<Tp, AllocatorTp>::dictionary_size() const noexcept {
     std::ptrdiff_t difference = dictionary_sentinel_ - dictionary_iter_;
     if (difference < 0) {
         return static_cast<size_t>(right_telomere_tag_ - dictionary_iter_ +
@@ -113,25 +124,30 @@ constexpr bool FusedDictionaryAndBuffer::SlideDictionary() {
     return static_cast<size_t>(difference);
 }
 
-[[nodiscard]] constexpr size_t FusedDictionaryAndBuffer::buffer_size()
-    const noexcept {
+template <typename Tp, typename AllocatorTp>
+[[nodiscard]] constexpr size_t
+FusedDictionaryAndBuffer<Tp, AllocatorTp>::buffer_size() const noexcept {
     // Buffer is always contiguous so it cannot be splitted into two
     // parts. In contrast dictionary can be
     [[assume(buffer_sentinel_ >= buffer_iter_)]];
     return static_cast<size_t>(buffer_sentinel_ - buffer_iter_);
 }
 
-[[nodiscard]] constexpr size_t FusedDictionaryAndBuffer::max_dictionary_size()
-    const noexcept {
+template <typename Tp, typename AllocatorTp>
+[[nodiscard]] constexpr size_t FusedDictionaryAndBuffer<
+    Tp, AllocatorTp>::max_dictionary_size() const noexcept {
     return dictionary_size_;
 }
 
-[[nodiscard]] constexpr size_t FusedDictionaryAndBuffer::max_buffer_size()
-    const noexcept {
+template <typename Tp, typename AllocatorTp>
+[[nodiscard]] constexpr size_t
+FusedDictionaryAndBuffer<Tp, AllocatorTp>::max_buffer_size() const noexcept {
     return buffer_size_;
 }
 
-/*static*/ constexpr size_t FusedDictionaryAndBuffer::CalculateCyclicBufferSize(
+template <typename Tp, typename AllocatorTp>
+/*static*/ constexpr size_t
+FusedDictionaryAndBuffer<Tp, AllocatorTp>::CalculateCyclicBufferSize(
     size_t dictionary_size, size_t buffer_size,
     std::optional<size_t> cyclic_buffer_size) {
     if (cyclic_buffer_size) {
