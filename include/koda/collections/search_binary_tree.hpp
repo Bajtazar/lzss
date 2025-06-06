@@ -26,36 +26,36 @@ class SearchBinaryTree {
             const RepeatitionMarker&) const noexcept = default;
     };
 
-    explicit SearchBinaryTree(size_t string_size) noexcept;
+    constexpr explicit SearchBinaryTree(size_t string_size) noexcept;
 
-    explicit SearchBinaryTree(SearchBinaryTree&& other) noexcept;
-    explicit SearchBinaryTree(const SearchBinaryTree& other) = delete;
+    constexpr explicit SearchBinaryTree(SearchBinaryTree&& other) noexcept;
+    constexpr explicit SearchBinaryTree(const SearchBinaryTree& other) = delete;
 
-    SearchBinaryTree& operator=(SearchBinaryTree&& other) noexcept;
-    SearchBinaryTree& operator=(const SearchBinaryTree& other) = delete;
+    constexpr SearchBinaryTree& operator=(SearchBinaryTree&& other) noexcept;
+    constexpr SearchBinaryTree& operator=(const SearchBinaryTree& other) =
+        delete;
 
-    void AddString(StringView string);
+    constexpr void AddString(StringView string);
 
-    bool RemoveString(StringView string);
+    constexpr bool RemoveString(StringView string);
 
-    RepeatitionMarker FindMatch(StringView buffer) const;
+    constexpr RepeatitionMarker FindMatch(StringView buffer) const;
 
-    void dumpTree();
-
-    ~SearchBinaryTree();
+    constexpr ~SearchBinaryTree();
 
    private:
     struct Node {
         enum class Color : bool { kBlack = 0, kRed = 1 };
 
-        explicit Node(const uint8_t* key, size_t insertion_index,
-                      Node* parent = nullptr, Color color = Color::kBlack);
+        constexpr explicit Node(const uint8_t* key, size_t insertion_index,
+                                Node* parent = nullptr,
+                                Color color = Color::kBlack);
 
-        Node(Node&&) noexcept = default;
-        Node(const Node&) = delete;
+        constexpr Node(Node&&) noexcept = default;
+        constexpr Node(const Node&) = delete;
 
-        Node& operator=(Node&&) noexcept = default;
-        Node& operator=(const Node&) = delete;
+        constexpr Node& operator=(Node&&) noexcept = default;
+        constexpr Node& operator=(const Node&) = delete;
 
         size_t ref_counter = 1;
         size_t insertion_index;
@@ -72,34 +72,32 @@ class SearchBinaryTree {
             NodePool& pool;
             Node* node;
 
-            ~Scheduler();
+            constexpr ~Scheduler();
         };
 
-        explicit NodePool() noexcept = default;
+        constexpr explicit NodePool() noexcept = default;
 
-        NodePool(NodePool&& pool) noexcept;
-        NodePool(const NodePool& pool) = delete;
+        constexpr NodePool(NodePool&& pool) noexcept;
+        constexpr NodePool(const NodePool& pool) = delete;
 
-        NodePool& operator=(NodePool&& pool) noexcept;
-        NodePool& operator=(const NodePool& pool) = delete;
+        constexpr NodePool& operator=(NodePool&& pool) noexcept;
+        constexpr NodePool& operator=(const NodePool& pool) = delete;
 
-        void ReturnNode(Node* handle);
+        constexpr void ReturnNode(Node* handle);
 
-        Scheduler ScheduleForReturn(Node* node);
+        constexpr Scheduler ScheduleForReturn(Node* node);
 
-        Node* GetNode(const uint8_t* key, size_t insertion_index,
-                      Node* parent = nullptr,
-                      Node::Color color = Node::Color::kBlack);
+        constexpr Node* GetNode(const uint8_t* key, size_t insertion_index,
+                                Node* parent = nullptr,
+                                Node::Color color = Node::Color::kBlack);
 
-        ~NodePool();
+        constexpr ~NodePool();
 
        private:
         Node* handle_ = nullptr;
 
-        void Destroy();
+        constexpr void Destroy();
     };
-
-    void dumpTree(Node* parent, std::string view);
 
     using NodeSpot = std::pair<Node*&, Node*>;
 
@@ -109,86 +107,89 @@ class SearchBinaryTree {
     NodePool pool_;
     Node* root_ = nullptr;
 
-    void RotateLeft(Node* node);
+    constexpr void RotateLeft(Node* node);
 
-    void RotateRight(Node* node);
+    constexpr void RotateRight(Node* node);
 
-    void RotateHelper(Node* node, Node* child, Node* root);
+    constexpr void RotateHelper(Node* node, Node* child, Node* root);
 
-    void InsertNewNode(const uint8_t* key);
+    constexpr void InsertNewNode(const uint8_t* key);
 
-    void UpdateNodeReference(Node* node, const uint8_t* key);
+    constexpr void UpdateNodeReference(Node* node, const uint8_t* key);
 
-    void BuildNode(const uint8_t* key, Node*& node, Node* parent);
+    constexpr void BuildNode(const uint8_t* key, Node*& node, Node* parent);
 
-    std::optional<NodeSpot> TryToInserLeaf(const uint8_t* key);
+    constexpr std::optional<NodeSpot> TryToInserLeaf(const uint8_t* key);
 
-    void FixInsertionImbalance(Node* node);
+    constexpr void FixInsertionImbalance(Node* node);
 
-    bool FixLocalInsertionImbalance(Node*& node, Node*& parent,
-                                    Node*& grand_parent);
+    constexpr bool FixLocalInsertionImbalance(Node*& node, Node*& parent,
+                                              Node*& grand_parent);
 
-    void FixLocalInsertionImbalanceRight(Node*& node, Node*& parent,
-                                         Node*& grand_parent, Node* uncle);
+    constexpr void FixLocalInsertionImbalanceRight(Node*& node, Node*& parent,
+                                                   Node*& grand_parent,
+                                                   Node* uncle);
 
-    void FixLocalInsertionImbalanceLeft(Node*& node, Node*& parent,
-                                        Node*& grand_parent, Node* uncle);
+    constexpr void FixLocalInsertionImbalanceLeft(Node*& node, Node*& parent,
+                                                  Node*& grand_parent,
+                                                  Node* uncle);
 
-    std::pair<size_t, size_t> FindString(const uint8_t* buffer,
-                                         size_t length) const;
+    constexpr std::pair<size_t, size_t> FindString(const uint8_t* buffer,
+                                                   size_t length) const;
 
-    static void UpdateMatchInfo(std::pair<size_t, size_t>& match_info,
-                                size_t prefix_length,
-                                const Node* node) noexcept;
+    constexpr static void UpdateMatchInfo(std::pair<size_t, size_t>& match_info,
+                                          size_t prefix_length,
+                                          const Node* node) noexcept;
 
-    size_t FindCommonPrefixSize(const uint8_t* buffer, const uint8_t* node,
-                                size_t length) const noexcept;
+    constexpr size_t FindCommonPrefixSize(const uint8_t* buffer,
+                                          const uint8_t* node,
+                                          size_t length) const noexcept;
 
-    Node* FindNodeToRemoval(StringView key_view);
+    constexpr Node* FindNodeToRemoval(StringView key_view);
 
-    Node* FindSuccessor(Node* node);
+    constexpr Node* FindSuccessor(Node* node);
 
-    void RemoveNode(Node* node);
+    constexpr void RemoveNode(Node* node);
 
-    void RemoveNodeRotateSiblingRightPath(Node* parent, Node* sibling,
-                                          Node* nephew);
+    constexpr void RemoveNodeRotateSiblingRightPath(Node* parent, Node* sibling,
+                                                    Node* nephew);
 
-    void RemoveNodeRotateSiblingLeftPath(Node* parent, Node* sibling,
-                                         Node* nephew);
+    constexpr void RemoveNodeRotateSiblingLeftPath(Node* parent, Node* sibling,
+                                                   Node* nephew);
 
-    void RemoveNodeRotateParentRightPath(Node* parent, Node* sibling,
-                                         Node* nephew);
+    constexpr void RemoveNodeRotateParentRightPath(Node* parent, Node* sibling,
+                                                   Node* nephew);
 
-    void RemoveNodeRotateParentLeftPath(Node* parent, Node* sibling,
-                                        Node* nephew);
+    constexpr void RemoveNodeRotateParentLeftPath(Node* parent, Node* sibling,
+                                                  Node* nephew);
 
-    void RemoveNodeWithTwoChildren(Node* node);
+    constexpr void RemoveNodeWithTwoChildren(Node* node);
 
-    void RemoveNodeWithOneChildren(Node* node, Node* children);
+    constexpr void RemoveNodeWithOneChildren(Node* node, Node* children);
 
-    void RemoveRootNode();
+    constexpr void RemoveRootNode();
 
-    void PrepareToRemoveRedChildlessNode(Node* node);
+    constexpr void PrepareToRemoveRedChildlessNode(Node* node);
 
-    void RemoveBlackChildlessNodeRightPathSiblingIsRed(Node* node, Node* parent,
-                                                       Node* sibling,
-                                                       Node* left_nephew,
-                                                       Node* right_nephew);
+    constexpr void RemoveBlackChildlessNodeRightPathSiblingIsRed(
+        Node* node, Node* parent, Node* sibling, Node* left_nephew,
+        Node* right_nephew);
 
-    bool RemoveBlackChildlessNodeRightPath(Node* node, Node* parent);
+    constexpr bool RemoveBlackChildlessNodeRightPath(Node* node, Node* parent);
 
-    void RemoveBlackChildlessNodeLeftPathSiblingIsRed(Node* node, Node* parent,
-                                                      Node* sibling,
-                                                      Node* left_nephew,
-                                                      Node* right_nephew);
+    constexpr void RemoveBlackChildlessNodeLeftPathSiblingIsRed(
+        Node* node, Node* parent, Node* sibling, Node* left_nephew,
+        Node* right_nephew);
 
-    bool RemoveBlackChildlessNodeLeftPath(Node* node, Node* parent);
+    constexpr bool RemoveBlackChildlessNodeLeftPath(Node* node, Node* parent);
 
-    void RemoveChildlessNode(Node* node);
+    constexpr void RemoveChildlessNode(Node* node);
 
-    void RemoveBlackChildlessNode(Node* node);
+    constexpr void RemoveBlackChildlessNode(Node* node);
 
-    void Destroy();
+    constexpr void Destroy();
 };
 
 }  // namespace koda
+
+#include <koda/collections/search_binary_tree.tpp>
