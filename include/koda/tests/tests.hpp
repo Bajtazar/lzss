@@ -28,34 +28,42 @@ constexpr bool compare(Tp&& t1, Up&& t2) noexcept {
 
 }  // namespace koda::tests
 
-#define BeginConstexprTest(TestName) \
-    constexpr bool TestName(void) {  \
-        bool ge_test_assertions = true;
+#define BeginConstexprTest(TestName)    \
+    constexpr uint64_t TestName(void) { \
+        uint64_t ge_test_assertions = 0;
 
-#define ConstexprAssertTrue(assertion) \
-    ge_test_assertions = ge_test_assertions && (assertion);
+#define ConstexprAssertTrue(assertion)         \
+    if (!ge_test_assertions && !(assertion)) { \
+        ge_test_assertions = __LINE__;         \
+    }
 
-#define ConstexprAssertFalse(assertion) \
-    ge_test_assertions = ge_test_assertions && !(assertion);
+#define ConstexprAssertFalse(assertion)       \
+    if (!ge_test_assertions && (assertion)) { \
+        ge_test_assertions = __LINE__;        \
+    }
 
-#define ConstexprEqual(left, right) \
-    ge_test_assertions =            \
-        ge_test_assertions && mpgl::tests::compare((left), (right));
+#define ConstexprEqual(left, right)                                      \
+    if (!ge_test_assertions && !mpgl::tests::compare((left), (right))) { \
+        ge_test_assertions = __LINE__;                                   \
+    }
 
 #define ConstexprEqualIter(leftIter, leftSent, rightIter, rightSent) \
-    ge_test_assertions =                                             \
-        ge_test_assertions &&                                        \
-        mpgl::tests::compare((leftIter), (leftSent), (rightIter), (rightSent));
+    if (!ge_test_assertions &&                                       \
+        !mpgl::tests::compare((leftIter), (leftSent), (rightIter),   \
+                              (rightSent))) {                        \
+        ge_test_assertions = __LINE__;                               \
+    }
 
 #define ConstexprOnThrow(assertion, exception) \
     try {                                      \
-        (assertion);                             \
-        ge_test_assertions = false;            \
+        (assertion);                           \
+        if (!ge_test_assertions) {             \
+            ge_test_assertions = __LINE__;     \
+        }                                      \
     } catch (exception const&) {               \
     }
 
-#define EndConstexprTest(TestName)       \
-    return ge_test_assertions; \
-    } \
-    static_assert(TestName());
-
+#define EndConstexprTest(TestName) \
+    return ge_test_assertions;     \
+    }                              \
+    static_assert(TestName() == 0);
