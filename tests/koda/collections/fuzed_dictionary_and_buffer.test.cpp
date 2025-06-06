@@ -1,5 +1,6 @@
 #include <koda/collections/fuzed_dictionary_and_buffer.hpp>
 #include <koda/tests/tests.hpp>
+#include <koda/tests/viewable_vector.hpp>
 
 #include <gtest/gtest.h>
 
@@ -7,8 +8,6 @@
 #include <array>
 #include <cstring>
 #include <ranges>
-
-#include "viewable_vector.hpp"
 
 using namespace koda::tests;
 

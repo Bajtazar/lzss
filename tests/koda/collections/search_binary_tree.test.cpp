@@ -1,5 +1,6 @@
 #include <koda/collections/search_binary_tree.hpp>
 #include <koda/tests/tests.hpp>
+#include <koda/tests/viewable_vector.hpp>
 
 #include <algorithm>
 #include <array>
@@ -8,8 +9,6 @@
 #include <ranges>
 #include <set>
 #include <vector>
-
-#include "viewable_vector.hpp"
 
 using namespace koda::tests;
 
