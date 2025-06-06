@@ -1,17 +1,16 @@
 #pragma once
 
 #include <concepts>
-#include <ranges>
+#include <iterator>
 
 namespace koda {
 
-template <std::ranges::contiguous_range TargetRange,
-          std::ranges::contiguous_range SourceRange>
-    requires(
-        std::same_as<std::ranges::range_value_t<TargetRange>,
-                     std::ranges::range_value_t<SourceRange>> &&
-        std::is_trivially_copyable_v<std::ranges::range_value_t<TargetRange>>)
-constexpr void MemoryCopy(TargetRange&& target, SourceRange&& source,
+template <std::ranges::contiguous_iterator TargetIter,
+          std::ranges::contiguous_iterator SourceIter>
+    requires(std::same_as<std::iter_value_t<TargetIter>,
+                          std::iter_value_t<SourceIter>> &&
+             std::is_trivially_copyable_v<std::iter_value_t<TargetIter>>)
+constexpr void MemoryCopy(TargetIter&& target, SourceIter&& source,
                           size_t length);
 
 }
