@@ -10,7 +10,7 @@
 #include <set>
 
 template <std::ranges::input_range Range>
-static std::basic_string<uint8_t> ConvertToString(Range&& range) {
+static constexpr std::basic_string<uint8_t> ConvertToString(Range&& range) {
     std::basic_string<uint8_t> result;
     std::ranges::transform(
         std::forward<Range>(range), std::back_inserter(result),
@@ -23,7 +23,7 @@ static std::basic_string<uint8_t> ConvertToString(Range&& range) {
 
 template <size_t Window, size_t Length>
     requires(Length >= Window)
-static std::array<std::basic_string<uint8_t>, Length - Window>
+static constexpr std::array<std::basic_string<uint8_t>, Length - Window>
 BuildSamplesFromString(const char (&sentence)[Length]) {
     std::array<std::basic_string<uint8_t>, Length - Window> result;
     for (size_t i = 0; i < result.size(); ++i) {
@@ -33,10 +33,10 @@ BuildSamplesFromString(const char (&sentence)[Length]) {
     return result;
 }
 
-static const auto kSampleString =
+static constexpr auto kSampleString =
     BuildSamplesFromString<4>("ala ma kota a kot ma ale");
 
-static const auto kOneOfRepeated = ConvertToString(" kot");
+static constexpr auto kOneOfRepeated = ConvertToString(" kot");
 
 TEST(SearchBinaryTreeTest, Creation) {
     koda::SearchBinaryTree tree{4};
