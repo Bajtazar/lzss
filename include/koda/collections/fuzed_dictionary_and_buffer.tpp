@@ -24,12 +24,20 @@ constexpr FusedDictionaryAndBuffer::FusedDictionaryAndBuffer(
       left_telomere_tag_{std::next(cyclic_buffer_.begin(), buffer_size_ - 1)},
       right_telomere_tag_{std::prev(cyclic_buffer_.end(), buffer_size_ - 1)} {
     if (dictionary_size < buffer_size_) [[unlikely]] {
-        throw std::logic_error{std::format(
-            "Dictionary size ({}) cannot be smaller than buffer size ({})",
-            dictionary_size, buffer_size_)};
+        if consteval {
+            throw "Invalid dictionary size";
+        } else {
+            throw std::logic_error{std::format(
+                "Dictionary size ({}) cannot be smaller than buffer size ({})",
+                dictionary_size, buffer_size_)};
+        }
     }
     if (buffer_size_ < 1) [[unlikely]] {
-        throw std::logic_error{"Buffer size has to be greater than 0"};
+        if consteval {
+            throw "Buffer size has to be greater than 0";
+        } else {
+            throw std::logic_error{"Buffer size has to be greater than 0"};
+        }
     }
     MemoryCopy(buffer_iter_, buffer);
 }
@@ -129,10 +137,15 @@ constexpr bool FusedDictionaryAndBuffer::SlideDictionary() {
     if (cyclic_buffer_size) {
         if (*cyclic_buffer_size < (dictionary_size + 2 * buffer_size - 1))
             [[unlikely]] {
-            throw std::logic_error{std::format(
-                "Given cyclic buffer size is too small, expected at least "
-                "dictionary size + 2*buffer size-1 ({}), got ({})",
-                dictionary_size + 2 * buffer_size - 1, *cyclic_buffer_size)};
+            if consteval {
+                throw "Given cyclic buffer size is too small";
+            } else {
+                throw std::logic_error{std::format(
+                    "Given cyclic buffer size is too small, expected at least "
+                    "dictionary size + 2*buffer size-1 ({}), got ({})",
+                    dictionary_size + 2 * buffer_size - 1,
+                    *cyclic_buffer_size)};
+            }
         }
         return *cyclic_buffer_size;
     }
