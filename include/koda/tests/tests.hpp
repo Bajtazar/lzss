@@ -32,25 +32,30 @@ constexpr bool compare(Tp&& t1, Up&& t2) noexcept {
     constexpr bool TestName(void) {  \
         bool ge_test_assertions = true;
 
-#define ConstexprAssert(assertion) \
-    ge_test_assertions = ge_test_assertions && assertion;
+#define ConstexprAssertTrue(assertion) \
+    ge_test_assertions = ge_test_assertions && (assertion);
+
+#define ConstexprAssertFalse(assertion) \
+    ge_test_assertions = ge_test_assertions && !(assertion);
 
 #define ConstexprEqual(left, right) \
     ge_test_assertions =            \
-        ge_test_assertions && mpgl::tests::compare(left, right);
+        ge_test_assertions && mpgl::tests::compare((left), (right));
 
 #define ConstexprEqualIter(leftIter, leftSent, rightIter, rightSent) \
     ge_test_assertions =                                             \
         ge_test_assertions &&                                        \
-        mpgl::tests::compare(leftIter, leftSent, rightIter, rightSent);
+        mpgl::tests::compare((leftIter), (leftSent), (rightIter), (rightSent));
 
 #define ConstexprOnThrow(assertion, exception) \
     try {                                      \
-        assertion;                             \
+        (assertion);                             \
         ge_test_assertions = false;            \
     } catch (exception const&) {               \
     }
 
-#define EndConstexprTest       \
+#define EndConstexprTest(TestName)       \
     return ge_test_assertions; \
-    }
+    } \
+    static_assert(TestName());
+
