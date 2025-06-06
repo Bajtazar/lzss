@@ -23,7 +23,7 @@ static constexpr ViewableVector<uint8_t> AsString(Ints... chars) {
 }
 
 BeginConstexprTest(FuzedDictionaryAndBufferTest, Creation) {
-    koda::FusedDictionaryAndBuffer dict{kDictSize, kBufferView};
+    koda::FusedDictionaryAndBuffer<uint8_t> dict{kDictSize, kBufferView};
 
     ConstexprAssertEqual(dict.buffer_size(), kBuffer.size());
     ConstexprAssertEqual(dict.max_buffer_size(), kBuffer.size());
@@ -90,7 +90,7 @@ static constexpr std::vector<uint8_t> GeneratePseudoNumberSequence(
 }
 
 BeginConstexprTest(FuzedDictionaryAndBufferTest, LongRunBufferAndDict) {
-    koda::FusedDictionaryAndBuffer dict{kDictSize, kBufferView};
+    koda::FusedDictionaryAndBuffer<uint8_t> dict{kDictSize, kBufferView};
     // stress test
     auto sequence = GeneratePseudoNumberSequence(kRepeatitons);
     // Override buffer
@@ -127,7 +127,7 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, LongRunBufferAndDict) {
 EndConstexprTest(FuzedDictionaryAndBufferTest, LongRunBufferAndDict);
 
 BeginConstexprTest(FuzedDictionaryAndBufferTest, AddEndSymbolTests) {
-    koda::FusedDictionaryAndBuffer dict{kDictSize, kBufferView};
+    koda::FusedDictionaryAndBuffer<uint8_t> dict{kDictSize, kBufferView};
     // stress test
     auto sequence =
         GeneratePseudoNumberSequence(kDictSize + kBufferView.size());
