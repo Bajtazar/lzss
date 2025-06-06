@@ -12,10 +12,10 @@ namespace koda {
 template <typename Tp, typename AllocatorTp>
 constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::FusedDictionaryAndBuffer(
     size_t dictionary_size, SequenceView buffer,
-    std::optional<size_t> cyclic_buffer_size)
+    std::optional<size_t> cyclic_buffer_size, const AllocatorTp& allocator)
     : cyclic_buffer_(CalculateCyclicBufferSize(dictionary_size, buffer.size(),
                                                cyclic_buffer_size),
-                     0),
+                     0, allocator),
       dictionary_size_{dictionary_size},
       buffer_size_{buffer.size()},
       dictionary_iter_{cyclic_buffer_.begin()},
