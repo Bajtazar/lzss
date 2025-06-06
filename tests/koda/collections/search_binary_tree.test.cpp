@@ -42,10 +42,9 @@ BuildSamplesFromString(const char (&sentence)[Length]) {
     return result;
 }
 
-template <size_t Window, size_t Length>
-constexpr std::basic_string_view<uint8_t> AsVV(const char (&sentence)[Length]) {
-    return ConvertToString(
-        std::ranges::subrange{std::begin(sentence), std::end(sentence)});
+constexpr ViewableVector<uint8_t> operator""_u8(const char* string,
+                                                std::size_t size) {
+    return ConvertToString(std::ranges::subrange{string, string + size});
 }
 
 template <size_t Size>
@@ -67,14 +66,14 @@ BeginConstexprTest(SearchBinaryTreeTest, Creation) {
         ConstexprAssertTrue(tree.FindMatch(element));
     }
 
-    ConstexprAssertTrue(tree.FindMatch(ConvertToString("abcd")));
-    ConstexprAssertTrue(tree.FindMatch(ConvertToString("abc")));
-    ConstexprAssertTrue(tree.FindMatch(ConvertToString("ab")));
-    ConstexprAssertTrue(tree.FindMatch(ConvertToString("a")));
-    ConstexprAssertFalse(tree.FindMatch(ConvertToString("xyzo")));
-    ConstexprAssertFalse(tree.FindMatch(ConvertToString("xyz")));
-    ConstexprAssertFalse(tree.FindMatch(ConvertToString("xy")));
-    ConstexprAssertFalse(tree.FindMatch(ConvertToString("x")));
+    ConstexprAssertTrue(tree.FindMatch("abcd"_u8));
+    ConstexprAssertTrue(tree.FindMatch("abc"_u8));
+    ConstexprAssertTrue(tree.FindMatch("ab"_u8));
+    ConstexprAssertTrue(tree.FindMatch("a"_u8));
+    ConstexprAssertFalse(tree.FindMatch("xyzo"_u8));
+    ConstexprAssertFalse(tree.FindMatch("xyz"_u8));
+    ConstexprAssertFalse(tree.FindMatch("xy"_u8));
+    ConstexprAssertFalse(tree.FindMatch("x"_u8));
 }
 EndConstexprTest(SearchBinaryTreeTest, Creation);
 
@@ -88,22 +87,22 @@ BeginConstexprTest(SearchBinaryTreeTest, Uniqueness) {
         tree.AddString(element);
     }
 
-    const auto al_result = tree.FindMatch(ConvertToString("al"));
+    const auto al_result = tree.FindMatch("al"_u8);
     ConstexprAssertTrue(al_result == Marker(0, 2) ||
                         al_result == Marker(22, 2));
 
-    ConstexprEqual(tree.FindMatch(ConvertToString("abcd")), Marker(0, 1));
-    ConstexprEqual(tree.FindMatch(ConvertToString("ala")), Marker(0, 3));
-    ConstexprEqual(tree.FindMatch(ConvertToString(" ale")), Marker(20, 4));
+    ConstexprEqual(tree.FindMatch("abcd"_u8), Marker(0, 1));
+    ConstexprEqual(tree.FindMatch("ala"_u8), Marker(0, 3));
+    ConstexprEqual(tree.FindMatch(" ale"_u8), Marker(20, 4));
 
-    const auto kot_result = tree.FindMatch(ConvertToString("kot"));
+    const auto kot_result = tree.FindMatch("kot"_u8);
 
     ConstexprAssertTrue(kot_result == Marker(14, 3) ||
                         kot_result == Marker(7, 3));
-    ConstexprEqual(tree.FindMatch(ConvertToString("kota")), Marker(7, 4));
-    ConstexprEqual(tree.FindMatch(ConvertToString("kot ")), Marker(14, 4));
+    ConstexprEqual(tree.FindMatch("kota"_u8), Marker(7, 4));
+    ConstexprEqual(tree.FindMatch("kot "_u8), Marker(14, 4));
 
-    const auto ma_result = tree.FindMatch(ConvertToString("ma"));
+    const auto ma_result = tree.FindMatch("ma"_u8);
 
     ConstexprAssertTrue(ma_result == Marker(4, 2) ||
                         ma_result == Marker(18, 2));
