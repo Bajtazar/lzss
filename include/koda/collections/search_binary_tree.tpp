@@ -8,8 +8,8 @@ namespace koda {
 
 template <typename Tp, typename AllocatorTp>
 constexpr SearchBinaryTree<Tp, AllocatorTp>::SearchBinaryTree(
-    size_t string_size) noexcept
-    : string_size_{string_size} {}
+    size_t string_size, const AllocatorTp& allocator) noexcept
+    : pool_{allocator}, string_size_{string_size} {}
 
 template <typename Tp, typename AllocatorTp>
 constexpr SearchBinaryTree<Tp, AllocatorTp>::SearchBinaryTree(
@@ -98,14 +98,21 @@ constexpr SearchBinaryTree<Tp, AllocatorTp>::NodePool::Scheduler::~Scheduler() {
 
 template <typename Tp, typename AllocatorTp>
 constexpr SearchBinaryTree<Tp, AllocatorTp>::NodePool::NodePool(
+    const AllocatorTp& allocator) noexcept
+    : allocator_{allocator} {}
+
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>::NodePool::NodePool(
     NodePool&& other) noexcept
-    : handle_{std::exchange(other.handle_, nullptr)} {}
+    : allocator_{std::move(other.allocator_)},
+      handle_{std::exchange(other.handle_, nullptr)} {}
 
 template <typename Tp, typename AllocatorTp>
 constexpr SearchBinaryTree<Tp, AllocatorTp>::NodePool&
 SearchBinaryTree<Tp, AllocatorTp>::NodePool::operator=(
     NodePool&& other) noexcept {
     Destroy();
+    allocator_ = std::move(other.allocator_);
     handle_ = std::exchange(other.handle_, nullptr);
     return *this;
 }
@@ -130,7 +137,10 @@ SearchBinaryTree<Tp, AllocatorTp>::NodePool::GetNode(const ValueType* key,
                                                      Node* parent,
                                                      Node::Color color) {
     if (!handle_) {
-        return new Node{key, insertion_index, parent, color};
+        Node* node = NodeTraits::allocate(allocator_, 1);
+        NodeTraits::construct(allocator_, node, key, insertion_index, parent,
+                              color);
+        return node;
     }
     Node* node = handle_;
     handle_ = node->left;
@@ -147,8 +157,10 @@ constexpr SearchBinaryTree<Tp, AllocatorTp>::NodePool::~NodePool() {
 template <typename Tp, typename AllocatorTp>
 constexpr void SearchBinaryTree<Tp, AllocatorTp>::NodePool::Destroy() {
     for (Node* node = handle_; node;) {
-        std::unique_ptr<Node> handle{node};
+        Node* old_node = node;
         node = node->left;
+        NodeTraits::destroy(allocator_, old_node);
+        NodeTraits::deallocate(allocator_, old_node, 1);
     }
 }
 

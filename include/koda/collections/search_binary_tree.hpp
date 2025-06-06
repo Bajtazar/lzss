@@ -28,7 +28,9 @@ class SearchBinaryTree {
             const RepeatitionMarker&) const noexcept = default;
     };
 
-    constexpr explicit SearchBinaryTree(size_t string_size) noexcept;
+    constexpr explicit SearchBinaryTree(
+        size_t string_size,
+        const AllocatorTp& allocator = AllocatorTp{}) noexcept;
 
     constexpr explicit SearchBinaryTree(SearchBinaryTree&& other) noexcept;
     constexpr explicit SearchBinaryTree(const SearchBinaryTree& other) = delete;
@@ -77,7 +79,7 @@ class SearchBinaryTree {
             constexpr ~Scheduler();
         };
 
-        constexpr explicit NodePool() noexcept = default;
+        constexpr explicit NodePool(const AllocatorTp& allocator) noexcept;
 
         constexpr NodePool(NodePool&& pool) noexcept;
         constexpr NodePool(const NodePool& pool) = delete;
@@ -96,6 +98,11 @@ class SearchBinaryTree {
         constexpr ~NodePool();
 
        private:
+        using ValueTraits = std::allocator_traits<AllocatorTp>;
+        using NodeTraits = typename ValueTraits::rebind_traits<Node>;
+        using NodeAllocatorTp = typename ValueTraits::rebind_alloc<Node>;
+
+        [[no_unique_address]] NodeAllocatorTp allocator_;
         Node* handle_ = nullptr;
 
         constexpr void Destroy();
