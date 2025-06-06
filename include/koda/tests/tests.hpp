@@ -28,8 +28,8 @@ constexpr bool compare(Tp&& t1, Up&& t2) noexcept {
 
 }  // namespace koda::tests
 
-#define BeginConstexprTest(TestName)    \
-    constexpr uint64_t TestName(void) { \
+#define BeginConstexprTest(TestCase, TestName)    \
+    constexpr uint64_t TestCase##TestName(void) { \
         uint64_t ge_test_assertions = 0;
 
 #define ConstexprAssertTrue(assertion)         \
@@ -43,13 +43,13 @@ constexpr bool compare(Tp&& t1, Up&& t2) noexcept {
     }
 
 #define ConstexprEqual(left, right)                                      \
-    if (!ge_test_assertions && !mpgl::tests::compare((left), (right))) { \
+    if (!ge_test_assertions && !koda::tests::compare((left), (right))) { \
         ge_test_assertions = __LINE__;                                   \
     }
 
 #define ConstexprEqualIter(leftIter, leftSent, rightIter, rightSent) \
     if (!ge_test_assertions &&                                       \
-        !mpgl::tests::compare((leftIter), (leftSent), (rightIter),   \
+        !koda::tests::compare((leftIter), (leftSent), (rightIter),   \
                               (rightSent))) {                        \
         ge_test_assertions = __LINE__;                               \
     }
@@ -63,7 +63,7 @@ constexpr bool compare(Tp&& t1, Up&& t2) noexcept {
     } catch (exception const&) {               \
     }
 
-#define EndConstexprTest(TestName) \
-    return ge_test_assertions;     \
-    }                              \
-    static_assert(TestName() == 0);
+#define EndConstexprTest(TestCase, TestName) \
+    return ge_test_assertions;               \
+    }                                        \
+    static_assert(TestCase##TestName() == 0);
