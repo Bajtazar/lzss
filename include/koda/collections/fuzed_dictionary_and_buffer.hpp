@@ -77,33 +77,36 @@ class FusedDictionaryAndBuffer {
    public:
     using SequenceView = std::basic_string_view<uint8_t>;
 
-    explicit FusedDictionaryAndBuffer(
+    constexpr explicit FusedDictionaryAndBuffer(
         size_t dictionary_size, SequenceView buffer,
         std::optional<size_t> cyclic_buffer_size = std::nullopt);
 
-    FusedDictionaryAndBuffer(const FusedDictionaryAndBuffer&) = delete;
-    FusedDictionaryAndBuffer(FusedDictionaryAndBuffer&&) noexcept = default;
-
-    FusedDictionaryAndBuffer& operator=(const FusedDictionaryAndBuffer&) =
+    constexpr FusedDictionaryAndBuffer(const FusedDictionaryAndBuffer&) =
         delete;
-    FusedDictionaryAndBuffer& operator=(FusedDictionaryAndBuffer&&) = delete;
+    constexpr FusedDictionaryAndBuffer(FusedDictionaryAndBuffer&&) noexcept =
+        default;
 
-    bool AddSymbolToBuffer(uint8_t symbol);
+    constexpr FusedDictionaryAndBuffer& operator=(
+        const FusedDictionaryAndBuffer&) = delete;
+    constexpr FusedDictionaryAndBuffer& operator=(FusedDictionaryAndBuffer&&) =
+        delete;
 
-    bool AddEndSymbolToBuffer();
+    constexpr bool AddSymbolToBuffer(uint8_t symbol);
 
-    [[nodiscard]] SequenceView get_buffer() const noexcept;
+    constexpr bool AddEndSymbolToBuffer();
 
-    [[nodiscard]] SequenceView get_oldest_dictionary_full_match()
+    [[nodiscard]] constexpr SequenceView get_buffer() const noexcept;
+
+    [[nodiscard]] constexpr SequenceView get_oldest_dictionary_full_match()
         const noexcept;
 
-    [[nodiscard]] size_t max_dictionary_size() const noexcept;
+    [[nodiscard]] constexpr size_t max_dictionary_size() const noexcept;
 
-    [[nodiscard]] size_t max_buffer_size() const noexcept;
+    [[nodiscard]] constexpr size_t max_buffer_size() const noexcept;
 
-    [[nodiscard]] size_t dictionary_size() const noexcept;
+    [[nodiscard]] constexpr size_t dictionary_size() const noexcept;
 
-    [[nodiscard]] size_t buffer_size() const noexcept;
+    [[nodiscard]] constexpr size_t buffer_size() const noexcept;
 
    private:
     using Buffer = std::vector<uint8_t>;
@@ -120,13 +123,15 @@ class FusedDictionaryAndBuffer {
     BufferIter left_telomere_tag_;
     BufferIter right_telomere_tag_;
 
-    void RelocateBuffer();
+    constexpr void RelocateBuffer();
 
-    bool SlideDictionary();
+    constexpr bool SlideDictionary();
 
-    static size_t CalculateCyclicBufferSize(
+    static constexpr size_t CalculateCyclicBufferSize(
         size_t dictionary_size, size_t buffer_size,
         std::optional<size_t> cyclic_buffer_size);
 };
 
 }  // namespace koda
+
+#include <koda/collections/fuzed_dictionary_and_buffer.tpp>

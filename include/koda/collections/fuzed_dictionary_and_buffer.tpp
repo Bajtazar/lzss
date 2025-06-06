@@ -1,12 +1,15 @@
-#include <koda/collections/fuzed_dictionary_and_buffer.hpp>
+#pragma once
 
+#include <koda/utils/utils.hpp>
+
+#include <algorithm>
 #include <cstring>
 #include <format>
 #include <stdexcept>
 
 namespace koda {
 
-FusedDictionaryAndBuffer::FusedDictionaryAndBuffer(
+constexpr FusedDictionaryAndBuffer::FusedDictionaryAndBuffer(
     size_t dictionary_size, SequenceView buffer,
     std::optional<size_t> cyclic_buffer_size)
     : cyclic_buffer_(CalculateCyclicBufferSize(dictionary_size, buffer.size(),
@@ -28,10 +31,10 @@ FusedDictionaryAndBuffer::FusedDictionaryAndBuffer(
     if (buffer_size_ < 1) [[unlikely]] {
         throw std::logic_error{"Buffer size has to be greater than 0"};
     }
-    std::memcpy(buffer_iter_.base(), buffer.data(), buffer.size());
+    MemoryCopy(buffer_iter_, buffer);
 }
 
-bool FusedDictionaryAndBuffer::AddSymbolToBuffer(uint8_t symbol) {
+constexpr bool FusedDictionaryAndBuffer::AddSymbolToBuffer(uint8_t symbol) {
     if (buffer_sentinel_ == cyclic_buffer_.end()) [[unlikely]] {
         RelocateBuffer();
     } else {
@@ -41,37 +44,36 @@ bool FusedDictionaryAndBuffer::AddSymbolToBuffer(uint8_t symbol) {
     return SlideDictionary();
 }
 
-bool FusedDictionaryAndBuffer::AddEndSymbolToBuffer() {
+constexpr bool FusedDictionaryAndBuffer::AddEndSymbolToBuffer() {
     /// Relocation is not needed since no symbol is appended
     ++buffer_iter_;
     return SlideDictionary();
 }
 
-[[nodiscard]] FusedDictionaryAndBuffer::SequenceView
+[[nodiscard]] constexpr FusedDictionaryAndBuffer::SequenceView
 FusedDictionaryAndBuffer::get_buffer() const noexcept {
     // Always contiguous
     return SequenceView{buffer_iter_, buffer_sentinel_};
 }
 
-[[nodiscard]] FusedDictionaryAndBuffer::SequenceView
+[[nodiscard]] constexpr FusedDictionaryAndBuffer::SequenceView
 FusedDictionaryAndBuffer::get_oldest_dictionary_full_match() const noexcept {
     // Always contiguous
     return SequenceView{dictionary_iter_,
                         std::next(dictionary_iter_, this->max_buffer_size())};
 }
 
-void FusedDictionaryAndBuffer::RelocateBuffer() {
+constexpr void FusedDictionaryAndBuffer::RelocateBuffer() {
     // When end symbols are added then this class contract permits usage of
     // AddSymbolToBuffer method and thus buffer size won't be changed and so
     // when relocation is happening the buffer always has to have its max size
-    std::memcpy(cyclic_buffer_.data(), right_telomere_tag_.base(),
-                buffer_size_ - 1);
+    MemoryCopy(cyclic_buffer_.begin(), right_telomere_tag_, buffer_size_ - 1);
     buffer_iter_ = cyclic_buffer_.begin();
     buffer_sentinel_ = left_telomere_tag_;
     // First element will be a freashly inserted symbol
 }
 
-bool FusedDictionaryAndBuffer::SlideDictionary() {
+constexpr bool FusedDictionaryAndBuffer::SlideDictionary() {
     // Follow buffer
     if (dictionary_sentinel_++ == cyclic_buffer_.end()) [[unlikely]] {
         dictionary_sentinel_ = left_telomere_tag_;
@@ -92,7 +94,7 @@ bool FusedDictionaryAndBuffer::SlideDictionary() {
     return false;
 }
 
-[[nodiscard]] size_t FusedDictionaryAndBuffer::dictionary_size()
+[[nodiscard]] constexpr size_t FusedDictionaryAndBuffer::dictionary_size()
     const noexcept {
     std::ptrdiff_t difference = dictionary_sentinel_ - dictionary_iter_;
     if (difference < 0) {
@@ -103,24 +105,25 @@ bool FusedDictionaryAndBuffer::SlideDictionary() {
     return static_cast<size_t>(difference);
 }
 
-[[nodiscard]] size_t FusedDictionaryAndBuffer::buffer_size() const noexcept {
+[[nodiscard]] constexpr size_t FusedDictionaryAndBuffer::buffer_size()
+    const noexcept {
     // Buffer is always contiguous so it cannot be splitted into two
     // parts. In contrast dictionary can be
     [[assume(buffer_sentinel_ >= buffer_iter_)]];
     return static_cast<size_t>(buffer_sentinel_ - buffer_iter_);
 }
 
-[[nodiscard]] size_t FusedDictionaryAndBuffer::max_dictionary_size()
+[[nodiscard]] constexpr size_t FusedDictionaryAndBuffer::max_dictionary_size()
     const noexcept {
     return dictionary_size_;
 }
 
-[[nodiscard]] size_t FusedDictionaryAndBuffer::max_buffer_size()
+[[nodiscard]] constexpr size_t FusedDictionaryAndBuffer::max_buffer_size()
     const noexcept {
     return buffer_size_;
 }
 
-/*static*/ size_t FusedDictionaryAndBuffer::CalculateCyclicBufferSize(
+/*static*/ constexpr size_t FusedDictionaryAndBuffer::CalculateCyclicBufferSize(
     size_t dictionary_size, size_t buffer_size,
     std::optional<size_t> cyclic_buffer_size) {
     if (cyclic_buffer_size) {
