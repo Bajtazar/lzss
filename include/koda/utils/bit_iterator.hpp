@@ -85,7 +85,7 @@ class LittleEndianInputBitIter {
     [[nodiscard]] friend constexpr bool operator==(
         std::default_sentinel_t sentinel,
         LittleEndianInputBitIter const& right) noexcept
-        requires(std::equality_comparable_with<Iter, std::default_sentinel_t>)
+        requires(std::equality_comparable_with<std::default_sentinel_t, Iter>)
     {
         return sentinel == right.iter_;
     }
@@ -158,7 +158,7 @@ class LittleEndianOutputBitIter {
     [[nodiscard]] friend constexpr bool operator==(
         std::default_sentinel_t sentinel,
         LittleEndianOutputBitIter const& right) noexcept
-        requires(std::equality_comparable_with<Iter, std::default_sentinel_t>)
+        requires(std::equality_comparable_with<std::default_sentinel_t, Iter>)
     {
         return sentinel == right.iter_;
     }
@@ -225,7 +225,7 @@ class BigEndianInputBitIter {
     [[nodiscard]] friend constexpr bool operator==(
         std::default_sentinel_t sentinel,
         BigEndianInputBitIter const& right) noexcept
-        requires(std::equality_comparable_with<Iter, std::default_sentinel_t>)
+        requires(std::equality_comparable_with<std::default_sentinel_t, Iter>)
     {
         return sentinel == right.iter_;
     }
@@ -296,7 +296,7 @@ class BigEndianOutputBitIter {
     [[nodiscard]] friend constexpr bool operator==(
         std::default_sentinel_t sentinel,
         BigEndianOutputBitIter const& right) noexcept
-        requires(std::equality_comparable_with<Iter, std::default_sentinel_t>)
+        requires(std::equality_comparable_with<std::default_sentinel_t, Iter>)
     {
         return sentinel == right.iter_;
     }
