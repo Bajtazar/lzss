@@ -47,6 +47,8 @@ class SearchBinaryTree {
 
     [[nodiscard]] constexpr size_t string_size() const noexcept;
 
+    [[nodiscard]] constexpr AllocatorTp get_allocator() const;
+
     constexpr ~SearchBinaryTree();
 
    private:
@@ -96,6 +98,8 @@ class SearchBinaryTree {
         constexpr Node* GetNode(const ValueType* key, size_t insertion_index,
                                 Node* parent = nullptr,
                                 Node::Color color = Node::Color::kBlack);
+
+        constexpr AllocatorTp get_allocator() const;
 
         constexpr ~NodePool();
 

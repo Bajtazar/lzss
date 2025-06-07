@@ -83,6 +83,12 @@ template <typename Tp, typename AllocatorTp>
 }
 
 template <typename Tp, typename AllocatorTp>
+[[nodiscard]] constexpr AllocatorTp
+SearchBinaryTree<Tp, AllocatorTp>::get_allocator() const {
+    return pool_.get_allocator();
+}
+
+template <typename Tp, typename AllocatorTp>
 constexpr SearchBinaryTree<Tp, AllocatorTp>::~SearchBinaryTree() {
     Destroy();
 }
@@ -153,6 +159,12 @@ SearchBinaryTree<Tp, AllocatorTp>::NodePool::GetNode(const ValueType* key,
 
     *node = Node{key, insertion_index, parent, color};
     return node;
+}
+
+template <typename Tp, typename AllocatorTp>
+constexpr AllocatorTp
+SearchBinaryTree<Tp, AllocatorTp>::NodePool::get_allocator() const {
+    return allocator_;
 }
 
 template <typename Tp, typename AllocatorTp>
