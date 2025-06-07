@@ -2,34 +2,42 @@
 
 namespace koda {
 
-constexpr LzssIntermediateToken::LzssIntermediateToken(uint8_t symbol) noexcept
-    : holds_distance_match_pair_{false}, symbol_{symbol} {}
+template <std::integral InputToken>
+constexpr LzssIntermediateToken<InputToken>::LzssIntermediateToken(
+    InputToken symbol) noexcept
+    : symbol_{symbol}, holds_distance_match_pair_{false} {}
 
-constexpr LzssIntermediateToken::LzssIntermediateToken(
+template <std::integral InputToken>
+constexpr LzssIntermediateToken<InputToken>::LzssIntermediateToken(
     size_t match_position, size_t match_length) noexcept
-    : holds_distance_match_pair_{true},
-      repeatition_marker_{match_position, match_length} {}
+    : repeatition_marker_{match_position, match_length},
+      holds_distance_match_pair_{true} {}
 
-[[nodiscard]] constexpr bool LzssIntermediateToken::holds_symbol()
+template <std::integral InputToken>
+[[nodiscard]] constexpr bool LzssIntermediateToken<InputToken>::holds_symbol()
     const noexcept {
     return holds_distance_match_pair_ == false;
 }
 
-[[nodiscard]] constexpr bool LzssIntermediateToken::holds_marker()
+template <std::integral InputToken>
+[[nodiscard]] constexpr bool LzssIntermediateToken<InputToken>::holds_marker()
     const noexcept {
     return holds_distance_match_pair_ == true;
 }
 
-[[nodiscard]] constexpr std::optional<uint8_t>
-LzssIntermediateToken::get_symbol() const noexcept {
+template <std::integral InputToken>
+[[nodiscard]] constexpr std::optional<InputToken>
+LzssIntermediateToken<InputToken>::get_symbol() const noexcept {
     if (holds_symbol()) {
         return symbol_;
     }
     return std::nullopt;
 }
 
-[[nodiscard]] constexpr std::optional<LzssIntermediateToken::RepeatitionMarker>
-LzssIntermediateToken::get_marker() const noexcept {
+template <std::integral InputToken>
+[[nodiscard]] constexpr std::optional<
+    LzssIntermediateToken<InputToken>::RepeatitionMarker>
+LzssIntermediateToken<InputToken>::get_marker() const noexcept {
     if (holds_marker()) {
         return repeatition_marker_;
     }
