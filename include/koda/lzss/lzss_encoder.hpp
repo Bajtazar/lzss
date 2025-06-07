@@ -36,7 +36,7 @@ class LzssEncoder {
     constexpr void Flush(BitOutputRange auto&& output);
 
     constexpr void operator()(InputRange<InputToken> auto&& input,
-                              BitOutputRange auto&& output) const;
+                              BitOutputRange auto&& output);
 
    private:
     FusedDictionaryAndBuffer<InputToken> dictionary_and_buffer_;

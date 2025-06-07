@@ -24,4 +24,15 @@ constexpr LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::LzssEncoder(
     : LzssEncoder{dictionary_size, look_ahead_size, AuxiliaryEncoder{},
                   std::move(cyclic_buffer_size), allocator} {}
 
+template <std::integral InputToken,
+          Encoder<LzssIntermediateToken> AuxiliaryEncoder, typename AllocatorTp>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken))
+constexpr void
+LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::operator()(
+    InputRange<InputToken> auto&& input, BitOutputRange auto&& output) {
+    Encode(std::forward<decltype(input)>(input),
+           std::forward<decltype(output)>(output));
+    Flush(std::forward<decltype(output)>(output));
+}
+
 }  // namespace koda
