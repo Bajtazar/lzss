@@ -77,6 +77,12 @@ SearchBinaryTree<Tp, AllocatorTp>::FindMatch(StringView buffer) const {
 }
 
 template <typename Tp, typename AllocatorTp>
+[[nodiscard]] constexpr size_t SearchBinaryTree<Tp, AllocatorTp>::string_size()
+    const noexcept {
+    return string_size_;
+}
+
+template <typename Tp, typename AllocatorTp>
 constexpr SearchBinaryTree<Tp, AllocatorTp>::~SearchBinaryTree() {
     Destroy();
 }

@@ -45,6 +45,8 @@ class SearchBinaryTree {
 
     constexpr RepeatitionMarker FindMatch(StringView buffer) const;
 
+    [[nodiscard]] constexpr size_t string_size() const noexcept;
+
     constexpr ~SearchBinaryTree();
 
    private:
