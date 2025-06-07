@@ -1,264 +1,278 @@
+#include <koda/tests/tests.hpp>
 #include <koda/utils/bit_iterator.hpp>
-
-#include <gtest/gtest.h>
 
 #include <iterator>
 #include <sstream>
 #include <string>
 #include <vector>
 
-TEST(LittleEndianInputBitIterTest, AppendBits) {
+BeginConstexprTest(LittleEndianInputBitIterTest, AppendBits) {
     std::vector<uint8_t> bytes = {0b101011};
     koda::LittleEndianInputBitIter iter{bytes.cbegin()};
 
-    ASSERT_EQ(iter.Position(), 0);
-    ASSERT_TRUE(*iter++);
-    ASSERT_EQ(iter.Position(), 1);
-    ASSERT_TRUE(*iter++);
-    ASSERT_EQ(iter.Position(), 2);
-    ASSERT_FALSE(*iter++);
-    ASSERT_EQ(iter.Position(), 3);
-    ASSERT_TRUE(*iter++);
-    ASSERT_EQ(iter.Position(), 4);
-    ASSERT_FALSE(*iter++);
-    ASSERT_EQ(iter.Position(), 5);
-    ASSERT_TRUE(*iter++);
-    ASSERT_EQ(iter.Position(), 6);
-    ASSERT_FALSE(*iter++);
-    ASSERT_EQ(iter.Position(), 7);
-    ASSERT_FALSE(*iter++);
-    ASSERT_EQ(iter.Position(), 0);
+    ConstexprAssertEqual(iter.Position(), 0);
+    ConstexprAssertTrue(*iter++);
+    ConstexprAssertEqual(iter.Position(), 1);
+    ConstexprAssertTrue(*iter++);
+    ConstexprAssertEqual(iter.Position(), 2);
+    ConstexprAssertFalse(*iter++);
+    ConstexprAssertEqual(iter.Position(), 3);
+    ConstexprAssertTrue(*iter++);
+    ConstexprAssertEqual(iter.Position(), 4);
+    ConstexprAssertFalse(*iter++);
+    ConstexprAssertEqual(iter.Position(), 5);
+    ConstexprAssertTrue(*iter++);
+    ConstexprAssertEqual(iter.Position(), 6);
+    ConstexprAssertFalse(*iter++);
+    ConstexprAssertEqual(iter.Position(), 7);
+    ConstexprAssertFalse(*iter++);
+    ConstexprAssertEqual(iter.Position(), 0);
 
-    ASSERT_NE(iter, koda::LittleEndianInputBitIter{bytes.cbegin()});
+    ConstexprAssertNotEqual(iter,
+                            koda::LittleEndianInputBitIter{bytes.cbegin()});
 }
+EndConstexprTest(LittleEndianInputBitIterTest, AppendBits);
 
-TEST(LittleEndianInputBitIterTest, Skip) {
+BeginConstexprTest(LittleEndianInputBitIterTest, Skip) {
     std::vector<uint8_t> bytes = {0b101011, 0b1101};
     koda::LittleEndianInputBitIter iter{bytes.cbegin()};
 
-    ASSERT_EQ(iter.Position(), 0);
-    ASSERT_TRUE(*iter++);
-    ASSERT_EQ(iter.Position(), 1);
-    ASSERT_TRUE(*iter++);
+    ConstexprAssertEqual(iter.Position(), 0);
+    ConstexprAssertTrue(*iter++);
+    ConstexprAssertEqual(iter.Position(), 1);
+    ConstexprAssertTrue(*iter++);
     iter.SkipToNextByte();
-    ASSERT_EQ(iter.Position(), 0);
-    ASSERT_TRUE(*iter++);
-    ASSERT_EQ(iter.Position(), 1);
-    ASSERT_FALSE(*iter++);
-    ASSERT_EQ(iter.Position(), 2);
+    ConstexprAssertEqual(iter.Position(), 0);
+    ConstexprAssertTrue(*iter++);
+    ConstexprAssertEqual(iter.Position(), 1);
+    ConstexprAssertFalse(*iter++);
+    ConstexprAssertEqual(iter.Position(), 2);
 
-    ASSERT_EQ(iter, koda::LittleEndianInputBitIter{std::next(bytes.cbegin())});
+    ConstexprAssertEqual(
+        iter, koda::LittleEndianInputBitIter{std::next(bytes.cbegin())});
 }
+EndConstexprTest(LittleEndianInputBitIterTest, Skip);
 
-TEST(LittleEndianInputBitIterTest, ReadByte) {
+BeginConstexprTest(LittleEndianInputBitIterTest, ReadByte) {
     std::vector<uint8_t> bytes = {0b101011, 0b1101};
     koda::LittleEndianInputBitIter iter{bytes.cbegin()};
 
-    ASSERT_EQ(iter.Position(), 0);
-    ASSERT_TRUE(*iter++);
-    ASSERT_EQ(iter.Position(), 1);
-    ASSERT_TRUE(*iter++);
+    ConstexprAssertEqual(iter.Position(), 0);
+    ConstexprAssertTrue(*iter++);
+    ConstexprAssertEqual(iter.Position(), 1);
+    ConstexprAssertTrue(*iter++);
     iter.SkipToNextByte();
-    ASSERT_EQ(iter.ReadByte(), std::byte{0b1101});
+    ConstexprAssertEqual(iter.ReadByte(), std::byte{0b1101});
 
-    ASSERT_EQ(iter, koda::LittleEndianInputBitIter{bytes.cend()});
+    ConstexprAssertEqual(iter, koda::LittleEndianInputBitIter{bytes.cend()});
 }
+EndConstexprTest(LittleEndianInputBitIterTest, ReadByte);
 
-TEST(BigEndianInputBitIterTest, AppendBits) {
+BeginConstexprTest(BigEndianInputBitIterTest, AppendBits) {
     std::vector<uint8_t> bytes = {0b101011};
     koda::BigEndianInputBitIter iter{bytes.cbegin()};
 
-    ASSERT_EQ(iter.Position(), 7);
-    ASSERT_FALSE(*iter++);
-    ASSERT_EQ(iter.Position(), 6);
-    ASSERT_FALSE(*iter++);
-    ASSERT_EQ(iter.Position(), 5);
-    ASSERT_TRUE(*iter++);
-    ASSERT_EQ(iter.Position(), 4);
-    ASSERT_FALSE(*iter++);
-    ASSERT_EQ(iter.Position(), 3);
-    ASSERT_TRUE(*iter++);
-    ASSERT_EQ(iter.Position(), 2);
-    ASSERT_FALSE(*iter++);
-    ASSERT_EQ(iter.Position(), 1);
-    ASSERT_TRUE(*iter++);
-    ASSERT_EQ(iter.Position(), 0);
-    ASSERT_TRUE(*iter++);
-    ASSERT_EQ(iter.Position(), 7);
+    ConstexprAssertEqual(iter.Position(), 7);
+    ConstexprAssertFalse(*iter++);
+    ConstexprAssertEqual(iter.Position(), 6);
+    ConstexprAssertFalse(*iter++);
+    ConstexprAssertEqual(iter.Position(), 5);
+    ConstexprAssertTrue(*iter++);
+    ConstexprAssertEqual(iter.Position(), 4);
+    ConstexprAssertFalse(*iter++);
+    ConstexprAssertEqual(iter.Position(), 3);
+    ConstexprAssertTrue(*iter++);
+    ConstexprAssertEqual(iter.Position(), 2);
+    ConstexprAssertFalse(*iter++);
+    ConstexprAssertEqual(iter.Position(), 1);
+    ConstexprAssertTrue(*iter++);
+    ConstexprAssertEqual(iter.Position(), 0);
+    ConstexprAssertTrue(*iter++);
+    ConstexprAssertEqual(iter.Position(), 7);
 
-    ASSERT_NE(iter, koda::BigEndianInputBitIter{bytes.cbegin()});
+    ConstexprAssertNotEqual(iter, koda::BigEndianInputBitIter{bytes.cbegin()});
 }
+EndConstexprTest(BigEndianInputBitIterTest, AppendBits);
 
-TEST(BigEndianInputBitIterTest, Skip) {
+BeginConstexprTest(BigEndianInputBitIterTest, Skip) {
     std::vector<uint8_t> bytes = {0b101011, 0b1101};
     koda::BigEndianInputBitIter iter{bytes.cbegin()};
 
-    ASSERT_EQ(iter.Position(), 7);
-    ASSERT_FALSE(*iter++);
-    ASSERT_EQ(iter.Position(), 6);
-    ASSERT_FALSE(*iter++);
+    ConstexprAssertEqual(iter.Position(), 7);
+    ConstexprAssertFalse(*iter++);
+    ConstexprAssertEqual(iter.Position(), 6);
+    ConstexprAssertFalse(*iter++);
     iter.SkipToNextByte();
-    ASSERT_EQ(iter.Position(), 7);
-    ASSERT_FALSE(*iter++);
-    ASSERT_EQ(iter.Position(), 6);
-    ASSERT_FALSE(*iter++);
-    ASSERT_EQ(iter.Position(), 5);
+    ConstexprAssertEqual(iter.Position(), 7);
+    ConstexprAssertFalse(*iter++);
+    ConstexprAssertEqual(iter.Position(), 6);
+    ConstexprAssertFalse(*iter++);
+    ConstexprAssertEqual(iter.Position(), 5);
 
-    ASSERT_EQ(iter, koda::BigEndianInputBitIter{std::next(bytes.cbegin())});
+    ConstexprAssertEqual(
+        iter, koda::BigEndianInputBitIter{std::next(bytes.cbegin())});
 }
+EndConstexprTest(BigEndianInputBitIterTest, Skip);
 
-TEST(BigEndianInputBitIterTest, ReadByte) {
+BeginConstexprTest(BigEndianInputBitIterTest, ReadByte) {
     std::vector<uint8_t> bytes = {0b101011, 0b1101};
     koda::BigEndianInputBitIter iter{bytes.cbegin()};
 
-    ASSERT_EQ(iter.Position(), 7);
-    ASSERT_FALSE(*iter++);
-    ASSERT_EQ(iter.Position(), 6);
-    ASSERT_FALSE(*iter++);
+    ConstexprAssertEqual(iter.Position(), 7);
+    ConstexprAssertFalse(*iter++);
+    ConstexprAssertEqual(iter.Position(), 6);
+    ConstexprAssertFalse(*iter++);
     iter.SkipToNextByte();
-    ASSERT_EQ(iter.ReadByte(), std::byte{0b1101});
+    ConstexprAssertEqual(iter.ReadByte(), std::byte{0b1101});
 
-    ASSERT_EQ(iter, koda::BigEndianInputBitIter{bytes.cend()});
+    ConstexprAssertEqual(iter, koda::BigEndianInputBitIter{bytes.cend()});
 }
+EndConstexprTest(BigEndianInputBitIterTest, ReadByte);
 
-TEST(LittleEndianOutputBitIterTest, AppendBits) {
+BeginConstexprTest(LittleEndianOutputBitIterTest, AppendBits) {
     std::vector<uint8_t> result;
     koda::LittleEndianOutputBitIter iter{std::back_inserter(result)};
 
-    ASSERT_EQ(iter.Position(), 0);
+    ConstexprAssertEqual(iter.Position(), 0);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 1);
+    ConstexprAssertEqual(iter.Position(), 1);
     *iter++ = 0;
-    ASSERT_EQ(iter.Position(), 2);
+    ConstexprAssertEqual(iter.Position(), 2);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 3);
+    ConstexprAssertEqual(iter.Position(), 3);
     *iter++ = 0;
-    ASSERT_EQ(iter.Position(), 4);
+    ConstexprAssertEqual(iter.Position(), 4);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 5);
+    ConstexprAssertEqual(iter.Position(), 5);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 6);
+    ConstexprAssertEqual(iter.Position(), 6);
     *iter++ = 0;
-    ASSERT_EQ(iter.Position(), 7);
+    ConstexprAssertEqual(iter.Position(), 7);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 0);
+    ConstexprAssertEqual(iter.Position(), 0);
 
-    ASSERT_FALSE(result.empty());
-    ASSERT_EQ(result.front(), 0b10110101);
+    ConstexprAssertFalse(result.empty());
+    ConstexprAssertEqual(result.front(), 0b10110101);
 }
+EndConstexprTest(LittleEndianOutputBitIterTest, AppendBits);
 
-TEST(LittleEndianOutputBitIterTest, Skip) {
+BeginConstexprTest(LittleEndianOutputBitIterTest, Skip) {
     std::vector<uint8_t> result;
     koda::LittleEndianOutputBitIter iter{std::back_inserter(result)};
 
-    ASSERT_EQ(iter.Position(), 0);
+    ConstexprAssertEqual(iter.Position(), 0);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 1);
+    ConstexprAssertEqual(iter.Position(), 1);
     *iter++ = 0;
-    ASSERT_EQ(iter.Position(), 2);
+    ConstexprAssertEqual(iter.Position(), 2);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 3);
+    ConstexprAssertEqual(iter.Position(), 3);
     iter.SkipToNextByte();
-    ASSERT_EQ(iter.Position(), 0);
+    ConstexprAssertEqual(iter.Position(), 0);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 1);
+    ConstexprAssertEqual(iter.Position(), 1);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 2);
+    ConstexprAssertEqual(iter.Position(), 2);
     iter.SkipToNextByte();
-    ASSERT_EQ(iter.Position(), 0);
+    ConstexprAssertEqual(iter.Position(), 0);
 
-    ASSERT_EQ(result.size(), 2);
-    ASSERT_EQ(result[0], 0b101);
-    ASSERT_EQ(result[1], 0b11);
+    ConstexprAssertEqual(result.size(), 2);
+    ConstexprAssertEqual(result[0], 0b101);
+    ConstexprAssertEqual(result[1], 0b11);
 }
+EndConstexprTest(LittleEndianOutputBitIterTest, Skip);
 
-TEST(LittleEndianOutputBitIterTest, SaveByte) {
+BeginConstexprTest(LittleEndianOutputBitIterTest, SaveByte) {
     std::vector<uint8_t> result;
     koda::LittleEndianOutputBitIter iter{std::back_inserter(result)};
 
-    ASSERT_EQ(iter.Position(), 0);
+    ConstexprAssertEqual(iter.Position(), 0);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 1);
+    ConstexprAssertEqual(iter.Position(), 1);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 2);
+    ConstexprAssertEqual(iter.Position(), 2);
     iter.SaveByte(0b1101);
-    ASSERT_EQ(iter.Position(), 0);
+    ConstexprAssertEqual(iter.Position(), 0);
     iter.SaveByte(0b1001);
-    ASSERT_EQ(iter.Position(), 0);
+    ConstexprAssertEqual(iter.Position(), 0);
 
-    ASSERT_EQ(result.size(), 3);
-    ASSERT_EQ(result[0], 0b11);
-    ASSERT_EQ(result[1], 0b1101);
-    ASSERT_EQ(result[2], 0b1001);
+    ConstexprAssertEqual(result.size(), 3);
+    ConstexprAssertEqual(result[0], 0b11);
+    ConstexprAssertEqual(result[1], 0b1101);
+    ConstexprAssertEqual(result[2], 0b1001);
 }
+EndConstexprTest(LittleEndianOutputBitIterTest, SaveByte);
 
-TEST(BigEndianOutputBitIterIterTest, AppendBits) {
+BeginConstexprTest(BigEndianOutputBitIterIterTest, AppendBits) {
     std::vector<uint8_t> result;
     koda::BigEndianOutputBitIter iter{std::back_inserter(result)};
 
-    ASSERT_EQ(iter.Position(), 7);
+    ConstexprAssertEqual(iter.Position(), 7);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 6);
+    ConstexprAssertEqual(iter.Position(), 6);
     *iter++ = 0;
-    ASSERT_EQ(iter.Position(), 5);
+    ConstexprAssertEqual(iter.Position(), 5);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 4);
+    ConstexprAssertEqual(iter.Position(), 4);
     *iter++ = 0;
-    ASSERT_EQ(iter.Position(), 3);
+    ConstexprAssertEqual(iter.Position(), 3);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 2);
+    ConstexprAssertEqual(iter.Position(), 2);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 1);
+    ConstexprAssertEqual(iter.Position(), 1);
     *iter++ = 0;
-    ASSERT_EQ(iter.Position(), 0);
+    ConstexprAssertEqual(iter.Position(), 0);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 7);
+    ConstexprAssertEqual(iter.Position(), 7);
 
-    ASSERT_FALSE(result.empty());
-    ASSERT_EQ(result.front(), 0b10101101);
+    ConstexprAssertFalse(result.empty());
+    ConstexprAssertEqual(result.front(), 0b10101101);
 }
+EndConstexprTest(BigEndianOutputBitIterIterTest, AppendBits);
 
-TEST(BigEndianOutputBitIterIterTest, Skip) {
+BeginConstexprTest(BigEndianOutputBitIterIterTest, Skip) {
     std::vector<uint8_t> result;
     koda::BigEndianOutputBitIter iter{std::back_inserter(result)};
 
-    ASSERT_EQ(iter.Position(), 7);
+    ConstexprAssertEqual(iter.Position(), 7);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 6);
+    ConstexprAssertEqual(iter.Position(), 6);
     *iter++ = 0;
-    ASSERT_EQ(iter.Position(), 5);
+    ConstexprAssertEqual(iter.Position(), 5);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 4);
+    ConstexprAssertEqual(iter.Position(), 4);
     iter.SkipToNextByte();
-    ASSERT_EQ(iter.Position(), 7);
+    ConstexprAssertEqual(iter.Position(), 7);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 6);
+    ConstexprAssertEqual(iter.Position(), 6);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 5);
+    ConstexprAssertEqual(iter.Position(), 5);
     iter.SkipToNextByte();
-    ASSERT_EQ(iter.Position(), 7);
+    ConstexprAssertEqual(iter.Position(), 7);
 
-    ASSERT_EQ(result.size(), 2);
-    ASSERT_EQ(result[0], 0b10100000);
-    ASSERT_EQ(result[1], 0b11000000);
+    ConstexprAssertEqual(result.size(), 2);
+    ConstexprAssertEqual(result[0], 0b10100000);
+    ConstexprAssertEqual(result[1], 0b11000000);
 }
+EndConstexprTest(BigEndianOutputBitIterIterTest, Skip);
 
-TEST(BigEndianOutputBitIterIterTest, SaveByte) {
+BeginConstexprTest(BigEndianOutputBitIterIterTest, SaveByte) {
     std::vector<uint8_t> result;
     koda::BigEndianOutputBitIter iter{std::back_inserter(result)};
 
-    ASSERT_EQ(iter.Position(), 7);
+    ConstexprAssertEqual(iter.Position(), 7);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 6);
+    ConstexprAssertEqual(iter.Position(), 6);
     *iter++ = 1;
-    ASSERT_EQ(iter.Position(), 5);
+    ConstexprAssertEqual(iter.Position(), 5);
     iter.SaveByte(0b1101);
-    ASSERT_EQ(iter.Position(), 7);
+    ConstexprAssertEqual(iter.Position(), 7);
     iter.SaveByte(0b1001);
-    ASSERT_EQ(iter.Position(), 7);
+    ConstexprAssertEqual(iter.Position(), 7);
 
-    ASSERT_EQ(result.size(), 3);
-    ASSERT_EQ(result[0], 0b11000000);
-    ASSERT_EQ(result[1], 0b1101);
-    ASSERT_EQ(result[2], 0b1001);
+    ConstexprAssertEqual(result.size(), 3);
+    ConstexprAssertEqual(result[0], 0b11000000);
+    ConstexprAssertEqual(result[1], 0b1101);
+    ConstexprAssertEqual(result[2], 0b1001);
 }
+EndConstexprTest(BigEndianOutputBitIterIterTest, SaveByte);
