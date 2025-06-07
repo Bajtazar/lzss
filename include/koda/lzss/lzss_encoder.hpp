@@ -9,6 +9,7 @@
 #include <concepts>
 #include <memory>
 #include <optional>
+#include <variant>
 
 namespace koda {
 
@@ -39,10 +40,22 @@ class LzssEncoder {
                               BitOutputRange auto&& output);
 
    private:
-    FusedDictionaryAndBuffer<InputToken> dictionary_and_buffer_;
+    struct FusedDictAndBufferInfo {
+        size_t dictionary_size;
+        std::optional<size_t> cyclic_buffer_size;
+    };
+
+    std::variant<FusedDictionaryAndBuffer<InputToken>, FusedDictAndBufferInfo>
+        dictionary_and_buffer_;
     SearchBinaryTree<InputToken> search_tree_;
     AuxiliaryEncoder auxiliary_encoder_;
 };
+
+template <std::integral InputToken,
+          Encoder<LzssIntermediateToken> AuxiliaryEncoder, typename AllocatorTp>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken))
+constexpr void LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::Encode(
+    InputRange<InputToken> auto&& input, BitOutputRange auto&& output) {}
 
 }  // namespace koda
 
