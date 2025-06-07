@@ -14,4 +14,14 @@ constexpr LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::LzssEncoder(
       search_tree_{look_ahead_size, allocator},
       auxiliary_encoder_{std::move(auxiliary_encoder)} {}
 
+template <std::integral InputToken,
+          Encoder<LzssIntermediateToken> AuxiliaryEncoder, typename AllocatorTp>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken))
+constexpr LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::LzssEncoder(
+    size_t dictionary_size, size_t look_ahead_size,
+    std::optional<size_t> cyclic_buffer_size, const AllocatorTp& allocator)
+    requires std::is_default_constructible_v<AuxiliaryEncoder>
+    : LzssEncoder{dictionary_size, look_ahead_size, AuxiliaryEncoder{},
+                  std::move(cyclic_buffer_size), allocator} {}
+
 }  // namespace koda

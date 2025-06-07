@@ -24,6 +24,12 @@ class LzssEncoder {
         std::optional<size_t> cyclic_buffer_size = std::nullopt,
         const AllocatorTp& allocator = AllocatorTp{});
 
+    constexpr explicit LzssEncoder(
+        size_t dictionary_size, size_t look_ahead_size,
+        std::optional<size_t> cyclic_buffer_size = std::nullopt,
+        const AllocatorTp& allocator = AllocatorTp{})
+        requires std::is_default_constructible_v<AuxiliaryEncoder>;
+
     constexpr void Encode(InputRange<InputToken> auto&& input,
                           BitOutputRange auto&& output);
 
