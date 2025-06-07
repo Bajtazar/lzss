@@ -6,6 +6,8 @@ namespace koda {
 
 template <typename ContainterTp>
 struct BackInserterIterator : public std::back_insert_iterator<ContainterTp> {
+    using difference_type = ptrdiff_t;
+
     using std::back_insert_iterator<ContainterTp>::back_insert_iterator;
 
     [[nodiscard]] friend constexpr bool operator==(
@@ -19,6 +21,10 @@ struct BackInserterIterator : public std::back_insert_iterator<ContainterTp> {
         [[maybe_unused]] BackInserterIterator const& right) noexcept {
         return true;
     }
+
+    constexpr BackInserterIterator& operator++() { return *this; }
+
+    constexpr BackInserterIterator operator++(int) { return *this; }
 };
 
 }  // namespace koda
