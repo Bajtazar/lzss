@@ -14,9 +14,9 @@
 namespace koda {
 
 template <std::integral InputToken = uint8_t,
-          Encoder<LzssIntermediateToken> AuxiliaryEncoder,
+          Encoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
           typename AllocatorTp = std::allocator<InputToken>>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken))
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 class LzssEncoder {
    public:
     constexpr explicit LzssEncoder(
@@ -55,8 +55,9 @@ class LzssEncoder {
 };
 
 template <std::integral InputToken,
-          Encoder<LzssIntermediateToken> AuxiliaryEncoder, typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken))
+          Encoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          typename AllocatorTp>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 constexpr void LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::Encode(
     InputRange<InputToken> auto&& input, BitOutputRange auto&& output) {
     if (std::holds_alternative<FusedDictAndBufferInfo>(
@@ -66,8 +67,9 @@ constexpr void LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::Encode(
 }
 
 template <std::integral InputToken,
-          Encoder<LzssIntermediateToken> AuxiliaryEncoder, typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken))
+          Encoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          typename AllocatorTp>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 constexpr void
 LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::InitializeBuffer(
     InputRange<InputToken> auto& input, BitOutputRange auto& output) {
@@ -77,7 +79,7 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::InitializeBuffer(
         std::from_range, input | std::views::take(look_ahead_size)};
     auxiliary_encoder_.Encode(
         init_view | std::views::transform([](auto& token) {
-            return LzssIntermediateToken{token};
+            return LzssIntermediateToken<InputToken>{token};
         }),
         output);
 

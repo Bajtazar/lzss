@@ -3,8 +3,9 @@
 namespace koda {
 
 template <std::integral InputToken,
-          Encoder<LzssIntermediateToken> AuxiliaryEncoder, typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken))
+          Encoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          typename AllocatorTp>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 constexpr LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::LzssEncoder(
     size_t dictionary_size, size_t look_ahead_size,
     AuxiliaryEncoder auxiliary_encoder,
@@ -15,8 +16,9 @@ constexpr LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::LzssEncoder(
       auxiliary_encoder_{std::move(auxiliary_encoder)} {}
 
 template <std::integral InputToken,
-          Encoder<LzssIntermediateToken> AuxiliaryEncoder, typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken))
+          Encoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          typename AllocatorTp>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 constexpr LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::LzssEncoder(
     size_t dictionary_size, size_t look_ahead_size,
     std::optional<size_t> cyclic_buffer_size, const AllocatorTp& allocator)
@@ -25,8 +27,9 @@ constexpr LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::LzssEncoder(
                   std::move(cyclic_buffer_size), allocator} {}
 
 template <std::integral InputToken,
-          Encoder<LzssIntermediateToken> AuxiliaryEncoder, typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken))
+          Encoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          typename AllocatorTp>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 constexpr void
 LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::operator()(
     InputRange<InputToken> auto&& input, BitOutputRange auto&& output) {
@@ -36,8 +39,9 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::operator()(
 }
 
 template <std::integral InputToken,
-          Encoder<LzssIntermediateToken> AuxiliaryEncoder, typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken))
+          Encoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          typename AllocatorTp>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 constexpr void LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::Flush(
     BitOutputRange auto&& output) {
     auxiliary_encoder_.Flush(std::forward<decltype(output)>(output));
