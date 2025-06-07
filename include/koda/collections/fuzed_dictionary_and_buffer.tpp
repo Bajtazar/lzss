@@ -64,6 +64,12 @@ FusedDictionaryAndBuffer<Tp, AllocatorTp>::AddEndSymbolToBuffer() {
 }
 
 template <typename Tp, typename AllocatorTp>
+[[nodiscard]] constexpr AllocatorTp
+FusedDictionaryAndBuffer<Tp, AllocatorTp>::get_allocator() const {
+    return cyclic_buffer_.get_allocator();
+}
+
+template <typename Tp, typename AllocatorTp>
 [[nodiscard]] constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::SequenceView
 FusedDictionaryAndBuffer<Tp, AllocatorTp>::get_buffer() const noexcept {
     // Always contiguous

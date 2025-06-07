@@ -98,6 +98,8 @@ class FusedDictionaryAndBuffer {
 
     constexpr bool AddEndSymbolToBuffer();
 
+    [[nodiscard]] constexpr AllocatorTp get_allocator() const;
+
     [[nodiscard]] constexpr SequenceView get_buffer() const noexcept;
 
     [[nodiscard]] constexpr SequenceView get_oldest_dictionary_full_match()
