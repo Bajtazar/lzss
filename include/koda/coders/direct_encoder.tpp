@@ -11,7 +11,7 @@ constexpr void DirectEncoder<Token>::Encode(InputRange<Token> auto&& input,
                                             BitOutputRange auto&& output) {
     std::ranges::for_each(
         std::forward<decltype(input)>(input),
-        std::bind_back(Traits::EncodeToken,
+        std::bind_back(Traits::template EncodeToken<decltype(output)>,
                        std::forward<decltype(output)>(output)));
 }
 
