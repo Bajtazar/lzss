@@ -29,7 +29,8 @@ struct TokenTraits<Token> {
     static constexpr void EncodeToken(TokenType token,
                                       BitOutputRange auto&& output);
 
-    [[nodiscard]] constexpr TokenType DecodeToken(BitInputRange auto&& input);
+    [[nodiscard]] static constexpr TokenType DecodeToken(
+        BitInputRange auto&& input);
 };
 
 }  // namespace koda

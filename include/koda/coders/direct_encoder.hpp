@@ -10,12 +10,12 @@ struct IdentityEncoder {
 
     constexpr explicit IdentityEncoder() noexcept = default;
 
-    constexpr void Encode(InputRange<InputToken> auto&& input,
+    constexpr void Encode(InputRange<Token> auto&& input,
                           BitOutputRange auto&& output);
 
     constexpr void Flush(BitOutputRange auto&& output);
 
-    constexpr void operator()(InputRange<InputToken> auto&& input,
+    constexpr void operator()(InputRange<Token> auto&& input,
                               BitOutputRange auto&& output);
 };
 

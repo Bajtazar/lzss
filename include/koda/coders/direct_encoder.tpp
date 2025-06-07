@@ -1,13 +1,14 @@
 #pragma once
 
 #include <algorithm>
+#include <functional>
 #include <ranges>
 
 namespace koda {
 
 template <typename Token>
-constexpr void IdentityEncoder<Token>::Encode(
-    InputRange<InputToken> auto&& input, BitOutputRange auto&& output) {
+constexpr void IdentityEncoder<Token>::Encode(InputRange<Token> auto&& input,
+                                              BitOutputRange auto&& output) {
     std::ranges::for_each(
         std::forward<decltype(input)>(input),
         std::bind_back(Traits::EncodeToken,
@@ -20,7 +21,7 @@ constexpr void IdentityEncoder<Token>::Flush(
 
 template <typename Token>
 constexpr void IdentityEncoder<Token>::operator()(
-    InputRange<InputToken> auto&& input, BitOutputRange auto&& output) {
+    InputRange<Token> auto&& input, BitOutputRange auto&& output) {
     Encode(std::forward<decltype(input)>(input),
            std::forward<decltype(output)>(output));
 }
