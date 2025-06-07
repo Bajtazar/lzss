@@ -33,3 +33,5 @@ struct TokenTraits<Token> {
 };
 
 }  // namespace koda
+
+#include <koda/coders/token_traits.tpp>
