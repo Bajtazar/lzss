@@ -52,6 +52,18 @@ constexpr bool compare(Tp&& t1, Up&& t2) noexcept {
         ge_test_assertions = __LINE__;                                     \
     }
 
+#define ConstexprAssertNotEqual(left, right)                            \
+    if (!ge_test_assertions && koda::tests::compare((left), (right))) { \
+        ge_test_assertions = __LINE__;                                  \
+    }
+
+#define ConstexprAssertNotEqualIter(leftIter, leftSent, rightIter, rightSent) \
+    if (!ge_test_assertions &&                                                \
+        koda::tests::compare((leftIter), (leftSent), (rightIter),             \
+                             (rightSent))) {                                  \
+        ge_test_assertions = __LINE__;                                        \
+    }
+
 #define ConstexprAssertOnThrow(assertion, exception) \
     try {                                            \
         (assertion);                                 \
