@@ -7,8 +7,8 @@
 namespace koda {
 
 template <typename Token>
-constexpr void IdentityEncoder<Token>::Encode(InputRange<Token> auto&& input,
-                                              BitOutputRange auto&& output) {
+constexpr void DirectEncoder<Token>::Encode(InputRange<Token> auto&& input,
+                                            BitOutputRange auto&& output) {
     std::ranges::for_each(
         std::forward<decltype(input)>(input),
         std::bind_back(Traits::EncodeToken,
@@ -16,12 +16,12 @@ constexpr void IdentityEncoder<Token>::Encode(InputRange<Token> auto&& input,
 }
 
 template <typename Token>
-constexpr void IdentityEncoder<Token>::Flush(
+constexpr void DirectEncoder<Token>::Flush(
     [[maybe_unused]] BitOutputRange auto&& output) {}
 
 template <typename Token>
-constexpr void IdentityEncoder<Token>::operator()(
-    InputRange<Token> auto&& input, BitOutputRange auto&& output) {
+constexpr void DirectEncoder<Token>::operator()(InputRange<Token> auto&& input,
+                                                BitOutputRange auto&& output) {
     Encode(std::forward<decltype(input)>(input),
            std::forward<decltype(output)>(output));
 }

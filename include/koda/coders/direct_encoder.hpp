@@ -5,10 +5,10 @@
 namespace koda {
 
 template <typename Token>
-struct IdentityEncoder {
+struct DirectEncoder {
     using Traits = TokenTraits<Token>;
 
-    constexpr explicit IdentityEncoder() noexcept = default;
+    constexpr explicit DirectEncoder() noexcept = default;
 
     constexpr void Encode(InputRange<Token> auto&& input,
                           BitOutputRange auto&& output);
