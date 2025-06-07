@@ -49,13 +49,46 @@ class LzssEncoder {
         dictionary_and_buffer_;
     SearchBinaryTree<InputToken> search_tree_;
     AuxiliaryEncoder auxiliary_encoder_;
+
+    constexpr void InitializeBuffer(InputRange<InputToken> auto& input,
+                                    BitOutputRange auto& output);
 };
 
 template <std::integral InputToken,
           Encoder<LzssIntermediateToken> AuxiliaryEncoder, typename AllocatorTp>
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken))
 constexpr void LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::Encode(
-    InputRange<InputToken> auto&& input, BitOutputRange auto&& output) {}
+    InputRange<InputToken> auto&& input, BitOutputRange auto&& output) {
+    if (std::holds_alternative<FusedDictAndBufferInfo>(
+            dictionary_and_buffer_)) {
+        InitializeBuffer(input, output);
+    }
+}
+
+template <std::integral InputToken,
+          Encoder<LzssIntermediateToken> AuxiliaryEncoder, typename AllocatorTp>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken))
+constexpr void
+LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::InitializeBuffer(
+    InputRange<InputToken> auto& input, BitOutputRange auto& output) {
+    const size_t look_ahead_size = search_tree_.string_size();
+
+    std::vector<InputToken> init_view{
+        std::from_range, input | std::views::take(look_ahead_size)};
+    auxiliary_encoder_.Encode(
+        init_view | std::views::transform([](auto& token) {
+            return LzssIntermediateToken{token};
+        }),
+        output);
+
+    auto [dict_size, cyclic_buffer_size] =
+        std::get<FusedDictAndBufferInfo>(dictionary_and_buffer_);
+    dictionary_and_buffer_ =
+        FusedDictionaryAndBuffer{dict_size,
+                                 {init_view},
+                                 std::move(cyclic_buffer_size),
+                                 search_tree_.get_allocator()};
+}
 
 }  // namespace koda
 
