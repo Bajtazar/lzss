@@ -7,8 +7,8 @@ namespace koda {
 template <std::integral Token>
 /*static*/ constexpr void TokenTraits<Token>::EncodeToken(
     TokenType token, BitOutputRange auto&& output) {
-    LittleEndianInputBitIter token_iter{&token};
-    std::ranges::copy(token_iter, decltype(token_iter){},
+    std::ranges::copy(LittleEndianInputBitIter{&token},
+                      LittleEndianInputBitIter{std::next(&token)},
                       std::ranges::begin(output));
 }
 
