@@ -35,4 +35,12 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::operator()(
     Flush(std::forward<decltype(output)>(output));
 }
 
+template <std::integral InputToken,
+          Encoder<LzssIntermediateToken> AuxiliaryEncoder, typename AllocatorTp>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken))
+constexpr void LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::Flush(
+    BitOutputRange auto&& output) {
+    auxiliary_encoder_.Flush(std::forward<decltype(output)>(output));
+}
+
 }  // namespace koda
