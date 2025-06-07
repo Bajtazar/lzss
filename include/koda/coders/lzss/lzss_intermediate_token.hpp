@@ -41,4 +41,4 @@ class [[nodiscard]] LzssIntermediateToken {
 
 }  // namespace koda
 
-#include <koda/lzss/lzss_intermediate_token.tpp>
+#include <koda/coders/lzss/lzss_intermediate_token.tpp>

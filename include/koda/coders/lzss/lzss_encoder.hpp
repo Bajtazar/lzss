@@ -1,9 +1,9 @@
 #pragma once
 
-#include <koda/coder.hpp>
+#include <koda/coders/coder.hpp>
+#include <koda/coders/lzss/lzss_intermediate_token.hpp>
 #include <koda/collections/fuzed_dictionary_and_buffer.hpp>
 #include <koda/collections/search_binary_tree.hpp>
-#include <koda/lzss/lzss_intermediate_token.hpp>
 #include <koda/utils/concepts.hpp>
 
 #include <concepts>
@@ -94,4 +94,4 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::InitializeBuffer(
 
 }  // namespace koda
 
-#include <koda/lzss/lzss_encoder.tpp>
+#include <koda/coders/lzss/lzss_encoder.tpp>

@@ -36,7 +36,7 @@ LzssIntermediateToken<InputToken>::get_symbol() const noexcept {
 
 template <std::integral InputToken>
 [[nodiscard]] constexpr std::optional<
-    LzssIntermediateToken<InputToken>::RepeatitionMarker>
+    typename LzssIntermediateToken<InputToken>::RepeatitionMarker>
 LzssIntermediateToken<InputToken>::get_marker() const noexcept {
     if (holds_marker()) {
         return repeatition_marker_;
