@@ -1,6 +1,8 @@
 #pragma once
 
 #include <koda/coder.hpp>
+#include <koda/collections/fuzed_dictionary_and_buffer.hpp>
+#include <koda/collections/search_binary_tree.hpp>
 #include <koda/utils/concepts.hpp>
 
 #include <memory>
@@ -46,36 +48,21 @@ class LzssEncoder {
    public:
     constexpr explicit LzssEncoder(
         size_t dictionary_size,
-        // 1 << (CHAR_BIT * sizeof(InputToken))
-        AuxiliaryEncoder auxiliary_encoder = std::nullopt) noexcept;
+        AuxiliaryEncoder auxiliary_encoder = {}) noexcept;
+
+    constexpr void Encode(InputRange<InputToken> auto&& input,
+                          BitOutputRange auto&& output);
+
+    constexpr void Flush(BitOutputRange auto&& output);
 
     constexpr void operator()(InputRange<InputToken> auto&& input,
                               BitOutputRange auto&& output) const;
 
    private:
-    size_t dictionary_size_;
+    FusedDictionaryAndBuffer<InputToken> dictionary_and_buffer_;
+    SearchBinaryTree<InputToken> search_tree_;
     AuxiliaryEncoder auxiliary_encoder_;
 };
-
-template <std::integral InputTokenTp,
-          Encoder<LzssIntermediateToken> AuxiliaryEncoderTp>
-class LzssEncoderInstance {
-   public:
-    constexpr explicit LzssEncoderInstance(size_t dictionary_size,
-                                           AuxiliaryEncoder auxiliary_encoder)
-        : dictionary_size_{dictionary_size},
-          auxiliary_encoder_{auxiliary_encoder} {}
-
-   private:
-    size_t dictionary_size_;
-    AuxiliaryEncoder auxiliary_encoder_;
-};
-
-template <std::integral InputToken,
-          Encoder<LzssIntermediateToken> AuxiliaryEncoder>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken))
-constexpr void LzssEncoder<InputToken, AuxiliaryEncoder>::operator()(
-    InputRange<InputToken> auto&& input, BitOutputRange auto&& output) const {}
 
 }  // namespace koda
 
