@@ -3,19 +3,60 @@
 namespace koda {
 
 template <ByteInputIterator Iter>
-constexpr LittleEndianInputBitIter<Iter>&
-LittleEndianInputBitIter<Iter>::operator++(void) noexcept {
+[[nodiscard]] constexpr InputBitIteratorSource<Iter>::bit
+InputBitIteratorSource<Iter>::value() const noexcept {
+    return ((1 << bit_iter_) & (*iter_)) >> bit_iter_;
+}
+
+template <ByteInputIterator Iter>
+constexpr void
+InputBitIteratorSource<Iter>::IncrementLittleEndianess() noexcept {
     if (++bit_iter_ == ByteLength()) {
         ++iter_;
         bit_iter_ = 0;
     }
-    return *this;
+}
+
+template <ByteInputIterator Iter>
+constexpr void InputBitIteratorSource<Iter>::IncrementBigEndianess() noexcept {
+    if (!(bit_iter_--)) {
+        ++iter_;
+        bit_iter_ = ByteLength() - 1;
+    }
+}
+
+template <ByteInputIterator Iter>
+constexpr void
+InputBitIteratorSource<Iter>::SkipToNextByteLittleEndianess() noexcept {
+    ++iter_;
+    bit_iter_ = 0;
+}
+
+template <ByteInputIterator Iter>
+constexpr void
+InputBitIteratorSource<Iter>::SkipToNextByteBigEndianess() noexcept {
+    ++iter_;
+    bit_iter_ = ByteLength() - 1;
+}
+
+template <ByteInputIterator Iter>
+[[nodiscard]] constexpr std::byte
+InputBitIteratorSource<Iter>::ReadByteLittleEndianess() noexcept {
+    bit_iter_ = 0;
+    return static_cast<std::byte>(*iter_++);
+}
+
+template <ByteInputIterator Iter>
+[[nodiscard]] constexpr std::byte
+InputBitIteratorSource<Iter>::ReadByteBigEndianess() noexcept {
+    bit_iter_ = 0;
+    return static_cast<std::byte>(*iter_++);
 }
 
 template <ByteInputIterator Iter>
 [[nodiscard]] constexpr std::byte LittleEndianInputBitIter<Iter>::ReadByte(
     void) noexcept {
-    bit_iter_ = 0;
+    bit_iter_ = ByteLength() - 1;
     return static_cast<std::byte>(*iter_++);
 }
 
@@ -44,16 +85,6 @@ constexpr void LittleEndianOutputBitIter<Iter>::SaveByte(
         SkipToNextByte();
     }
     *iter_++ = byte;
-}
-
-template <ByteInputIterator Iter>
-constexpr BigEndianInputBitIter<Iter>& BigEndianInputBitIter<Iter>::operator++(
-    void) noexcept {
-    if (!(bit_iter_--)) {
-        ++iter_;
-        bit_iter_ = ByteLength() - 1;
-    }
-    return *this;
 }
 
 template <ByteInputIterator Iter>

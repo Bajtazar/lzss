@@ -69,9 +69,7 @@ class InputBitIteratorSource {
         return CHAR_BIT;
     }
 
-    [[nodiscard]] constexpr bit value() const noexcept {
-        return ((1 << bit_iter_) & (*iter_)) >> bit_iter_;
-    }
+    [[nodiscard]] constexpr bit value() const noexcept;
 
     constexpr void IncrementLittleEndianess() noexcept;
 
@@ -81,7 +79,9 @@ class InputBitIteratorSource {
 
     constexpr void SkipToNextByteBigEndianess() noexcept;
 
-    [[nodiscard]] constexpr std::byte ReadByte() noexcept;
+    [[nodiscard]] constexpr std::byte ReadByteLittleEndianess() noexcept;
+
+    [[nodiscard]] constexpr std::byte ReadByteBigEndianess() noexcept;
 
     [[nodiscard]] constexpr uint8_t Position() const noexcept {
         return bit_iter_;
@@ -189,10 +189,7 @@ class LittleEndianInputBitIter {
         return CHAR_BIT;
     }
 
-    constexpr void SkipToNextByte() noexcept {
-        ++iter_;
-        bit_iter_ = 0;
-    }
+    constexpr void SkipToNextByte() noexcept {}
 
     [[nodiscard]] constexpr std::byte ReadByte() noexcept;
 
@@ -327,10 +324,7 @@ class BigEndianInputBitIter {
         return CHAR_BIT;
     }
 
-    constexpr void SkipToNextByte() noexcept {
-        ++iter_;
-        bit_iter_ = 7;
-    }
+    constexpr void SkipToNextByte() noexcept {}
 
     [[nodiscard]] constexpr std::byte ReadByte() noexcept;
 
