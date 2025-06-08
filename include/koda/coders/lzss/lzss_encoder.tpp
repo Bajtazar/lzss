@@ -108,16 +108,7 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::EncodeData(
 
     for (auto token : input) {
         auto look_ahead = dict.get_buffer();
-
-        if (!match_count_) {
-            PeformEncodigStep(look_ahead, output);
-        } else {
-            --match_count_;
-        }
-
-        if (dict.dictionary_size() == dict.max_dictionary_size()) {
-            search_tree_.RemoveString(dict.get_oldest_dictionary_full_match());
-        }
+        PeformEncodigStep(dict, look_ahead, output);
         search_tree_.AddString(look_ahead);
         dict.AddSymbolToBuffer(token);
     }
@@ -128,7 +119,7 @@ template <std::integral InputToken,
           typename AllocatorTp>
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 constexpr void
-LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::PeformEncodigStep(
+LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::EncodeSymbolOrMatch(
     SequenceView look_ahead, BitOutputRange auto& output) {
     auto marker = search_tree_.FindMatch(look_ahead);
     IMToken symbol_token{look_ahead[0]};
@@ -162,6 +153,25 @@ template <std::integral InputToken,
           typename AllocatorTp>
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 constexpr void
+LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::PeformEncodigStep(
+    FusedDictionaryAndBuffer<InputToken>& dict, SequenceView look_ahead,
+    BitOutputRange auto& output) {
+    if (!match_count_) {
+        EncodeSymbolOrMatch(look_ahead, output);
+    } else {
+        --match_count_;
+    }
+
+    if (dict.dictionary_size() == dict.max_dictionary_size()) {
+        search_tree_.RemoveString(dict.get_oldest_dictionary_full_match());
+    }
+}
+
+template <std::integral InputToken,
+          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          typename AllocatorTp>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
+constexpr void
 LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::FlushData(
     BitOutputRange auto& output) {
     [[assume(std::holds_alternative<FusedDictionaryAndBuffer<InputToken>>(
@@ -171,17 +181,7 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::FlushData(
         std::get<FusedDictionaryAndBuffer<InputToken>>(dictionary_and_buffer_);
 
     for (size_t i = 0; i < search_tree_.string_size(); ++i) {
-        auto look_ahead = dict.get_buffer();
-
-        if (!match_count_) {
-            PeformEncodigStep(look_ahead, output);
-        } else {
-            --match_count_;
-        }
-
-        if (dict.dictionary_size() == dict.max_dictionary_size()) {
-            search_tree_.RemoveString(dict.get_oldest_dictionary_full_match());
-        }
+        PeformEncodigStep(dict, dict.get_buffer(), output);
         dict.AddEndSymbolToBuffer();
     }
 }

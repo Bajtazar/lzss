@@ -65,10 +65,14 @@ class LzssEncoder {
     constexpr void EncodeData(InputRange<InputToken> auto& input,
                               BitOutputRange auto& output);
 
-    constexpr void PeformEncodigStep(SequenceView look_ahead,
-                                     BitOutputRange auto& output);
-
     constexpr void FlushData(BitOutputRange auto& output);
+
+    constexpr void EncodeSymbolOrMatch(SequenceView look_ahead,
+                                       BitOutputRange auto& output);
+
+    constexpr void PeformEncodigStep(FusedDictionaryAndBuffer<InputToken>& dict,
+                                     SequenceView look_ahead,
+                                     BitOutputRange auto& output);
 };
 
 }  // namespace koda
