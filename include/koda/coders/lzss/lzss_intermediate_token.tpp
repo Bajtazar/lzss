@@ -9,7 +9,7 @@ constexpr LzssIntermediateToken<InputToken>::LzssIntermediateToken(
 
 template <std::integral InputToken>
 constexpr LzssIntermediateToken<InputToken>::LzssIntermediateToken(
-    uint32_t match_position, uint32_t match_length) noexcept
+    uint32_t match_position, uint16_t match_length) noexcept
     : repeatition_marker_{match_position, match_length},
       holds_distance_match_pair_{true} {}
 
@@ -60,7 +60,7 @@ TokenTraits<LzssIntermediateToken<InputToken>>::EncodeToken(
     ++iter;
     TokenTraits<uint32_t>::EncodeToken(position,
                                        std::forward<decltype(output)>(output));
-    TokenTraits<uint32_t>::EncodeToken(length,
+    TokenTraits<uint16_t>::EncodeToken(length,
                                        std::forward<decltype(output)>(output));
 }
 
@@ -74,7 +74,7 @@ TokenTraits<LzssIntermediateToken<InputToken>>::DecodeToken(
     if (auto value = *iter; (++iter, value)) {
         auto position = TokenTraits<uint32_t>::DecodeToken(
             std::forward<decltype(input)>(input));
-        auto length = TokenTraits<uint32_t>::DecodeToken(
+        auto length = TokenTraits<uint16_t>::DecodeToken(
             std::forward<decltype(input)>(input));
         return LzssIntermediateToken<InputToken>{position, length};
     }
@@ -90,9 +90,10 @@ TokenTraits<LzssIntermediateToken<InputToken>>::TokenBitSize(TokenType token) {
         return TokenTraits<typename LzssIntermediateToken<InputToken>::Symbol>::
             TokenBitSize(*symbol);
     }
-    auto [position, length] = *token.get_match();
-    return TokenTraits<uint32_t>::TokenBitSize(position) +
-           TokenTraits<uint32_t>::TokenBitSize(length);
+    auto [position, length] = *token.get_marker();
+    return static_cast<float>(TokenTraits<uint32_t>::TokenBitSize(position) +
+                              TokenTraits<uint16_t>::TokenBitSize(length)) /
+           length;
 }
 
 }  // namespace koda

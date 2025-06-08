@@ -8,7 +8,7 @@
 static constexpr size_t kDictionarySize = 1024;
 static constexpr size_t kLookAheadSize = 4;
 
-BeginConstexprTest(LzssEncoder, EncodeBytes) {
+TEST(LzssEncoder, EncodeBytes) {
     std::string input_sequence = "ala ma kota a kot ma ale";
     std::vector<uint8_t> target;
     auto source = koda::MakeLittleEndianOutputSource(
@@ -20,5 +20,6 @@ BeginConstexprTest(LzssEncoder, EncodeBytes) {
     koda::LzssEncoder<char> encoder{1024, 4};
     encoder.Encode(input_sequence, output_range);
 
-}
-EndConstexprTest(LzssEncoder, EncodeBytes);
+    std::cout << std::format("{}\n", target);
+};
+// EndConstexprTest(LzssEncoder, EncodeBytes);
