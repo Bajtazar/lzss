@@ -1,5 +1,5 @@
 #include <koda/coders/direct_decoder.hpp>
-#include <koda/coders/direct_dncoder.hpp>
+#include <koda/coders/direct_encoder.hpp>
 #include <koda/tests/tests.hpp>
 #include <koda/utils/back_inserter_iterator.hpp>
 #include <koda/utils/bit_iterator.hpp>
@@ -22,13 +22,12 @@ BeginConstexprTest(DirectDecoderTest, DecodeBytes) {
 
     koda::DirectDecoder<uint8_t> decoder;
 
-    auto out_source = koda::MakeLittleEndianInputSource(target.cbegin());
-    std::ranges::subrange out_range{koda::LittleEndianInputBitIter{out_source},
-                                    std::default_sentinel};
-
+    koda::LittleEndianInputBitRangeWrapper out_range{target};
     std::vector<uint8_t> reconstruction;
+    std::ranges::subrange recon_range{
+        koda::BackInserterIterator{reconstruction}, std::default_sentinel};
 
-    decoder.Decode(out_range, reconstruction);
+    decoder.Decode(out_range, recon_range);
 
     ConstexprAssertEqual(expected, reconstruction);
 }
