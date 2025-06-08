@@ -30,9 +30,7 @@ struct DummyBitInputIterator {
 
     DummyBitInputIterator& operator++();
 
-    std::byte ReadByte();
-
-    uint8_t Position();
+    size_t Position();
 
     void operator++(int);
 };
@@ -61,9 +59,7 @@ struct DummyBitOutputIterator {
 
     value_type& operator*() const;
 
-    void SaveByte(uint8_t);
-
-    uint8_t Position();
+    size_t Position();
 
     DummyBitOutputIterator& operator++();
 

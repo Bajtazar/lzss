@@ -15,13 +15,13 @@ concept WeaklyEqualityComparable = requires(Tp& tp, Up& up) {
 
 template <class Iter>
 concept BitInputIterator = std::input_iterator<Iter> && requires(Iter iter) {
-    { iter.Position() } -> std::same_as<uint8_t>;
+    { iter.Position() } -> std::same_as<size_t>;
 };
 
 template <class Iter>
 concept BitOutputIterator =
-    std::output_iterator<Iter, uint8_t> && requires(Iter iter) {
-        { iter.Position() } -> std::same_as<uint8_t>;
+    std::output_iterator<Iter, size_t> && requires(Iter iter) {
+        { iter.Position() } -> std::same_as<size_t>;
     };
 
 template <class Range>
@@ -29,7 +29,7 @@ concept BitInputRange = std::ranges::input_range<Range> &&
                         BitInputIterator<std::ranges::iterator_t<Range>>;
 
 template <class Range>
-concept BitOutputRange = std::ranges::output_range<Range, uint8_t> &&
+concept BitOutputRange = std::ranges::output_range<Range, size_t> &&
                          BitOutputIterator<std::ranges::iterator_t<Range>>;
 
 template <typename Tp, typename Up>
@@ -64,7 +64,7 @@ class InputBitIteratorSource {
 
     constexpr void IncrementBigEndianess() noexcept;
 
-    [[nodiscard]] constexpr uint8_t Position() const noexcept {
+    [[nodiscard]] constexpr size_t Position() const noexcept {
         return bit_iter_;
     }
 
@@ -109,11 +109,11 @@ class InputBitIteratorSource {
    private:
     constexpr explicit InputBitIteratorSource(
         Iter iter,
-        uint8_t bit_iter) noexcept(std::is_nothrow_move_constructible_v<Iter>)
+        size_t bit_iter) noexcept(std::is_nothrow_move_constructible_v<Iter>)
         : iter_{std::move(iter)}, bit_iter_{bit_iter} {}
 
     Iter iter_;
-    uint8_t bit_iter_;
+    size_t bit_iter_;
 };
 
 template <typename Iter>
@@ -156,7 +156,7 @@ class OutputBitIteratorSource {
 
     constexpr void SaveValueBigEndian(bit value) noexcept;
 
-    [[nodiscard]] constexpr uint8_t Position(std::byte byte) const noexcept {
+    [[nodiscard]] constexpr size_t Position() const noexcept {
         return bit_iter_;
     }
 
@@ -201,12 +201,12 @@ class OutputBitIteratorSource {
    private:
     constexpr explicit OutputBitIteratorSource(
         Iter iter,
-        uint8_t bit_iter) noexcept(std::is_nothrow_move_constructible_v<Iter>)
+        size_t bit_iter) noexcept(std::is_nothrow_move_constructible_v<Iter>)
         : iter_{std::move(iter)}, bit_iter_{bit_iter} {}
 
     std::iter_value_t<Iter> temporary_;
     Iter iter_;
-    uint8_t bit_iter_;
+    size_t bit_iter_;
 };
 
 template <typename Iter>
@@ -275,8 +275,8 @@ class LittleEndianInputBitIter {
         return InputBitIteratorSource<Iter>::ByteLength();
     }
 
-    [[nodiscard]] constexpr uint8_t Position() const noexcept {
-        return source_.Position();
+    [[nodiscard]] constexpr size_t Position() const noexcept {
+        return source_->Position();
     }
 
    private:
@@ -339,7 +339,7 @@ class LittleEndianOutputBitIter {
         return OutputBitIteratorSource<Iter>::ByteLength();
     }
 
-    [[nodiscard]] constexpr uint8_t Position() const noexcept {
+    [[nodiscard]] constexpr size_t Position() const noexcept {
         return source_->Position();
     }
 
@@ -400,8 +400,8 @@ class BigEndianInputBitIter {
         return InputBitIteratorSource<Iter>::ByteLength();
     }
 
-    [[nodiscard]] constexpr uint8_t Position() const noexcept {
-        return source_.Position();
+    [[nodiscard]] constexpr size_t Position() const noexcept {
+        return source_->Position();
     }
 
    private:
@@ -462,7 +462,7 @@ class BigEndianOutputBitIter {
         return OutputBitIteratorSource<Iter>::ByteLength();
     }
 
-    [[nodiscard]] constexpr uint8_t Position() const noexcept {
+    [[nodiscard]] constexpr size_t Position() const noexcept {
         return source_->Position();
     }
 

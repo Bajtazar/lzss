@@ -26,8 +26,8 @@ constexpr void InputBitIteratorSource<Iter>::IncrementBigEndianess() noexcept {
 }
 
 template <typename Iter>
-constexpr void OutputBitIteratorSource<Iter>::SaveValueLittleEndian(bit value) noexcept
-{
+constexpr void OutputBitIteratorSource<Iter>::SaveValueLittleEndian(
+    bit value) noexcept {
     std::iter_value_t<Iter> mask = 1 << bit_iter_;
     temporary_ = (~mask & temporary_) | (value << bit_iter_);
     if (++bit_iter_ == ByteLength()) {
@@ -37,13 +37,14 @@ constexpr void OutputBitIteratorSource<Iter>::SaveValueLittleEndian(bit value) n
 }
 
 template <typename Iter>
-constexpr void OutputBitIteratorSource<Iter>::SaveValueBigEndian(bit value) noexcept
-{
+constexpr void OutputBitIteratorSource<Iter>::SaveValueBigEndian(
+    bit value) noexcept {
     std::iter_value_t<Iter> mask = 1 << bit_iter_;
     temporary_ = (~mask & temporary_) | (value << bit_iter_);
-    if (++bit_iter_ == ByteLength()) {
+    if (!(bit_iter_--)) {
         *iter_++ = temporary_;
-        bit_iter_ = temporary_ = 0;
+        temporary_ = 0;
+        bit_iter_ = ByteLength() - 1;
     }
 }
 
