@@ -47,6 +47,9 @@ class LzssEncoder {
         std::optional<size_t> cyclic_buffer_size;
     };
 
+    using SequenceView =
+        typename FusedDictionaryAndBuffer<InputToken>::SequenceView;
+
     std::variant<FusedDictionaryAndBuffer<InputToken>, FusedDictAndBufferInfo>
         dictionary_and_buffer_;
     SearchBinaryTree<InputToken> search_tree_;
@@ -82,11 +85,9 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::InitializeBuffer(
 
     auto [dict_size, cyclic_buffer_size] =
         std::get<FusedDictAndBufferInfo>(dictionary_and_buffer_);
-    dictionary_and_buffer_ =
-        FusedDictionaryAndBuffer{dict_size,
-                                 {init_view},
-                                 std::move(cyclic_buffer_size),
-                                 search_tree_.get_allocator()};
+    dictionary_and_buffer_ = FusedDictionaryAndBuffer{
+        dict_size, SequenceView{init_view}, std::move(cyclic_buffer_size),
+        search_tree_.get_allocator()};
 }
 
 }  // namespace koda

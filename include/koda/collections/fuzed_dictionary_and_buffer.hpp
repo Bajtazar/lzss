@@ -92,7 +92,7 @@ class FusedDictionaryAndBuffer {
     constexpr FusedDictionaryAndBuffer& operator=(
         const FusedDictionaryAndBuffer&) = delete;
     constexpr FusedDictionaryAndBuffer& operator=(FusedDictionaryAndBuffer&&) =
-        delete;
+        default;
 
     constexpr bool AddSymbolToBuffer(ValueType symbol);
 
