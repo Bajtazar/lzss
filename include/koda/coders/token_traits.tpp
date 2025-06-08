@@ -17,8 +17,9 @@ template <std::integral Token>
 [[nodiscard]] /*static*/ constexpr TokenTraits<Token>::TokenType
 TokenTraits<Token>::DecodeToken(BitInputRange auto&& input) {
     TokenType result;
+    auto source = koda::MakeLittleEndianOutputSource(&result);
     std::ranges::copy(input | std::views::take(sizeof(Token) * 8),
-                      LittleEndianOutputBitIter{&result});
+                      LittleEndianOutputBitIter{source});
     return result;
 }
 

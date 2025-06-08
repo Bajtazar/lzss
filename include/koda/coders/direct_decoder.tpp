@@ -7,12 +7,12 @@
 namespace koda {
 
 template <typename Token>
-constexpr float DirectEncoder<Token>::TokenBitSize(Token token) const {
+constexpr float DirectDecoder<Token>::TokenBitSize(Token token) const {
     return Traits::TokenBitSize(token);
 }
 
 template <typename Token>
-constexpr void DirectEncoder<Token>::Decode(
+constexpr void DirectDecoder<Token>::Decode(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
     const auto sentinel = std::ranges::end(input);
@@ -26,7 +26,7 @@ constexpr void DirectEncoder<Token>::Decode(
 }
 
 template <typename Token>
-constexpr void DirectEncoder<Token>::operator()(
+constexpr void DirectDecoder<Token>::operator()(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
     Decode(std::forward<decltype(input)>(input),
