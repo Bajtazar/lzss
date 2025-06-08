@@ -8,10 +8,10 @@
 #include <koda/utils/concepts.hpp>
 
 #include <concepts>
+#include <iostream>
 #include <memory>
 #include <optional>
 #include <variant>
-#include <iostream>
 
 namespace koda {
 
@@ -42,6 +42,8 @@ class LzssEncoder {
     constexpr void operator()(InputRange<InputToken> auto&& input,
                               BitOutputRange auto&& output);
 
+    [[nodiscard]] constexpr auto&& auxiliary_encoder(this auto&& self);
+
    private:
     using SequenceView =
         typename FusedDictionaryAndBuffer<InputToken>::SequenceView;
@@ -60,7 +62,7 @@ class LzssEncoder {
     constexpr auto InitializeBuffer(InputRange<InputToken> auto& input);
 
     constexpr void EncodeData(InputRange<InputToken> auto& input,
-                                    BitOutputRange auto& output);
+                              BitOutputRange auto& output);
 };
 
 template <std::integral InputToken,
@@ -102,25 +104,33 @@ template <std::integral InputToken,
           SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
           typename AllocatorTp>
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
-constexpr void LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::EncodeData(
-    InputRange<InputToken> auto& input,
-    BitOutputRange auto& output) {
-    [[assume(std::holds_alternative<FusedDictionaryAndBuffer<InputToken>>(dictionary_and_buffer_))]];
+constexpr void
+LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::EncodeData(
+    InputRange<InputToken> auto& input, BitOutputRange auto& output) {
+    [[assume(std::holds_alternative<FusedDictionaryAndBuffer<InputToken>>(
+        dictionary_and_buffer_))]];
 
-    auto& dict = std::get<FusedDictionaryAndBuffer<InputToken>>(dictionary_and_buffer_);
+    auto& dict =
+        std::get<FusedDictionaryAndBuffer<InputToken>>(dictionary_and_buffer_);
 
-    for (auto iter = std::ranges::begin(input); iter != std::ranges::end(input); ) {
+    for (auto iter = std::ranges::begin(input);
+         iter != std::ranges::end(input);) {
         const InputToken token = *iter;
+
         search_tree_.AddString(dict.get_buffer());
+        if (dict.dictionary_size() == dict.max_dictionary_size()) {
+            search_tree_.RemoveString(dict.get_oldest_dictionary_full_match());
+        }
         dict.AddSymbolToBuffer(token);
+
         auto marker = search_tree_.FindMatch(dict.get_buffer());
 
         IMToken symbol_token{token};
 
         if (!marker.match_length) {
-            auxiliary_encoder_.Encode(std::ranges::subrange{
-                &symbol_token, std::next(&symbol_token)
-            }, output);
+            auxiliary_encoder_.Encode(
+                std::ranges::subrange{&symbol_token, std::next(&symbol_token)},
+                output);
             ++iter;
             continue;
         }
@@ -128,22 +138,22 @@ constexpr void LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::EncodeDat
         IMToken match_token{marker.match_position, marker.match_length};
 
         float est_match_bitsize = auxiliary_encoder_.TokenBitSize(match_token);
-        float est_symbol_bitsize = auxiliary_encoder_.TokenBitSize(symbol_token);
+        float est_symbol_bitsize =
+            auxiliary_encoder_.TokenBitSize(symbol_token);
 
         if (est_symbol_bitsize <= est_match_bitsize) {
-            auxiliary_encoder_.Encode(std::ranges::subrange{
-                &symbol_token, std::next(&symbol_token)
-            }, output);
+            auxiliary_encoder_.Encode(
+                std::ranges::subrange{&symbol_token, std::next(&symbol_token)},
+                output);
             ++iter;
         } else {
-            auxiliary_encoder_.Encode(std::ranges::subrange{
-                &match_token, std::next(&match_token)
-            }, output);
+            auxiliary_encoder_.Encode(
+                std::ranges::subrange{&match_token, std::next(&match_token)},
+                output);
+            // Add temporary tokens to buffer to!
             std::advance(iter, marker.match_length);
         }
     }
-
-
 }
 
 }  // namespace koda

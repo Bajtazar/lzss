@@ -42,6 +42,16 @@ template <std::integral InputToken,
           SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
           typename AllocatorTp>
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
+[[nodiscard]] constexpr auto&&
+LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::auxiliary_encoder(
+    this auto&& self) {
+    return std::forward_like<decltype(self)>(self.auxiliary_encoder_);
+}
+
+template <std::integral InputToken,
+          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          typename AllocatorTp>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 constexpr void LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::Flush(
     BitOutputRange auto&& output) {
     auxiliary_encoder_.Flush(std::forward<decltype(output)>(output));
