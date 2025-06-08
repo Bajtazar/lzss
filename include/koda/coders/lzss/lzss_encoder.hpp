@@ -67,6 +67,8 @@ class LzssEncoder {
 
     constexpr void PeformEncodigStep(SequenceView look_ahead,
                                      BitOutputRange auto& output);
+
+    constexpr void FlushData(BitOutputRange auto& output);
 };
 
 }  // namespace koda

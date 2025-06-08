@@ -54,6 +54,7 @@ template <std::integral InputToken,
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 constexpr void LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::Flush(
     BitOutputRange auto&& output) {
+    FlushData(std::forward<decltype(output)>(output));
     auxiliary_encoder_.Flush(std::forward<decltype(output)>(output));
 }
 
@@ -114,10 +115,10 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::EncodeData(
             --match_count_;
         }
 
-        search_tree_.AddString(look_ahead);
         if (dict.dictionary_size() == dict.max_dictionary_size()) {
             search_tree_.RemoveString(dict.get_oldest_dictionary_full_match());
         }
+        search_tree_.AddString(look_ahead);
         dict.AddSymbolToBuffer(token);
     }
 }
@@ -139,7 +140,8 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::PeformEncodigStep(
         return;
     }
 
-    IMToken match_token{marker.match_position, marker.match_length};
+    IMToken match_token{static_cast<uint32_t>(marker.match_position),
+                        static_cast<uint16_t>(marker.match_length)};
 
     float est_match_bitsize = auxiliary_encoder_.TokenBitSize(match_token);
     float est_symbol_bitsize = auxiliary_encoder_.TokenBitSize(symbol_token);
@@ -153,6 +155,35 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::PeformEncodigStep(
     match_count_ = marker.match_length - 1;
     auxiliary_encoder_.Encode(
         std::ranges::subrange{&match_token, std::next(&match_token)}, output);
+}
+
+template <std::integral InputToken,
+          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          typename AllocatorTp>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
+constexpr void
+LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::FlushData(
+    BitOutputRange auto& output) {
+    [[assume(std::holds_alternative<FusedDictionaryAndBuffer<InputToken>>(
+        dictionary_and_buffer_))]];
+
+    auto& dict =
+        std::get<FusedDictionaryAndBuffer<InputToken>>(dictionary_and_buffer_);
+
+    for (size_t i = 0; i < search_tree_.string_size(); ++i) {
+        auto look_ahead = dict.get_buffer();
+
+        if (!match_count_) {
+            PeformEncodigStep(look_ahead, output);
+        } else {
+            --match_count_;
+        }
+
+        if (dict.dictionary_size() == dict.max_dictionary_size()) {
+            search_tree_.RemoveString(dict.get_oldest_dictionary_full_match());
+        }
+        dict.AddEndSymbolToBuffer();
+    }
 }
 
 }  // namespace koda
