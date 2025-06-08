@@ -424,6 +424,32 @@ class LittleEndianInputBitRangeWrapper {
     EndSource end_;
 };
 
+template <typename Range>
+    requires std::same_as<std::ranges::sentinel_t<Range>,
+                          std::default_sentinel_t>
+class LittleEndianInputBitRangeWrapper<Range> {
+    using BeginSource = InputBitIteratorSource<std::ranges::iterator_t<Range>>;
+
+   public:
+    using iterator_type =
+        LittleEndianInputBitIter<std::ranges::iterator_t<Range>>;
+
+    constexpr explicit LittleEndianInputBitRangeWrapper(Range&& range)
+        : begin_{
+              BeginSource::MakeLittleEndianSource(std::ranges::begin(range))} {}
+
+    [[nodiscard]] constexpr iterator_type begin() {
+        return iterator_type{begin_};
+    }
+
+    [[nodiscard]] constexpr std::default_sentinel_t end() const noexcept {
+        return std::default_sentinel;
+    }
+
+   private:
+    BeginSource begin_;
+};
+
 }  // namespace koda
 
 #include <koda/utils/bit_iterator.tpp>
