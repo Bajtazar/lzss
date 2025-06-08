@@ -1,5 +1,7 @@
 #pragma once
 
+#include <koda/coders/token_traits.hpp>
+
 #include <cinttypes>
 #include <cstddef>
 #include <optional>
@@ -9,6 +11,8 @@ namespace koda {
 template <std::integral InputToken>
 class [[nodiscard]] LzssIntermediateToken {
    public:
+    using Symbol = InputToken;
+
     struct RepeatitionMarker {
         size_t match_position;
         size_t match_length;
@@ -40,6 +44,17 @@ class [[nodiscard]] LzssIntermediateToken {
         RepeatitionMarker repeatition_marker_;
     };
     bool holds_distance_match_pair_;
+};
+
+template <std::integral InputToken>
+struct TokenTraits<LzssIntermediateToken<InputToken>> {
+    using TokenType = LzssIntermediateToken<InputToken>;
+
+    static constexpr void EncodeToken(TokenType token,
+                                      BitOutputRange auto&& output);
+
+    [[nodiscard]] static constexpr TokenType DecodeToken(
+        BitInputRange auto&& input);
 };
 
 }  // namespace koda
