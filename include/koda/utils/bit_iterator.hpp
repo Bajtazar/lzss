@@ -110,15 +110,14 @@ class InputBitIteratorSource {
         return sentinel == right.iter_;
     }
 
-    [[nodiscard]] friend constexpr InputBitIteratorSource
-    MakeLittleEndianInputBitIteratorSource(Iter iter) noexcept(
+    [[nodiscard]] static constexpr InputBitIteratorSource
+    MakeLittleEndianSource(Iter iter) noexcept(
         std::is_nothrow_move_constructible_v<Iter>) {
         return InputBitIteratorSource{std::move(iter), /*bit_iter*/ 0};
     }
 
-    [[nodiscard]] friend constexpr InputBitIteratorSource
-    MakeBigEndianInputBitIteratorSource(Iter iter) noexcept(
-        std::is_nothrow_move_constructible_v<Iter>) {
+    [[nodiscard]] static constexpr InputBitIteratorSource MakeBigEndianSource(
+        Iter iter) noexcept(std::is_nothrow_move_constructible_v<Iter>) {
         return InputBitIteratorSource{std::move(iter),
                                       /*bit_iter*/ ByteLength() - 1};
     }
