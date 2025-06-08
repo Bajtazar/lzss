@@ -42,9 +42,17 @@ concept ByteInputIterator = std::input_iterator<Iter> && requires(Iter iter) {
     { *iter } -> SameSize<std::byte>;
 };
 
+template <class Range>
+concept ByteInputRange = std::ranges::range<Range> &&
+                         ByteInputIterator<std::ranges::iterator_t<Range>>;
+
 template <class Iter>
 concept ByteOutputIterator = std::output_iterator<Iter, uint8_t> &&
                              requires(Iter iter, uint8_t c) { *iter = c; };
+
+template <class Range>
+concept ByteOutputRange = std::ranges::range<Range> &&
+                          ByteOutputIterator<std::ranges::iterator_t<Range>>;
 
 template <ByteInputIterator Iter>
 class InputBitIteratorSource {
@@ -402,6 +410,31 @@ class BigEndianOutputBitIter {
     Iter iter_;
     uint8_t temporary_;
     uint8_t bit_iter_;
+};
+
+template <ByteInputRange Range>
+class LittleEndianInputBitRangeWrapper {
+    using BeginSource = InputBitIteratorSource<std::ranges::iterator_t<Range>>;
+    using EndSource = InputBitIteratorSource<std::ranges::sentinel_t<Range>>;
+
+   public:
+    using iterator_type =
+        LittleEndianInputBitIter<std::ranges::iterator_t<Range>>;
+
+    constexpr explicit LittleEndianInputBitRangeWrapper(Range&& range)
+        : begin_{BeginSource::MakeLittleEndianSource(
+              std::ranges::begin(range))},
+          end_{EndSource::MakeLittleEndianSource(std::ranges::end(range))} {}
+
+    [[nodiscard]] constexpr iterator_type begin() {
+        return iterator_type{begin_};
+    }
+
+    [[nodiscard]] constexpr iterator_type end() { return iterator_type{end_}; }
+
+   private:
+    BeginSource begin_;
+    EndSource end_;
 };
 
 }  // namespace koda
