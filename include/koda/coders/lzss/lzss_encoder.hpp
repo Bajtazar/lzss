@@ -77,11 +77,6 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::InitializeBuffer(
 
     std::vector<InputToken> init_view{
         std::from_range, input | std::views::take(look_ahead_size)};
-    auxiliary_encoder_.Encode(
-        init_view | std::views::transform([](auto& token) {
-            return LzssIntermediateToken<InputToken>{token};
-        }),
-        output);
 
     auto [dict_size, cyclic_buffer_size] =
         std::get<FusedDictAndBufferInfo>(dictionary_and_buffer_);
