@@ -23,7 +23,6 @@ concept SizeAwareEncoder =
 template <typename DecoderTp, typename Tp>
 concept Decoder = requires(DecoderTp decoder, DummyBitInputRange input,
                            DummyOutputRange<Tp> output) {
-    decoder.Initialize(input);
     decoder.Decode(input, output);
     decoder(input, output);
 };
