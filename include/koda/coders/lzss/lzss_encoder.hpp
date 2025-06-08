@@ -58,6 +58,7 @@ class LzssEncoder {
         dictionary_and_buffer_;
     SearchBinaryTree<InputToken> search_tree_;
     AuxiliaryEncoder auxiliary_encoder_;
+    uint16_t match_count_ = 0;
 
     constexpr auto InitializeBuffer(InputRange<InputToken> auto& input);
 
@@ -113,46 +114,48 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::EncodeData(
     auto& dict =
         std::get<FusedDictionaryAndBuffer<InputToken>>(dictionary_and_buffer_);
 
-    for (auto iter = std::ranges::begin(input);
-         iter != std::ranges::end(input);) {
-        const InputToken token = *iter;
+    for (auto token : input) {
+        auto look_ahead = dict.get_buffer();
 
-        search_tree_.AddString(dict.get_buffer());
+        if (!match_count_) {
+            auto marker = search_tree_.FindMatch(look_ahead);
+
+            std::cout << look_ahead[0] << " -> '" << look_ahead << "'\n";
+            IMToken symbol_token{look_ahead[0]};
+
+            if (!marker) {
+                std::cout << "Encoding '" << look_ahead[0] << "'\n";
+                auxiliary_encoder_.Encode(
+                    std::ranges::subrange{&symbol_token, std::next(&symbol_token)},
+                    output);
+                goto X;
+            }
+
+            IMToken match_token{marker.match_position, marker.match_length};
+
+            float est_match_bitsize = auxiliary_encoder_.TokenBitSize(match_token);
+            float est_symbol_bitsize =
+                auxiliary_encoder_.TokenBitSize(symbol_token);
+
+            if (est_symbol_bitsize <= est_match_bitsize) {
+                auxiliary_encoder_.Encode(
+                    std::ranges::subrange{&symbol_token, std::next(&symbol_token)},
+                    output);
+            } else {
+                match_count_ = marker.match_length - 1;
+                auxiliary_encoder_.Encode(
+                    std::ranges::subrange{&match_token, std::next(&match_token)},
+                    output);
+            }
+        } else {
+            --match_count_;
+        }
+X:
+        search_tree_.AddString(look_ahead);
         if (dict.dictionary_size() == dict.max_dictionary_size()) {
             search_tree_.RemoveString(dict.get_oldest_dictionary_full_match());
         }
         dict.AddSymbolToBuffer(token);
-
-        auto marker = search_tree_.FindMatch(dict.get_buffer());
-
-        IMToken symbol_token{token};
-
-        if (!marker.match_length) {
-            auxiliary_encoder_.Encode(
-                std::ranges::subrange{&symbol_token, std::next(&symbol_token)},
-                output);
-            ++iter;
-            continue;
-        }
-
-        IMToken match_token{marker.match_position, marker.match_length};
-
-        float est_match_bitsize = auxiliary_encoder_.TokenBitSize(match_token);
-        float est_symbol_bitsize =
-            auxiliary_encoder_.TokenBitSize(symbol_token);
-
-        if (est_symbol_bitsize <= est_match_bitsize) {
-            auxiliary_encoder_.Encode(
-                std::ranges::subrange{&symbol_token, std::next(&symbol_token)},
-                output);
-            ++iter;
-        } else {
-            auxiliary_encoder_.Encode(
-                std::ranges::subrange{&match_token, std::next(&match_token)},
-                output);
-            // Add temporary tokens to buffer to!
-            std::advance(iter, marker.match_length);
-        }
     }
 }
 
