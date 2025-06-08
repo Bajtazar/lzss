@@ -14,6 +14,37 @@ constexpr LzssIntermediateToken<InputToken>::LzssIntermediateToken(
       holds_distance_match_pair_{true} {}
 
 template <std::integral InputToken>
+[[nodiscard]] constexpr std::partial_ordering
+LzssIntermediateToken<InputToken>::operator<=>(
+    const LzssIntermediateToken& right) const noexcept {
+    if (auto symbol = get_symbol()) {
+        if (auto other = right.get_symbol()) {
+            return *symbol <=> *other;
+        }
+        return std::partial_ordering::unordered;
+    }
+    if (auto other = right.get_marker()) {
+        return *get_marker() <=> *other;
+    }
+    return std::partial_ordering::unordered;
+}
+
+template <std::integral InputToken>
+[[nodiscard]] constexpr bool LzssIntermediateToken<InputToken>::operator==(
+    const LzssIntermediateToken& right) const noexcept {
+    if (auto symbol = get_symbol()) {
+        if (auto other = right.get_symbol()) {
+            return *symbol == *other;
+        }
+        return false;
+    }
+    if (auto other = right.get_marker()) {
+        return *get_marker() == *other;
+    }
+    return false;
+}
+
+template <std::integral InputToken>
 [[nodiscard]] constexpr bool LzssIntermediateToken<InputToken>::holds_symbol()
     const noexcept {
     return holds_distance_match_pair_ == false;

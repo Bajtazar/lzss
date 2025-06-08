@@ -16,6 +16,12 @@ class [[nodiscard]] LzssIntermediateToken {
     struct RepeatitionMarker {
         uint32_t match_position;
         uint16_t match_length;
+
+        [[nodiscard]] constexpr auto operator<=>(
+            const RepeatitionMarker& right) const noexcept = default;
+
+        [[nodiscard]] constexpr bool operator==(
+            const RepeatitionMarker& right) const noexcept = default;
     };
 
     constexpr explicit LzssIntermediateToken(InputToken symbol) noexcept;
@@ -32,6 +38,12 @@ class [[nodiscard]] LzssIntermediateToken {
 
     [[nodiscard]] constexpr std::optional<RepeatitionMarker> get_marker()
         const noexcept;
+
+    [[nodiscard]] constexpr std::partial_ordering operator<=>(
+        const LzssIntermediateToken& right) const noexcept;
+
+    [[nodiscard]] constexpr bool operator==(
+        const LzssIntermediateToken& right) const noexcept;
 
    private:
     // We don't need to manually call destructor on an active
