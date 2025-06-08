@@ -14,13 +14,13 @@ struct BackInserterIterator : public std::back_insert_iterator<ContainterTp> {
     [[nodiscard]] friend constexpr bool operator==(
         [[maybe_unused]] BackInserterIterator const& left,
         [[maybe_unused]] std::default_sentinel_t sentinel) noexcept {
-        return true;
+        return false;
     }
 
     [[nodiscard]] friend constexpr bool operator==(
         [[maybe_unused]] std::default_sentinel_t sentinel,
         [[maybe_unused]] BackInserterIterator const& right) noexcept {
-        return true;
+        return false;
     }
 
     constexpr BackInserterIterator& operator++() { return *this; }

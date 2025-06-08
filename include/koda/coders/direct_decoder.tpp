@@ -19,7 +19,7 @@ constexpr void DirectDecoder<Token>::Decode(
     auto output_iter = std::ranges::begin(output);
     const auto output_sent = std::ranges::end(output);
     for (auto iter = std::ranges::begin(input);
-         iter != sentinel && output_sent != output_sent;) {
+         iter != sentinel && output_iter != output_sent;) {
         *output_iter++ =
             Traits::template DecodeToken(std::ranges::subrange{iter, sentinel});
     }
