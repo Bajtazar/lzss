@@ -8,7 +8,7 @@ namespace koda {
 
 template <typename Token>
 constexpr float DirectEncoder<Token>::TokenBitSize(Token token) const {
-    return 0;
+    return Traits::TokenBitSize(token);
 }
 
 template <typename Token>

@@ -11,11 +11,12 @@
 #include <memory>
 #include <optional>
 #include <variant>
+#include <iostream>
 
 namespace koda {
 
 template <std::integral InputToken = uint8_t,
-          Encoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder =
+          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder =
               DirectEncoder<LzssIntermediateToken<InputToken>>,
           typename AllocatorTp = std::allocator<InputToken>>
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
@@ -42,42 +43,47 @@ class LzssEncoder {
                               BitOutputRange auto&& output);
 
    private:
+    using SequenceView =
+        typename FusedDictionaryAndBuffer<InputToken>::SequenceView;
+    using IMToken = LzssIntermediateToken<InputToken>;
+
     struct FusedDictAndBufferInfo {
         size_t dictionary_size;
         std::optional<size_t> cyclic_buffer_size;
     };
-
-    using SequenceView =
-        typename FusedDictionaryAndBuffer<InputToken>::SequenceView;
 
     std::variant<FusedDictionaryAndBuffer<InputToken>, FusedDictAndBufferInfo>
         dictionary_and_buffer_;
     SearchBinaryTree<InputToken> search_tree_;
     AuxiliaryEncoder auxiliary_encoder_;
 
-    constexpr void InitializeBuffer(InputRange<InputToken> auto& input,
+    constexpr auto InitializeBuffer(InputRange<InputToken> auto& input);
+
+    constexpr void EncodeData(InputRange<InputToken> auto& input,
                                     BitOutputRange auto& output);
 };
 
 template <std::integral InputToken,
-          Encoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
           typename AllocatorTp>
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 constexpr void LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::Encode(
     InputRange<InputToken> auto&& input, BitOutputRange auto&& output) {
     if (std::holds_alternative<FusedDictAndBufferInfo>(
             dictionary_and_buffer_)) {
-        InitializeBuffer(input, output);
+        auto processed_input = InitializeBuffer(input);
+        return EncodeData(processed_input, output);
     }
+    EncodeData(input, output);
 }
 
 template <std::integral InputToken,
-          Encoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
           typename AllocatorTp>
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
-constexpr void
+constexpr auto
 LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::InitializeBuffer(
-    InputRange<InputToken> auto& input, BitOutputRange auto& output) {
+    InputRange<InputToken> auto& input) {
     const size_t look_ahead_size = search_tree_.string_size();
 
     std::vector<InputToken> init_view{
@@ -88,6 +94,41 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::InitializeBuffer(
     dictionary_and_buffer_ = FusedDictionaryAndBuffer{
         dict_size, SequenceView{init_view}, std::move(cyclic_buffer_size),
         search_tree_.get_allocator()};
+
+    return input | std::views::drop(look_ahead_size);
+}
+
+template <std::integral InputToken,
+          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          typename AllocatorTp>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
+constexpr void LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::EncodeData(
+    InputRange<InputToken> auto& input,
+    BitOutputRange auto& output) {
+    [[assume(std::holds_alternative<FusedDictionaryAndBuffer<InputToken>>(dictionary_and_buffer_))]];
+
+    auto& dict = std::get<FusedDictionaryAndBuffer<InputToken>>(dictionary_and_buffer_);
+    for (const auto& token : input) {
+        search_tree_.AddString(dict.get_buffer());
+        dict.AddSymbolToBuffer(token);
+        auto marker = search_tree_.FindMatch(dict.get_buffer());
+
+
+
+        std::cout << token << " -> ";
+        std::cout << marker.match_position << ": "
+            << marker.match_length << " with sizes ";
+
+        IMToken symbol_token{token};
+        IMToken match_token{marker.match_position,
+        marker.match_length};
+
+        std::cout << auxiliary_encoder_.TokenBitSize(symbol_token)
+            << " x " <<auxiliary_encoder_.TokenBitSize(match_token) << "\n";
+
+    }
+
+
 }
 
 }  // namespace koda

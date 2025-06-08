@@ -3,7 +3,7 @@
 namespace koda {
 
 template <std::integral InputToken,
-          Encoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
           typename AllocatorTp>
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 constexpr LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::LzssEncoder(
@@ -16,7 +16,7 @@ constexpr LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::LzssEncoder(
       auxiliary_encoder_{std::move(auxiliary_encoder)} {}
 
 template <std::integral InputToken,
-          Encoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
           typename AllocatorTp>
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 constexpr LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::LzssEncoder(
@@ -27,7 +27,7 @@ constexpr LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::LzssEncoder(
                   std::move(cyclic_buffer_size), allocator} {}
 
 template <std::integral InputToken,
-          Encoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
           typename AllocatorTp>
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 constexpr void
@@ -39,7 +39,7 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::operator()(
 }
 
 template <std::integral InputToken,
-          Encoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
           typename AllocatorTp>
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 constexpr void LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::Flush(
