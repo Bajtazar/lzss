@@ -117,6 +117,19 @@ class InputBitIteratorSource {
 };
 
 template <typename Iter>
+[[nodiscard]] constexpr InputBitIteratorSource<Iter>
+MakeLittleEndianInputSource(Iter iter) {
+    return InputBitIteratorSource<Iter>::MakeLittleEndianSource(
+        std::move(iter));
+}
+
+template <typename Iter>
+[[nodiscard]] constexpr InputBitIteratorSource<Iter> MakeBigEndianInputSource(
+    Iter iter) {
+    return InputBitIteratorSource<Iter>::MakeBigEndianSource(std::move(iter));
+}
+
+template <typename Iter>
 class OutputBitIteratorSource {
    public:
     using bit = bool;
@@ -195,6 +208,19 @@ class OutputBitIteratorSource {
     Iter iter_;
     uint8_t bit_iter_;
 };
+
+template <typename Iter>
+[[nodiscard]] constexpr OutputBitIteratorSource<Iter>
+MakeLittleEndianOutputSource(Iter iter) {
+    return OutputBitIteratorSource<Iter>::MakeLittleEndianSource(
+        std::move(iter));
+}
+
+template <typename Iter>
+[[nodiscard]] constexpr OutputBitIteratorSource<Iter> MakeBigEndianOutputSource(
+    Iter iter) {
+    return OutputBitIteratorSource<Iter>::MakeBigEndianSource(std::move(iter));
+}
 
 template <typename Iter>
 class LittleEndianInputBitIter {

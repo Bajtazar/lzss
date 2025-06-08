@@ -7,6 +7,7 @@ namespace koda {
 template <typename ContainterTp>
 struct BackInserterIterator : public std::back_insert_iterator<ContainterTp> {
     using difference_type = ptrdiff_t;
+    using value_type = typename ContainterTp::value_type;
 
     using std::back_insert_iterator<ContainterTp>::back_insert_iterator;
 
