@@ -47,6 +47,96 @@ concept ByteOutputIterator = std::output_iterator<Iter, uint8_t> &&
                              requires(Iter iter, uint8_t c) { *iter = c; };
 
 template <ByteInputIterator Iter>
+class InputBitIteratorSource {
+   public:
+    using bit = bool;
+
+    constexpr InputBitIteratorSource(
+        const InputBitIteratorSource&
+            other) noexcept(std::is_nothrow_copy_constructible_v<Iter>) =
+        default;
+    constexpr InputBitIteratorSource(InputBitIteratorSource&& other) noexcept(
+        std::is_nothrow_move_constructible_v<Iter>) = default;
+
+    constexpr InputBitIteratorSource&
+    operator=(const InputBitIteratorSource& other) noexcept(
+        std::is_nothrow_copy_assignable_v<Iter>) = default;
+    constexpr InputBitIteratorSource&
+    operator=(InputBitIteratorSource&& other) noexcept(
+        std::is_nothrow_move_assignable_v<Iter>) = default;
+
+    [[nodiscard]] static inline consteval uint8_t ByteLength() noexcept {
+        return CHAR_BIT;
+    }
+
+    [[nodiscard]] constexpr bit value() const noexcept {
+        return ((1 << bit_iter_) & (*iter_)) >> bit_iter_;
+    }
+
+    constexpr void IncrementLittleEndianess() noexcept;
+
+    constexpr void IncrementBigEndianess() noexcept;
+
+    constexpr void SkipToNextByteLittleEndianess() noexcept;
+
+    constexpr void SkipToNextByteBigEndianess() noexcept;
+
+    [[nodiscard]] constexpr std::byte ReadByte() noexcept;
+
+    [[nodiscard]] constexpr uint8_t Position() const noexcept {
+        return bit_iter_;
+    }
+
+    [[nodiscard]] friend constexpr bool operator==(
+        InputBitIteratorSource const& left,
+        InputBitIteratorSource const& right) noexcept {
+        return (left.iter_ == right.iter_) &&
+               (left.bit_iter_ == right.bit_iter_);
+    }
+
+    [[nodiscard]] friend constexpr bool operator==(
+        InputBitIteratorSource const& left,
+        std::default_sentinel_t sentinel) noexcept
+        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>)
+    {
+        return left.iter_ == sentinel;
+    }
+
+    [[nodiscard]] friend constexpr bool operator==(
+        std::default_sentinel_t sentinel,
+        InputBitIteratorSource const& right) noexcept
+        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>)
+    {
+        return sentinel == right.iter_;
+    }
+
+    [[nodiscard]] friend constexpr InputBitIteratorSource
+    MakeLittleEndianInputBitIteratorSource(Iter iter) noexcept(
+        std::is_nothrow_move_constructible_v<Iter>) {
+        return InputBitIteratorSource{std::move(iter), /*bit_iter*/ 0};
+    }
+
+    [[nodiscard]] friend constexpr InputBitIteratorSource
+    MakeBigEndianInputBitIteratorSource(Iter iter) noexcept(
+        std::is_nothrow_move_constructible_v<Iter>) {
+        return InputBitIteratorSource{std::move(iter),
+                                      /*bit_iter*/ ByteLength() - 1};
+    }
+
+    constexpr ~InputBitIteratorSource() noexcept(
+        std::is_nothrow_destructible_v<Iter>) = default;
+
+   private:
+    constexpr explicit InputBitIteratorSource(
+        Iter iter,
+        uint8_t bit_iter) noexcept(std::is_nothrow_move_constructible_v<Iter>)
+        : iter_{std::move(iter)}, bit_iter_{bit_iter} {}
+
+    Iter iter_;
+    uint8_t bit_iter_;
+};
+
+template <ByteInputIterator Iter>
 class LittleEndianInputBitIter {
    public:
     using bit = bool;
@@ -59,13 +149,13 @@ class LittleEndianInputBitIter {
     explicit constexpr LittleEndianInputBitIter(Iter&& iter) noexcept
         : iter_{std::move(iter)}, bit_iter_{0} {}
 
-    explicit constexpr LittleEndianInputBitIter(void) noexcept = default;
+    explicit constexpr LittleEndianInputBitIter() noexcept = default;
 
-    [[nodiscard]] constexpr bit operator*(void) const noexcept {
+    [[nodiscard]] constexpr bit operator*() const noexcept {
         return ((1 << bit_iter_) & (*iter_)) >> bit_iter_;
     }
 
-    constexpr LittleEndianInputBitIter& operator++(void) noexcept;
+    constexpr LittleEndianInputBitIter& operator++() noexcept;
 
     [[nodiscard]] constexpr LittleEndianInputBitIter operator++(int) noexcept {
         auto temp = *this;
@@ -95,18 +185,18 @@ class LittleEndianInputBitIter {
         return sentinel == right.iter_;
     }
 
-    [[nodiscard]] static inline consteval uint8_t ByteLength(void) noexcept {
+    [[nodiscard]] static inline consteval uint8_t ByteLength() noexcept {
         return CHAR_BIT;
     }
 
-    constexpr void SkipToNextByte(void) noexcept {
+    constexpr void SkipToNextByte() noexcept {
         ++iter_;
         bit_iter_ = 0;
     }
 
-    [[nodiscard]] constexpr std::byte ReadByte(void) noexcept;
+    [[nodiscard]] constexpr std::byte ReadByte() noexcept;
 
-    [[nodiscard]] constexpr uint8_t Position(void) const noexcept {
+    [[nodiscard]] constexpr uint8_t Position() const noexcept {
         return bit_iter_;
     }
 
@@ -128,7 +218,7 @@ class LittleEndianOutputBitIter {
     explicit constexpr LittleEndianOutputBitIter(Iter&& iter) noexcept
         : iter_{std::move(iter)}, temporary_{0}, bit_iter_{0} {}
 
-    explicit constexpr LittleEndianOutputBitIter(void) noexcept = default;
+    explicit constexpr LittleEndianOutputBitIter() noexcept = default;
 
     constexpr LittleEndianOutputBitIter& operator=(bit value) noexcept;
 
@@ -137,9 +227,7 @@ class LittleEndianOutputBitIter {
         return *this;
     }
 
-    constexpr LittleEndianOutputBitIter& operator++(void) noexcept {
-        return *this;
-    }
+    constexpr LittleEndianOutputBitIter& operator++() noexcept { return *this; }
 
     [[nodiscard]] constexpr LittleEndianOutputBitIter& operator++(
         int) noexcept {
@@ -168,15 +256,15 @@ class LittleEndianOutputBitIter {
         return sentinel == right.iter_;
     }
 
-    [[nodiscard]] static inline consteval uint8_t ByteLength(void) noexcept {
+    [[nodiscard]] static inline consteval uint8_t ByteLength() noexcept {
         return CHAR_BIT;
     }
 
-    constexpr void SkipToNextByte(void) noexcept;
+    constexpr void SkipToNextByte() noexcept;
 
     constexpr void SaveByte(uint8_t byte) noexcept;
 
-    [[nodiscard]] constexpr uint8_t Position(void) const noexcept {
+    [[nodiscard]] constexpr uint8_t Position() const noexcept {
         return bit_iter_;
     }
 
@@ -199,13 +287,13 @@ class BigEndianInputBitIter {
     explicit constexpr BigEndianInputBitIter(Iter&& iter) noexcept
         : iter_{std::move(iter)}, bit_iter_{7} {}
 
-    explicit constexpr BigEndianInputBitIter(void) noexcept = default;
+    explicit constexpr BigEndianInputBitIter() noexcept = default;
 
-    [[nodiscard]] constexpr bit operator*(void) const noexcept {
+    [[nodiscard]] constexpr bit operator*() const noexcept {
         return ((1 << bit_iter_) & (*iter_)) >> bit_iter_;
     }
 
-    constexpr BigEndianInputBitIter& operator++(void) noexcept;
+    constexpr BigEndianInputBitIter& operator++() noexcept;
 
     [[nodiscard]] constexpr BigEndianInputBitIter operator++(int) noexcept {
         auto temp = *this;
@@ -235,18 +323,18 @@ class BigEndianInputBitIter {
         return sentinel == right.iter_;
     }
 
-    [[nodiscard]] static inline consteval uint8_t ByteLength(void) noexcept {
+    [[nodiscard]] static inline consteval uint8_t ByteLength() noexcept {
         return CHAR_BIT;
     }
 
-    constexpr void SkipToNextByte(void) noexcept {
+    constexpr void SkipToNextByte() noexcept {
         ++iter_;
         bit_iter_ = 7;
     }
 
-    [[nodiscard]] constexpr std::byte ReadByte(void) noexcept;
+    [[nodiscard]] constexpr std::byte ReadByte() noexcept;
 
-    [[nodiscard]] constexpr uint8_t Position(void) const noexcept {
+    [[nodiscard]] constexpr uint8_t Position() const noexcept {
         return bit_iter_;
     }
 
@@ -268,17 +356,15 @@ class BigEndianOutputBitIter {
     explicit constexpr BigEndianOutputBitIter(Iter&& iter) noexcept
         : iter_{std::move(iter)}, temporary_{0}, bit_iter_{7} {}
 
-    explicit constexpr BigEndianOutputBitIter(void) noexcept = default;
+    explicit constexpr BigEndianOutputBitIter() noexcept = default;
 
     constexpr BigEndianOutputBitIter& operator=(bit value) noexcept;
 
-    [[nodiscard]] constexpr BigEndianOutputBitIter& operator*(void) noexcept {
+    [[nodiscard]] constexpr BigEndianOutputBitIter& operator*() noexcept {
         return *this;
     }
 
-    constexpr BigEndianOutputBitIter& operator++(void) noexcept {
-        return *this;
-    }
+    constexpr BigEndianOutputBitIter& operator++() noexcept { return *this; }
 
     [[nodiscard]] constexpr BigEndianOutputBitIter& operator++(int) noexcept {
         return *this;
@@ -306,15 +392,15 @@ class BigEndianOutputBitIter {
         return sentinel == right.iter_;
     }
 
-    [[nodiscard]] static inline consteval uint8_t ByteLength(void) noexcept {
+    [[nodiscard]] static inline consteval uint8_t ByteLength() noexcept {
         return CHAR_BIT;
     }
 
-    constexpr void SkipToNextByte(void) noexcept;
+    constexpr void SkipToNextByte() noexcept;
 
     constexpr void SaveByte(uint8_t byte) noexcept;
 
-    [[nodiscard]] constexpr uint8_t Position(void) const noexcept {
+    [[nodiscard]] constexpr uint8_t Position() const noexcept {
         return bit_iter_;
     }
 
