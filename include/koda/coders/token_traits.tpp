@@ -1,5 +1,6 @@
 #pragma once
 
+#include <bit>
 #include <ranges>
 
 namespace koda {
@@ -7,8 +8,8 @@ namespace koda {
 template <std::integral Token>
 /*static*/ constexpr void TokenTraits<Token>::EncodeToken(
     TokenType token, BitOutputRange auto&& output) {
-    std::ranges::copy(LittleEndianInputBitIter{&token},
-                      LittleEndianInputBitIter{std::next(&token)},
+    std::ranges::copy(LittleEndianInputBitRangeWrapper{std::ranges::subrange{
+                          &token, std::next(&token)}},
                       std::ranges::begin(output));
 }
 
