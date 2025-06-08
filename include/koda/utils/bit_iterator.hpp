@@ -545,6 +545,110 @@ class BigEndianInputBitRangeWrapper<Range> {
     BeginSource begin_;
 };
 
+template <typename Range>
+class LittleEndianOutputBitRangeWrapper {
+    using BeginSource = OutputBitIteratorSource<std::ranges::iterator_t<Range>>;
+    using EndSource = OutputBitIteratorSource<std::ranges::sentinel_t<Range>>;
+
+   public:
+    using iterator_type =
+        LittleEndianOutputBitIter<std::ranges::iterator_t<Range>>;
+    using sentinel_type =
+        LittleEndianOutputBitIter<std::ranges::sentinel_t<Range>>;
+
+    constexpr explicit LittleEndianOutputBitRangeWrapper(Range&& range)
+        : begin_{BeginSource::MakeLittleEndianSource(
+              std::ranges::begin(range))},
+          end_{EndSource::MakeLittleEndianSource(std::ranges::end(range))} {}
+
+    [[nodiscard]] constexpr iterator_type begin() {
+        return iterator_type{begin_};
+    }
+
+    [[nodiscard]] constexpr sentinel_type end() { return sentinel_type{end_}; }
+
+   private:
+    BeginSource begin_;
+    EndSource end_;
+};
+
+template <typename Range>
+    requires std::same_as<std::ranges::sentinel_t<Range>,
+                          std::default_sentinel_t>
+class LittleEndianOutputBitRangeWrapper<Range> {
+    using BeginSource = OutputBitIteratorSource<std::ranges::iterator_t<Range>>;
+
+   public:
+    using iterator_type =
+        LittleEndianOutputBitIter<std::ranges::iterator_t<Range>>;
+
+    constexpr explicit LittleEndianOutputBitRangeWrapper(Range&& range)
+        : begin_{
+              BeginSource::MakeLittleEndianSource(std::ranges::begin(range))} {}
+
+    [[nodiscard]] constexpr iterator_type begin() {
+        return iterator_type{begin_};
+    }
+
+    [[nodiscard]] constexpr std::default_sentinel_t end() const noexcept {
+        return std::default_sentinel;
+    }
+
+   private:
+    BeginSource begin_;
+};
+
+template <typename Range>
+class BigEndianOutputBitRangeWrapper {
+    using BeginSource = OutputBitIteratorSource<std::ranges::iterator_t<Range>>;
+    using EndSource = OutputBitIteratorSource<std::ranges::sentinel_t<Range>>;
+
+   public:
+    using iterator_type =
+        BigEndianOutputBitIter<std::ranges::iterator_t<Range>>;
+    using sentinel_type =
+        BigEndianOutputBitIter<std::ranges::sentinel_t<Range>>;
+
+    constexpr explicit BigEndianOutputBitRangeWrapper(Range&& range)
+        : begin_{BeginSource::MakeBigEndianSource(std::ranges::begin(range))},
+          end_{EndSource::MakeBigEndianSource(std::ranges::end(range))} {}
+
+    [[nodiscard]] constexpr iterator_type begin() {
+        return iterator_type{begin_};
+    }
+
+    [[nodiscard]] constexpr sentinel_type end() { return sentinel_type{end_}; }
+
+   private:
+    BeginSource begin_;
+    EndSource end_;
+};
+
+template <typename Range>
+    requires std::same_as<std::ranges::sentinel_t<Range>,
+                          std::default_sentinel_t>
+class BigEndianOutputBitRangeWrapper<Range> {
+    using BeginSource = OutputBitIteratorSource<std::ranges::iterator_t<Range>>;
+
+   public:
+    using iterator_type =
+        BigEndianOutputBitIter<std::ranges::iterator_t<Range>>;
+
+    constexpr explicit BigEndianOutputBitRangeWrapper(Range&& range)
+        : begin_{BeginSource::MakeBigEndianSource(std::ranges::begin(range))} {}
+
+    [[nodiscard]] constexpr iterator_type begin() {
+        return iterator_type{begin_};
+    }
+
+    [[nodiscard]] constexpr std::default_sentinel_t end() const noexcept {
+        return std::default_sentinel;
+    }
+
+   private:
+    BeginSource begin_;
+};
+
 }  // namespace koda
 
 #include <koda/utils/bit_iterator.tpp>
