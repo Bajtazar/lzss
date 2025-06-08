@@ -9,8 +9,10 @@ constexpr LzssIntermediateToken<InputToken>::LzssIntermediateToken(
 
 template <std::integral InputToken>
 constexpr LzssIntermediateToken<InputToken>::LzssIntermediateToken(
-    size_t match_position, size_t match_length) noexcept
-    : repeatition_marker_{match_position, match_length},
+    size_t match_position, size_t match_length, uint16_t position_bitlength,
+    uint16_t length_bitlength) noexcept
+    : repeatition_marker_{match_position, match_length, position_bitlength,
+                          length_bitlength},
       holds_distance_match_pair_{true} {}
 
 template <std::integral InputToken>

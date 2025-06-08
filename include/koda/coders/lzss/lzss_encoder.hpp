@@ -1,6 +1,7 @@
 #pragma once
 
 #include <koda/coders/coder.hpp>
+#include <koda/coders/direct_encoder.hpp>
 #include <koda/coders/lzss/lzss_intermediate_token.hpp>
 #include <koda/collections/fuzed_dictionary_and_buffer.hpp>
 #include <koda/collections/search_binary_tree.hpp>
@@ -14,7 +15,8 @@
 namespace koda {
 
 template <std::integral InputToken = uint8_t,
-          Encoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          Encoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder =
+              DirectEncoder<LzssIntermediateToken<InputToken>>,
           typename AllocatorTp = std::allocator<InputToken>>
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 class LzssEncoder {
