@@ -3,20 +3,11 @@
 #include <koda/utils/back_inserter_iterator.hpp>
 #include <koda/utils/bit_iterator.hpp>
 
-#include <gtest/gtest.h>
-
 #include <bitset>
 #include <iterator>
 #include <vector>
 
-void Print(std::vector<uint8_t> v) {
-    for (auto k : v) {
-        std::cout << std::bitset<8>{k} << ", ";
-    }
-    std::cout << "\n";
-}
-
-TEST(DirectEncoderTest, EncodeBytes) {
+BeginConstexprTest(DirectEncoderTest, EncodeBytes) {
     const std::vector<uint8_t> expected{{0x43, 0x74, 0x35, 0x33}};
     std::vector<uint8_t> target;
     auto source =
@@ -28,11 +19,9 @@ TEST(DirectEncoderTest, EncodeBytes) {
 
     encoder.Encode(expected, range);
 
-    Print(expected);
-    Print(target);
-    // ConstexprAssertEqual(expected, target);
+    ConstexprAssertEqual(expected, target);
 }
-// EndConstexprTest(DirectEncoderTest, EncodeBytes);
+EndConstexprTest(DirectEncoderTest, EncodeBytes);
 
 static constexpr std::vector<uint8_t> ShiftBits(std::vector<uint8_t> vector,
                                                 uint8_t shift) {
@@ -46,7 +35,7 @@ static constexpr std::vector<uint8_t> ShiftBits(std::vector<uint8_t> vector,
     return result;
 }
 
-TEST(DirectEncoderTest, EncodeBytesWithStride) {
+BeginConstexprTest(DirectEncoderTest, EncodeBytesWithStride) {
     const std::vector<uint8_t> start{
         {0x43, 0x74, 0x35, 0x33, 0x54, 0x01, 0x84}};
     std::vector<uint8_t> expected = ShiftBits(start, 4);
@@ -75,10 +64,6 @@ TEST(DirectEncoderTest, EncodeBytesWithStride) {
     *iter2++ = 0;
     *iter2++ = 1;
 
-    Print(start);
-    Print(expected);
-    Print(target);
-
-    // ConstexprAssertEqual(expected, range.vector);
+    ConstexprAssertEqual(expected, target);
 }
-// EndConstexprTest(DirectEncoderTest, EncodeBytes);
+EndConstexprTest(DirectEncoderTest, EncodeBytes);
