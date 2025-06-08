@@ -81,13 +81,6 @@ constexpr void LittleEndianOutputBitIter<Iter>::SaveByte(
 }
 
 template <typename Iter>
-[[nodiscard]] constexpr std::byte BigEndianInputBitIter<Iter>::ReadByte(
-    void) noexcept {
-    bit_iter_ = ByteLength() - 1;
-    return static_cast<std::byte>(*iter_++);
-}
-
-template <typename Iter>
 constexpr BigEndianOutputBitIter<Iter>& BigEndianOutputBitIter<Iter>::operator=(
     bit value) noexcept {
     uint8_t mask = 1 << bit_iter_;
