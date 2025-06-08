@@ -25,6 +25,21 @@ constexpr std::vector<uint8_t> ScenarioIEncode(
     return target;
 }
 
+constexpr std::vector<uint8_t> ScenarioIIEncode(
+    const std::vector<uint32_t>& source_range) {
+    std::vector<uint8_t> target;
+    auto source =
+        koda::MakeLittleEndianOutputSource(koda::BackInserterIterator{target});
+    std::ranges::subrange range{koda::LittleEndianOutputBitIter{source},
+                                std::default_sentinel};
+
+    koda::DirectEncoder<uint32_t> encoder;
+
+    encoder.Encode(source_range, range);
+
+    return target;
+}
+
 }  // namespace
 
 BeginConstexprTest(DirectDecoderTest, DecodeBytes) {
@@ -43,3 +58,21 @@ BeginConstexprTest(DirectDecoderTest, DecodeBytes) {
     ConstexprAssertEqual(expected, reconstruction);
 }
 EndConstexprTest(DirectDecoderTest, DecodeBytes);
+
+BeginConstexprTest(DirectDecoderTest, DecodeIntegers) {
+    const std::vector<uint32_t> source_range{{0x43'32'12'45, 0x98'32'56'23}};
+
+    auto encoded = ScenarioIIEncode(source_range);
+
+    koda::DirectDecoder<uint32_t> decoder;
+
+    koda::LittleEndianInputBitRangeWrapper out_range{encoded};
+    std::vector<uint32_t> reconstruction;
+    std::ranges::subrange recon_range{
+        koda::BackInserterIterator{reconstruction}, std::default_sentinel};
+
+    decoder.Decode(out_range, recon_range);
+
+    ConstexprAssertEqual(source_range, reconstruction);
+}
+EndConstexprTest(DirectDecoderTest, DecodeIntegers);
