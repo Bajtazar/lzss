@@ -3,6 +3,8 @@
 #include <koda/utils/back_inserter_iterator.hpp>
 #include <koda/utils/bit_iterator.hpp>
 
+#include <gtest/gtest.h>
+
 #include <bitset>
 #include <iterator>
 #include <vector>
@@ -65,5 +67,23 @@ BeginConstexprTest(DirectEncoderTest, EncodeBytesWithStride) {
     *iter2++ = 1;
 
     ConstexprAssertEqual(expected, target);
+}
+EndConstexprTest(DirectEncoderTest, EncodeBytes);
+
+BeginConstexprTest(DirectEncoderTest, EncodeIntegers) {
+    const std::vector<uint32_t> source_range{{0x43'32'12'45, 0x98'32'56'23}};
+    const std::vector<uint8_t> expected_range{
+        {0x45, 0x12, 0x32, 0x43, 0x23, 0x56, 0x32, 0x98}};
+    std::vector<uint8_t> target;
+    auto source =
+        koda::MakeLittleEndianOutputSource(koda::BackInserterIterator{target});
+    std::ranges::subrange range{koda::LittleEndianOutputBitIter{source},
+                                std::default_sentinel};
+
+    koda::DirectEncoder<uint32_t> encoder;
+
+    encoder.Encode(source_range, range);
+
+    ConstexprAssertEqual(expected_range, target);
 }
 EndConstexprTest(DirectEncoderTest, EncodeBytes);
