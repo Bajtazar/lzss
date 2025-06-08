@@ -472,16 +472,18 @@ class BigEndianOutputBitIter {
 
 template <typename Range>
 class LittleEndianInputBitRangeWrapper {
-    using BeginSource = InputBitIteratorSource<std::ranges::iterator_t<Range>>;
-    using EndSource = InputBitIteratorSource<std::ranges::sentinel_t<Range>>;
+    using BeginSource =
+        InputBitIteratorSource<std::ranges::iterator_t<const Range>>;
+    using EndSource =
+        InputBitIteratorSource<std::ranges::sentinel_t<const Range>>;
 
    public:
     using iterator_type =
-        LittleEndianInputBitIter<std::ranges::iterator_t<Range>>;
+        LittleEndianInputBitIter<std::ranges::iterator_t<const Range>>;
     using sentinel_type =
-        LittleEndianInputBitIter<std::ranges::sentinel_t<Range>>;
+        LittleEndianInputBitIter<std::ranges::sentinel_t<const Range>>;
 
-    constexpr explicit LittleEndianInputBitRangeWrapper(Range&& range)
+    constexpr explicit LittleEndianInputBitRangeWrapper(const Range& range)
         : begin_{BeginSource::MakeLittleEndianSource(
               std::ranges::begin(range))},
           end_{EndSource::MakeLittleEndianSource(std::ranges::end(range))} {}
@@ -501,13 +503,14 @@ template <typename Range>
     requires std::same_as<std::ranges::sentinel_t<Range>,
                           std::default_sentinel_t>
 class LittleEndianInputBitRangeWrapper<Range> {
-    using BeginSource = InputBitIteratorSource<std::ranges::iterator_t<Range>>;
+    using BeginSource =
+        InputBitIteratorSource<std::ranges::iterator_t<const Range>>;
 
    public:
     using iterator_type =
-        LittleEndianInputBitIter<std::ranges::iterator_t<Range>>;
+        LittleEndianInputBitIter<std::ranges::iterator_t<const Range>>;
 
-    constexpr explicit LittleEndianInputBitRangeWrapper(Range&& range)
+    constexpr explicit LittleEndianInputBitRangeWrapper(const Range& range)
         : begin_{
               BeginSource::MakeLittleEndianSource(std::ranges::begin(range))} {}
 
@@ -525,14 +528,18 @@ class LittleEndianInputBitRangeWrapper<Range> {
 
 template <typename Range>
 class BigEndianInputBitRangeWrapper {
-    using BeginSource = InputBitIteratorSource<std::ranges::iterator_t<Range>>;
-    using EndSource = InputBitIteratorSource<std::ranges::sentinel_t<Range>>;
+    using BeginSource =
+        InputBitIteratorSource<std::ranges::iterator_t<const Range>>;
+    using EndSource =
+        InputBitIteratorSource<std::ranges::sentinel_t<const Range>>;
 
    public:
-    using iterator_type = BigEndianInputBitIter<std::ranges::iterator_t<Range>>;
-    using sentinel_type = BigEndianInputBitIter<std::ranges::sentinel_t<Range>>;
+    using iterator_type =
+        BigEndianInputBitIter<std::ranges::iterator_t<const Range>>;
+    using sentinel_type =
+        BigEndianInputBitIter<std::ranges::sentinel_t<const Range>>;
 
-    constexpr explicit BigEndianInputBitRangeWrapper(Range&& range)
+    constexpr explicit BigEndianInputBitRangeWrapper(const Range& range)
         : begin_{BeginSource::MakeBigEndianSource(std::ranges::begin(range))},
           end_{EndSource::MakeBigEndianSource(std::ranges::end(range))} {}
 
@@ -551,12 +558,14 @@ template <typename Range>
     requires std::same_as<std::ranges::sentinel_t<Range>,
                           std::default_sentinel_t>
 class BigEndianInputBitRangeWrapper<Range> {
-    using BeginSource = InputBitIteratorSource<std::ranges::iterator_t<Range>>;
+    using BeginSource =
+        InputBitIteratorSource<std::ranges::iterator_t<const Range>>;
 
    public:
-    using iterator_type = BigEndianInputBitIter<std::ranges::iterator_t<Range>>;
+    using iterator_type =
+        BigEndianInputBitIter<std::ranges::iterator_t<const Range>>;
 
-    constexpr explicit BigEndianInputBitRangeWrapper(Range&& range)
+    constexpr explicit BigEndianInputBitRangeWrapper(const Range& range)
         : begin_{BeginSource::MakeBigEndianSource(std::ranges::begin(range))} {}
 
     [[nodiscard]] constexpr iterator_type begin() {
