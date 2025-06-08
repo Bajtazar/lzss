@@ -154,3 +154,36 @@ BeginConstexprTest(LzssEncoder, EncodeTokensRealScenarioTooShortLookAhead) {
     ConstexprAssertTrue(target.empty());
 }
 EndConstexprTest(LzssEncoder, EncodeTokensRealScenarioTooShortLookAhead);
+
+BeginConstexprTest(LzssEncoder, EncodeTokensRepeatitions) {
+    std::string input_sequence = "kot kot kot kot kot kot kot";
+    std::vector expected_result = {
+        koda::LzssIntermediateToken<char>{'k'},
+        koda::LzssIntermediateToken<char>{'o'},
+        koda::LzssIntermediateToken<char>{'t'},
+        koda::LzssIntermediateToken<char>{' '},
+        koda::LzssIntermediateToken<char>{0, 3},   // 'kot'
+        koda::LzssIntermediateToken<char>{3, 3},   // ' ko'
+        koda::LzssIntermediateToken<char>{6, 3},   // 't k'
+        koda::LzssIntermediateToken<char>{9, 3},   // 'ot '
+        koda::LzssIntermediateToken<char>{12, 3},  // 'kot'
+        koda::LzssIntermediateToken<char>{15, 3},  // ' ko'
+        koda::LzssIntermediateToken<char>{18, 3},  // 't k'
+        koda::LzssIntermediateToken<char>{21, 2},  // 'ot'
+    };
+
+    std::vector<uint8_t> target;
+    auto source =
+        koda::MakeLittleEndianOutputSource(koda::BackInserterIterator{target});
+    std::ranges::subrange output_range{koda::LittleEndianOutputBitIter{source},
+                                       std::default_sentinel};
+
+    koda::LzssEncoder<char,
+                      LzssDummyAuxEncoder<koda::LzssIntermediateToken<char>>>
+        encoder{1024, 3};
+    encoder(input_sequence, output_range);
+
+    ConstexprAssertEqual(encoder.auxiliary_encoder().tokens, expected_result);
+    ConstexprAssertTrue(target.empty());
+}
+EndConstexprTest(LzssEncoder, EncodeTokensRepeatitions);
