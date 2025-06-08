@@ -8,7 +8,6 @@
 #include <koda/utils/concepts.hpp>
 
 #include <concepts>
-#include <iostream>
 #include <memory>
 #include <optional>
 #include <variant>
