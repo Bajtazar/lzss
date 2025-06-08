@@ -3,8 +3,6 @@
 #include <koda/utils/back_inserter_iterator.hpp>
 #include <koda/utils/bit_iterator.hpp>
 
-#include <gtest/gtest.h>
-
 namespace {
 template <typename Tp>
 struct LzssDummyAuxEncoder {
@@ -187,3 +185,52 @@ BeginConstexprTest(LzssEncoder, EncodeTokensRepeatitions) {
     ConstexprAssertTrue(target.empty());
 }
 EndConstexprTest(LzssEncoder, EncodeTokensRepeatitions);
+
+BeginConstexprTest(LzssEncoder, EncodeTokensShortDictionary) {
+    std::string input_sequence = "kot abcdefghijkelmouprst kot";
+    std::vector expected_result = {
+        koda::LzssIntermediateToken<char>{'k'},   //         [|kot]
+        koda::LzssIntermediateToken<char>{'o'},   //        [k|ot ]
+        koda::LzssIntermediateToken<char>{'t'},   //       [ko|t a]
+        koda::LzssIntermediateToken<char>{' '},   //      [kot| ab]
+        koda::LzssIntermediateToken<char>{'a'},   //     [kot |abc]
+        koda::LzssIntermediateToken<char>{'b'},   //    [kot a|bcd]
+        koda::LzssIntermediateToken<char>{'c'},   //   [kot ab|cde]
+        koda::LzssIntermediateToken<char>{'d'},   //  [kot abc|def]
+        koda::LzssIntermediateToken<char>{'e'},   // [kot abcd|efg]
+        koda::LzssIntermediateToken<char>{'f'},   // [ot abcde|fgh]
+        koda::LzssIntermediateToken<char>{'g'},   // [t abcdef|ghi]
+        koda::LzssIntermediateToken<char>{'h'},   // [ abcdefg|hij]
+        koda::LzssIntermediateToken<char>{'i'},   // [abcdefgh|ijk]
+        koda::LzssIntermediateToken<char>{'j'},   // [bcdefghi|jke]
+        koda::LzssIntermediateToken<char>{'k'},   // [cdefghij|kel]
+        koda::LzssIntermediateToken<char>{1, 1},  // [defghijk|elm] e = 1,1
+        koda::LzssIntermediateToken<char>{'l'},   // [efghijke|lmo]
+        koda::LzssIntermediateToken<char>{'m'},   // [fghijkel|mou]
+        koda::LzssIntermediateToken<char>{'o'},   // [ghijkelm|oup]
+        koda::LzssIntermediateToken<char>{'u'},   // [hijkelmo|upr]
+        koda::LzssIntermediateToken<char>{'p'},   // [ijkelmou|prs]
+        koda::LzssIntermediateToken<char>{'r'},   // [jkelmoup|rst]
+        koda::LzssIntermediateToken<char>{'s'},   // [kelmoupr|st ]
+        koda::LzssIntermediateToken<char>{'t'},   // [elmouprs|t k]
+        koda::LzssIntermediateToken<char>{' '},   // [lmouprst| ko]
+        koda::LzssIntermediateToken<char>{'k'},   // [mouprst |kot]
+        koda::LzssIntermediateToken<char>{0, 1},  // [ouprst k|ot]  o = 0, 1
+        koda::LzssIntermediateToken<char>{4, 1}   // [uprst ko|t]   t = 4,1
+    };
+
+    std::vector<uint8_t> target;
+    auto source =
+        koda::MakeLittleEndianOutputSource(koda::BackInserterIterator{target});
+    std::ranges::subrange output_range{koda::LittleEndianOutputBitIter{source},
+                                       std::default_sentinel};
+
+    koda::LzssEncoder<char,
+                      LzssDummyAuxEncoder<koda::LzssIntermediateToken<char>>>
+        encoder{8, 3};
+    encoder(input_sequence, output_range);
+
+    ConstexprAssertEqual(encoder.auxiliary_encoder().tokens, expected_result);
+    ConstexprAssertTrue(target.empty());
+}
+EndConstexprTest(LzssEncoder, EncodeTokensShortDictionary);
