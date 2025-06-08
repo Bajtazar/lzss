@@ -11,10 +11,7 @@ struct LzssDummyAuxEncoder {
     std::vector<Tp> tokens = {};
 
     constexpr float TokenBitSize(Tp token) const {
-        return token.holds_symbol() ? 1.f
-                                    : (token.get_marker()->match_length
-                                           ? 0.f
-                                           : 2.f);  // save all markers
+        return token.holds_symbol() ? 1.f : 0.f;  // save all markers
     }
 
     constexpr void Encode(koda::InputRange<Tp> auto&& input,
