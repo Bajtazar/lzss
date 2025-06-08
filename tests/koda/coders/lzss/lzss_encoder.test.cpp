@@ -108,3 +108,49 @@ BeginConstexprTest(LzssEncoder, EncodeTokensRealScenario) {
     ConstexprAssertTrue(target.empty());
 }
 EndConstexprTest(LzssEncoder, EncodeTokensRealScenario);
+
+BeginConstexprTest(LzssEncoder, EncodeTokensRealScenarioTooShortLookAhead) {
+    std::string input_sequence = "std::nullptr_t & nullptr";
+    std::vector expected_result = {
+        koda::LzssIntermediateToken<char>{'s'},
+        koda::LzssIntermediateToken<char>{'t'},
+        koda::LzssIntermediateToken<char>{'d'},
+        koda::LzssIntermediateToken<char>{':'},
+        koda::LzssIntermediateToken<char>{':'},
+        koda::LzssIntermediateToken<char>{'n'},
+        koda::LzssIntermediateToken<char>{'u'},
+        koda::LzssIntermediateToken<char>{'l'},
+        koda::LzssIntermediateToken<char>{'l'},
+        koda::LzssIntermediateToken<char>{'p'},
+        koda::LzssIntermediateToken<char>{'t'},
+        koda::LzssIntermediateToken<char>{'r'},
+        koda::LzssIntermediateToken<char>{'_'},
+        koda::LzssIntermediateToken<char>{'t'},
+        koda::LzssIntermediateToken<char>{' '},
+        koda::LzssIntermediateToken<char>{'&'},
+        koda::LzssIntermediateToken<char>{' '},
+        koda::LzssIntermediateToken<char>{'n'},
+        koda::LzssIntermediateToken<char>{'u'},
+        koda::LzssIntermediateToken<char>{'l'},
+        koda::LzssIntermediateToken<char>{'l'},
+        koda::LzssIntermediateToken<char>{'p'},
+        koda::LzssIntermediateToken<char>{'t'},
+        koda::LzssIntermediateToken<char>{'r'},
+    };
+
+    std::vector<uint8_t> target;
+    auto source =
+        koda::MakeLittleEndianOutputSource(koda::BackInserterIterator{target});
+    std::ranges::subrange output_range{koda::LittleEndianOutputBitIter{source},
+                                       std::default_sentinel};
+
+    koda::LzssEncoder<char,
+                      LzssDummyAuxEncoder<koda::LzssIntermediateToken<char>>>
+        encoder{1024, 4,
+                LzssDummyAuxEncoder<koda::LzssIntermediateToken<char>>{false}};
+    encoder(input_sequence, output_range);
+
+    ConstexprAssertEqual(encoder.auxiliary_encoder().tokens, expected_result);
+    ConstexprAssertTrue(target.empty());
+}
+EndConstexprTest(LzssEncoder, EncodeTokensRealScenarioTooShortLookAhead);
