@@ -272,6 +272,7 @@ class LittleEndianOutputBitIter {
 
     constexpr LittleEndianOutputBitIter& operator=(bit value) noexcept {
         source_->SaveValueLittleEndian(value);
+        return *this;
     }
 
     [[nodiscard]] constexpr LittleEndianOutputBitIter& operator*(
@@ -388,15 +389,16 @@ class BigEndianOutputBitIter {
     using value_type = bit;
     using difference_type = std::ptrdiff_t;
 
-    explicit constexpr BigEndianOutputBitIter(Iter const& iter) noexcept
-        : iter_{iter}, temporary_{0}, bit_iter_{7} {}
-
-    explicit constexpr BigEndianOutputBitIter(Iter&& iter) noexcept
-        : iter_{std::move(iter)}, temporary_{0}, bit_iter_{7} {}
+    explicit constexpr BigEndianOutputBitIter(
+        OutputBitIteratorSource<Iter>& source) noexcept
+        : source_{std::addressof(source)} {}
 
     explicit constexpr BigEndianOutputBitIter() noexcept = default;
 
-    constexpr BigEndianOutputBitIter& operator=(bit value) noexcept;
+    constexpr BigEndianOutputBitIter& operator=(bit value) noexcept {
+        source_->SaveValueBigEndian(value);
+        return *this;
+    }
 
     [[nodiscard]] constexpr BigEndianOutputBitIter& operator*() noexcept {
         return *this;
@@ -411,7 +413,7 @@ class BigEndianOutputBitIter {
     [[nodiscard]] friend constexpr bool operator==(
         BigEndianOutputBitIter const& left,
         BigEndianOutputBitIter const& right) noexcept {
-        return left.iter_ == right.iter_;
+        return *left.source_ == right.source_;
     }
 
     [[nodiscard]] friend constexpr bool operator==(
@@ -419,7 +421,7 @@ class BigEndianOutputBitIter {
         std::default_sentinel_t sentinel) noexcept
         requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>)
     {
-        return left.iter_ == sentinel;
+        return *left.source_ == sentinel;
     }
 
     [[nodiscard]] friend constexpr bool operator==(
@@ -427,21 +429,19 @@ class BigEndianOutputBitIter {
         BigEndianOutputBitIter const& right) noexcept
         requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>)
     {
-        return sentinel == right.iter_;
+        return sentinel == *right.source_;
     }
 
-    [[nodiscard]] static inline consteval uint8_t ByteLength() noexcept {
-        return CHAR_BIT;
+    [[nodiscard]] static inline consteval size_t ByteLength() noexcept {
+        return OutputBitIteratorSource<Iter>::ByteLength();
     }
 
     [[nodiscard]] constexpr uint8_t Position() const noexcept {
-        return bit_iter_;
+        return source_->Position();
     }
 
    private:
-    Iter iter_;
-    uint8_t temporary_;
-    uint8_t bit_iter_;
+    OutputBitIteratorSource<Iter>* source_;
 };
 
 template <typename Range>
