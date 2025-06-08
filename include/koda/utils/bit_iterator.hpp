@@ -127,6 +127,96 @@ class InputBitIteratorSource {
 };
 
 template <typename Iter>
+class OutputBitIteratorSource {
+   public:
+    using bit = bool;
+
+    constexpr OutputBitIteratorSource(
+        const OutputBitIteratorSource&
+            other) noexcept(std::is_nothrow_copy_constructible_v<Iter>) =
+        default;
+    constexpr OutputBitIteratorSource(OutputBitIteratorSource&& other) noexcept(
+        std::is_nothrow_move_constructible_v<Iter>) = default;
+
+    constexpr OutputBitIteratorSource&
+    operator=(const OutputBitIteratorSource& other) noexcept(
+        std::is_nothrow_copy_assignable_v<Iter>) = default;
+    constexpr OutputBitIteratorSource&
+    operator=(OutputBitIteratorSource&& other) noexcept(
+        std::is_nothrow_move_assignable_v<Iter>) = default;
+
+    [[nodiscard]] static inline consteval size_t ByteLength() noexcept {
+        return CHAR_BIT * sizeof(std::iter_value_t<Iter>);
+    }
+
+    constexpr void value(bit value) noexcept;
+
+    constexpr void IncrementLittleEndianess() noexcept;
+
+    constexpr void IncrementBigEndianess() noexcept;
+
+    constexpr void SkipToNextByteLittleEndianess() noexcept;
+
+    constexpr void SkipToNextByteBigEndianess() noexcept;
+
+    constexpr void SaveByteLittleEndianess(std::byte byte) noexcept;
+
+    constexpr void SaveByteBigEndianess() noexcept;
+
+    [[nodiscard]] constexpr uint8_t Position(std::byte byte) const noexcept {
+        return bit_iter_;
+    }
+
+    [[nodiscard]] friend constexpr bool operator==(
+        OutputBitIteratorSource const& left,
+        OutputBitIteratorSource const& right) noexcept {
+        return (left.iter_ == right.iter_) &&
+               (left.bit_iter_ == right.bit_iter_);
+    }
+
+    [[nodiscard]] friend constexpr bool operator==(
+        OutputBitIteratorSource const& left,
+        std::default_sentinel_t sentinel) noexcept
+        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>)
+    {
+        return left.iter_ == sentinel;
+    }
+
+    [[nodiscard]] friend constexpr bool operator==(
+        std::default_sentinel_t sentinel,
+        OutputBitIteratorSource const& right) noexcept
+        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>)
+    {
+        return sentinel == right.iter_;
+    }
+
+    [[nodiscard]] static constexpr OutputBitIteratorSource
+    MakeLittleEndianSource(Iter iter) noexcept(
+        std::is_nothrow_move_constructible_v<Iter>) {
+        return OutputBitIteratorSource{std::move(iter), /*bit_iter*/ 0};
+    }
+
+    [[nodiscard]] static constexpr OutputBitIteratorSource MakeBigEndianSource(
+        Iter iter) noexcept(std::is_nothrow_move_constructible_v<Iter>) {
+        return OutputBitIteratorSource{std::move(iter),
+                                      /*bit_iter*/ ByteLength() - 1};
+    }
+
+    constexpr ~OutputBitIteratorSource() noexcept(
+        std::is_nothrow_destructible_v<Iter>) = default;
+
+   private:
+    constexpr explicit OutputBitIteratorSource(
+        Iter iter,
+        uint8_t bit_iter) noexcept(std::is_nothrow_move_constructible_v<Iter>)
+        : iter_{std::move(iter)}, bit_iter_{bit_iter} {}
+
+    std::iter_value_t<Iter> temporary_;
+    Iter iter_;
+    uint8_t bit_iter_;
+};
+
+template <typename Iter>
 class LittleEndianInputBitIter {
    public:
     using bit = bool;
