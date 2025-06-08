@@ -10,6 +10,8 @@ struct DirectEncoder {
 
     constexpr explicit DirectEncoder() noexcept = default;
 
+    constexpr float TokenBitSize(Token token) const;
+
     constexpr void Encode(InputRange<Token> auto&& input,
                           BitOutputRange auto&& output);
 

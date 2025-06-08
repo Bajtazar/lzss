@@ -17,6 +17,7 @@ concept TokenTraitsType =
         {
             Traits::DecodeToken(output)
         } -> std::same_as<typename Traits::TokenType>;
+        { Traits::TokenBitSize(token) } -> std::same_as<float>;
     };
 
 template <typename Token>
@@ -31,6 +32,8 @@ struct TokenTraits<Token> {
 
     [[nodiscard]] static constexpr TokenType DecodeToken(
         BitInputRange auto&& input);
+
+    [[nodiscard]] static constexpr float TokenBitSize(TokenType token);
 };
 
 }  // namespace koda

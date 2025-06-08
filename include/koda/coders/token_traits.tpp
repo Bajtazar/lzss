@@ -22,4 +22,10 @@ TokenTraits<Token>::DecodeToken(BitInputRange auto&& input) {
     return result;
 }
 
+template <std::integral Token>
+[[nodiscard]] /*static*/ constexpr float TokenTraits<Token>::TokenBitSize(
+    [[maybe_unused]] TokenType token) {
+    return sizeof(Token) * CHAR_BIT;
+}
+
 }  // namespace koda

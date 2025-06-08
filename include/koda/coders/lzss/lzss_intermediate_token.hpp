@@ -14,14 +14,14 @@ class [[nodiscard]] LzssIntermediateToken {
     using Symbol = InputToken;
 
     struct RepeatitionMarker {
-        size_t match_position;
-        size_t match_length;
+        uint32_t match_position;
+        uint32_t match_length;
     };
 
     constexpr explicit LzssIntermediateToken(InputToken symbol) noexcept;
 
-    constexpr explicit LzssIntermediateToken(size_t match_position,
-                                             size_t match_length) noexcept;
+    constexpr explicit LzssIntermediateToken(uint32_t match_position,
+                                             uint32_t match_length) noexcept;
 
     [[nodiscard]] constexpr bool holds_symbol() const noexcept;
 
@@ -52,6 +52,8 @@ struct TokenTraits<LzssIntermediateToken<InputToken>> {
 
     [[nodiscard]] static constexpr TokenType DecodeToken(
         BitInputRange auto&& input);
+
+    [[nodiscard]] static constexpr float TokenBitSize(TokenType token);
 };
 
 }  // namespace koda

@@ -7,6 +7,11 @@
 namespace koda {
 
 template <typename Token>
+constexpr float DirectEncoder<Token>::TokenBitSize(Token token) const {
+    return 0;
+}
+
+template <typename Token>
 constexpr void DirectEncoder<Token>::Encode(InputRange<Token> auto&& input,
                                             BitOutputRange auto&& output) {
     std::ranges::for_each(
