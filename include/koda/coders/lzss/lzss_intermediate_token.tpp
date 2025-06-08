@@ -9,10 +9,8 @@ constexpr LzssIntermediateToken<InputToken>::LzssIntermediateToken(
 
 template <std::integral InputToken>
 constexpr LzssIntermediateToken<InputToken>::LzssIntermediateToken(
-    size_t match_position, size_t match_length, uint16_t position_bitlength,
-    uint16_t length_bitlength) noexcept
-    : repeatition_marker_{match_position, match_length, position_bitlength,
-                          length_bitlength},
+    size_t match_position, size_t match_length) noexcept
+    : repeatition_marker_{match_position, match_length},
       holds_distance_match_pair_{true} {}
 
 template <std::integral InputToken>
@@ -57,17 +55,13 @@ TokenTraits<LzssIntermediateToken<InputToken>>::EncodeToken(
         return TokenTraits<typename LzssIntermediateToken<InputToken>::Symbol>::
             EncodeToken(*symbol, std::forward<decltype(output)>(output));
     }
-    auto [position, length, pos_bitlen, len_bitlen] = *token.get_marker();
+    auto [position, length] = *token.get_marker();
     *iter = 1;
     ++iter;
-    std::ranges::copy(LittleEndianInputBitRangeWrapper{std::ranges::subrange{
-                          &position, std::next(&position)}} |
-                          std::views::take(pos_bitlen),
-                      std::ranges::begin(output));
-    std::ranges::copy(LittleEndianInputBitRangeWrapper{std::ranges::subrange{
-                          &length, std::next(&length)}} |
-                          std::views::take(len_bitlen),
-                      std::ranges::begin(output));
+    TokenTraits<size_t>::EncodeToken(position,
+                                     std::forward<decltype(output)>(output));
+    TokenTraits<size_t>::EncodeToken(length,
+                                     std::forward<decltype(output)>(output));
 }
 
 template <std::integral InputToken>
@@ -75,10 +69,18 @@ template <std::integral InputToken>
     LzssIntermediateToken<InputToken>>::TokenType
 TokenTraits<LzssIntermediateToken<InputToken>>::DecodeToken(
     BitInputRange auto&& input) {
-    // TokenType result;
-    // std::ranges::copy(input | std::views::take(sizeof(Token) * 8),
-    //                   LittleEndianOutputBitIter{&result});
-    // return result;
+    auto iter = std::ranges::begin(input);
+
+    if (auto value = *iter; (++iter, value)) {
+        auto position = TokenTraits<size_t>::DecodeToken(
+            std::forward<decltype(input)>(input));
+        auto length = TokenTraits<size_t>::DecodeToken(
+            std::forward<decltype(input)>(input));
+        return LzssIntermediateToken<InputToken>{position, length};
+    }
+    return LzssIntermediateToken<InputToken>{
+        TokenTraits<typename LzssIntermediateToken<InputToken>::Symbol>::
+            DecodeToken(std::forward<decltype(input)>(input))};
 }
 
 }  // namespace koda

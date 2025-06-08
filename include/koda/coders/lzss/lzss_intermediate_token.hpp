@@ -16,15 +16,12 @@ class [[nodiscard]] LzssIntermediateToken {
     struct RepeatitionMarker {
         size_t match_position;
         size_t match_length;
-        uint16_t position_bitlength;
-        uint16_t length_bitlength;
     };
 
     constexpr explicit LzssIntermediateToken(InputToken symbol) noexcept;
 
-    constexpr explicit LzssIntermediateToken(
-        size_t match_position, size_t match_length, uint16_t position_bitlength,
-        uint16_t length_bitlength) noexcept;
+    constexpr explicit LzssIntermediateToken(size_t match_position,
+                                             size_t match_length) noexcept;
 
     [[nodiscard]] constexpr bool holds_symbol() const noexcept;
 
