@@ -49,13 +49,6 @@ InputBitIteratorSource<Iter>::ReadByteLittleEndianess() noexcept {
 template <ByteInputIterator Iter>
 [[nodiscard]] constexpr std::byte
 InputBitIteratorSource<Iter>::ReadByteBigEndianess() noexcept {
-    bit_iter_ = 0;
-    return static_cast<std::byte>(*iter_++);
-}
-
-template <ByteInputIterator Iter>
-[[nodiscard]] constexpr std::byte LittleEndianInputBitIter<Iter>::ReadByte(
-    void) noexcept {
     bit_iter_ = ByteLength() - 1;
     return static_cast<std::byte>(*iter_++);
 }
