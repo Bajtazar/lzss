@@ -8,8 +8,10 @@
 #include <iterator>
 #include <vector>
 
-BeginConstexprTest(DirectDecoderTest, DecodeBytes) {
-    const std::vector<uint8_t> expected{{0x43, 0x74, 0x35, 0x33}};
+namespace {
+
+constexpr std::vector<uint8_t> ScenarioIEncode(
+    const std::vector<uint8_t>& expected) {
     std::vector<uint8_t> target;
     auto in_source =
         koda::MakeLittleEndianOutputSource(koda::BackInserterIterator{target});
@@ -19,6 +21,15 @@ BeginConstexprTest(DirectDecoderTest, DecodeBytes) {
     koda::DirectEncoder<uint8_t> encoder;
 
     encoder.Encode(expected, in_range);
+
+    return target;
+}
+
+}  // namespace
+
+BeginConstexprTest(DirectDecoderTest, DecodeBytes) {
+    const std::vector<uint8_t> expected{{0x43, 0x74, 0x35, 0x33}};
+    auto target = ScenarioIEncode(expected);
 
     koda::DirectDecoder<uint8_t> decoder;
 
