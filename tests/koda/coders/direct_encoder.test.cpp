@@ -3,8 +3,6 @@
 #include <koda/utils/back_inserter_iterator.hpp>
 #include <koda/utils/bit_iterator.hpp>
 
-#include <gtest/gtest.h>
-
 #include <bitset>
 #include <iterator>
 #include <vector>
@@ -25,10 +23,11 @@ BeginConstexprTest(DirectEncoderTest, EncodeBytes) {
 }
 EndConstexprTest(DirectEncoderTest, EncodeBytes);
 
-static constexpr std::vector<uint8_t> ShiftBits(std::vector<uint8_t> vector,
-                                                uint8_t shift) {
-    std::vector<uint8_t> result;
-    uint8_t next = 0;
+template <typename Tp>
+static constexpr std::vector<Tp> ShiftBits(std::vector<Tp> vector,
+                                           uint8_t shift) {
+    std::vector<Tp> result;
+    Tp next = 0;
     for (auto element : vector) {
         result.push_back((element << shift) | next);
         next = element >> shift;
