@@ -11,20 +11,22 @@ struct DummyInputIterator {
     using difference_type = std::ptrdiff_t;
     using value_type = Tp;
 
-    DummyInputIterator() = delete;
+    DummyInputIterator();
 
     value_type operator*() const;
 
     DummyInputIterator& operator++();
 
     void operator++(int);
+
+    bool operator==(const DummyInputIterator& right) const;
 };
 
 struct DummyBitInputIterator {
     using difference_type = std::ptrdiff_t;
     using value_type = uint8_t;
 
-    DummyBitInputIterator() = delete;
+    DummyBitInputIterator();
 
     value_type operator*() const;
 
@@ -33,6 +35,8 @@ struct DummyBitInputIterator {
     size_t Position();
 
     void operator++(int);
+
+    bool operator==(const DummyBitInputIterator& right) const;
 };
 
 static_assert(BitInputIterator<DummyBitInputIterator>);
@@ -42,20 +46,22 @@ struct DummyOutputIterator {
     using difference_type = std::ptrdiff_t;
     using value_type = Tp;
 
-    DummyOutputIterator() = delete;
+    DummyOutputIterator();
 
     value_type& operator*() const;
 
     DummyOutputIterator& operator++();
 
     DummyOutputIterator& operator++(int);
+
+    bool operator==(const DummyOutputIterator& right) const;
 };
 
 struct DummyBitOutputIterator {
     using difference_type = std::ptrdiff_t;
     using value_type = uint8_t;
 
-    DummyBitOutputIterator() = delete;
+    DummyBitOutputIterator();
 
     value_type& operator*() const;
 
@@ -64,6 +70,8 @@ struct DummyBitOutputIterator {
     DummyBitOutputIterator& operator++();
 
     DummyBitOutputIterator& operator++(int);
+
+    bool operator==(const DummyBitOutputIterator& right) const;
 };
 
 static_assert(BitOutputIterator<DummyBitOutputIterator>);
