@@ -119,20 +119,19 @@ template <std::integral InputToken,
           typename AllocatorTp>
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
 constexpr void
-LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::EncodeSymbolOrMatch(
-    SequenceView look_ahead, BitOutputRange auto& output) {
-    auto marker = search_tree_.FindMatch(look_ahead);
-    IMToken symbol_token{look_ahead[0]};
+LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::EncodeTokenOrMatch(
+    InputToken token, const Match& match, BitOutputRange auto& output) {
+    IMToken symbol_token{token};
 
-    if (!marker) {
+    if (!match) {
         auxiliary_encoder_.Encode(
             std::ranges::subrange{&symbol_token, std::next(&symbol_token)},
             output);
         return;
     }
 
-    IMToken match_token{static_cast<uint32_t>(marker.match_position),
-                        static_cast<uint16_t>(marker.match_length)};
+    IMToken match_token{static_cast<uint32_t>(match.match_position),
+                        static_cast<uint16_t>(match.match_length)};
 
     float est_match_bitsize = auxiliary_encoder_.TokenBitSize(match_token);
     float est_symbol_bitsize = auxiliary_encoder_.TokenBitSize(symbol_token);
@@ -143,7 +142,7 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::EncodeSymbolOrMatch(
             output);
         return;
     }
-    match_count_ = marker.match_length - 1;
+    match_count_ = match.match_length - 1;
     auxiliary_encoder_.Encode(
         std::ranges::subrange{&match_token, std::next(&match_token)}, output);
 }
@@ -157,7 +156,8 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::PeformEncodigStep(
     FusedDictionaryAndBuffer<InputToken>& dict, SequenceView look_ahead,
     BitOutputRange auto& output) {
     if (!match_count_) {
-        EncodeSymbolOrMatch(look_ahead, output);
+        EncodeTokenOrMatch(look_ahead[0], search_tree_.FindMatch(look_ahead),
+                           output);
     } else {
         --match_count_;
     }

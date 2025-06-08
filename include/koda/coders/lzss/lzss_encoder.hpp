@@ -48,6 +48,7 @@ class LzssEncoder {
     using SequenceView =
         typename FusedDictionaryAndBuffer<InputToken>::SequenceView;
     using IMToken = LzssIntermediateToken<InputToken>;
+    using Match = typename SearchBinaryTree<InputToken>::RepeatitionMarker;
 
     struct FusedDictAndBufferInfo {
         size_t dictionary_size;
@@ -67,8 +68,8 @@ class LzssEncoder {
 
     constexpr void FlushData(BitOutputRange auto& output);
 
-    constexpr void EncodeSymbolOrMatch(SequenceView look_ahead,
-                                       BitOutputRange auto& output);
+    constexpr void EncodeTokenOrMatch(InputToken token, const Match& match,
+                                      BitOutputRange auto& output);
 
     constexpr void PeformEncodigStep(FusedDictionaryAndBuffer<InputToken>& dict,
                                      SequenceView look_ahead,
