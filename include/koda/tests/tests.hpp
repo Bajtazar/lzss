@@ -24,9 +24,11 @@ requires(!std::equality_comparable_with<Tp, Up>) constexpr bool compare(
 
 }  // namespace koda::tests
 
-#define BeginConstexprTest(TestCase, TestName)    \
-    constexpr uint64_t TestCase##TestName(void) { \
+// clang-format off
+#define BeginConstexprTest(TestCase, TestName) \
+    static_assert(("TestCase##TestName", []() static -> uint64_t { \
         uint64_t ge_test_assertions = 0;
+// clang-format on
 
 #define ConstexprAssertTrue(assertion)         \
     if (!ge_test_assertions && !(assertion)) { \
@@ -71,7 +73,6 @@ requires(!std::equality_comparable_with<Tp, Up>) constexpr bool compare(
     } catch (exception const&) {                     \
     }
 
-#define EndConstexprTest(TestCase, TestName) \
-    return ge_test_assertions;               \
-    }                                        \
-    static_assert(TestCase##TestName() == 0);
+#define EndConstexprTest       \
+    return ge_test_assertions; \
+    }() == 0));
