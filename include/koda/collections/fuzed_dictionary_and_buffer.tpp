@@ -24,10 +24,8 @@ constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::FusedDictionaryAndBuffer(
       buffer_sentinel_{std::next(buffer_iter_, buffer_size_)},
       // buffer can be in fact empty, then only dictionary is being used. Useful
       // for decoders
-      left_telomere_tag_{std::next(cyclic_buffer_.begin(),
-                                   buffer_size_ > 1 ? buffer_size_ - 1 : 0)},
-      right_telomere_tag_{std::prev(cyclic_buffer_.end(),
-                                    buffer_size_ > 1 ? buffer_size_ - 1 : 0)} {
+      left_telomere_tag_{std::next(cyclic_buffer_.begin(), buffer_size_ - 1)},
+      right_telomere_tag_{std::prev(cyclic_buffer_.end(), buffer_size_ - 1)} {
     if (dictionary_size < buffer_size_) [[unlikely]] {
         if
             consteval { throw "Invalid dictionary size"; }
@@ -37,9 +35,18 @@ constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::FusedDictionaryAndBuffer(
                 dictionary_size, buffer_size_)};
         }
     }
-    if (buffer_size_) {
-        MemoryCopy(buffer_iter_, buffer);
+    if (buffer_size_ < 1) [[unlikely]] {
+        if
+            consteval { throw "Buffer size has to be greater than 0"; }
+        else {
+            throw std::logic_error{"Buffer size has to be greater than 0"};
+        }
     }
+    // Distance used to return iterator to the beginning of the cyclic buffer if
+    // it overflows right telomere
+    cyclic_buffer_wrap_ =
+        -std::distance(cyclic_buffer_.begin(), right_telomere_tag_);
+    MemoryCopy(buffer_iter_, buffer);
 }
 
 template <typename Tp, typename AllocatorTp>
@@ -88,6 +95,30 @@ template <typename Tp, typename AllocatorTp>
 [[nodiscard]] constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::SequenceView
 FusedDictionaryAndBuffer<Tp, AllocatorTp>::get_sequence_at_relative_pos(
     size_t position, size_t length) const {
+    CheckRelativePosCorrectness(position, length);
+
+    auto sequence_iter = std::next(dictionary_iter_, position);
+    // If iterator overflows right telomere then count the overflowing ammount
+    // from the beginning of the cyclic buffer
+    if (sequence_iter >= right_telomere_tag_) {
+        std::advance(sequence_iter, cyclic_buffer_wrap_);
+    }
+    return SequenceView{sequence_iter, std::next(sequence_iter, length)};
+}
+
+template <typename Tp, typename AllocatorTp>
+constexpr void
+FusedDictionaryAndBuffer<Tp, AllocatorTp>::CheckRelativePosCorrectness(
+    size_t position, size_t length) const {
+    if (length > buffer_size_) [[unlikely]] {
+        if
+            consteval { throw "Sequence is longer than bufer!"; }
+        else {
+            throw std::logic_error{
+                std::format("Sequence (len={}) is longer than bufer (len={})!",
+                            length, buffer_size_)};
+        }
+    }
     if (position + length > dictionary_size_) [[unlikely]] {
         if
             consteval { throw "Given position overflows the buffer!"; }
@@ -98,15 +129,6 @@ FusedDictionaryAndBuffer<Tp, AllocatorTp>::get_sequence_at_relative_pos(
                             position, length, dictionary_size_)};
         }
     }
-
-    auto sequence_iter = std::next(dictionary_iter_, position);
-    // If iterator overflows right telomere then count the overflowing ammount
-    // from the beginning of the cyclic buffer
-    if (sequence_iter >= right_telomere_tag_) {
-        std::advance(sequence_iter, static_cast<int64_t>(buffer_size_) - 1 -
-                                        cyclic_buffer_.size());
-    }
-    return SequenceView{sequence_iter, std::next(sequence_iter, length)};
 }
 
 template <typename Tp, typename AllocatorTp>

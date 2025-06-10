@@ -177,14 +177,19 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, AddEndSymbolTests) {
 EndConstexprTest;
 
 BeginConstexprTest(FuzedDictionaryAndBufferTest, PositionGetterStraight) {
-    koda::FusedDictionaryAndBuffer<uint16_t> dict{kDictSize, {}};
+    static constexpr uint16_t kBufferLen = 4;
 
-    for (uint16_t i = 0; i < kDictSize; ++i) {
+    koda::FusedDictionaryAndBuffer<uint16_t> dict{
+        kDictSize, koda::FusedDictionaryAndBuffer<uint16_t>::SequenceView{
+                       std::views::iota(uint16_t{0}, kBufferLen) |
+                       std::ranges::to<std::vector>()}};
+
+    for (uint16_t i = kBufferLen; i < kDictSize; ++i) {
         dict.AddSymbolToBuffer(i);
     }
 
-    for (uint16_t len = 1; len <= kDictSize; ++len) {
-        for (uint16_t pos = 0; pos < (kDictSize - len); ++pos) {
+    for (uint16_t len = 1; len <= kBufferLen; ++len) {
+        for (uint16_t pos = 0; pos < (kDictSize - kBufferLen); ++pos) {
             const auto expected =
                 std::views::iota(pos, static_cast<uint16_t>(pos + len)) |
                 std::ranges::to<std::vector>();

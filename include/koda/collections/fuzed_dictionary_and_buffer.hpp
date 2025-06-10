@@ -124,12 +124,16 @@ class FusedDictionaryAndBuffer {
     size_t dictionary_size_;
     size_t current_dictionary_size_ = 0;
     size_t buffer_size_;
+    int64_t cyclic_buffer_wrap_;
     BufferIter dictionary_iter_;
     BufferIter dictionary_sentinel_;
     BufferIter buffer_iter_;
     BufferIter buffer_sentinel_;
     BufferIter left_telomere_tag_;
     BufferIter right_telomere_tag_;
+
+    constexpr void CheckRelativePosCorrectness(size_t position,
+                                               size_t length) const;
 
     constexpr void RelocateBuffer();
 
