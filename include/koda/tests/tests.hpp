@@ -26,7 +26,7 @@ requires(!std::equality_comparable_with<Tp, Up>) constexpr bool compare(
 
 // clang-format off
 #define BeginConstexprTest(TestCase, TestName) \
-    static_assert(("TestCase##TestName", []() static -> uint64_t { \
+    static_assert([]() static -> uint64_t { \
         uint64_t ge_test_assertions = 0;
 // clang-format on
 
@@ -75,4 +75,4 @@ requires(!std::equality_comparable_with<Tp, Up>) constexpr bool compare(
 
 #define EndConstexprTest       \
     return ge_test_assertions; \
-    }() == 0));
+    }() == 0);
