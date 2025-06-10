@@ -33,14 +33,9 @@ constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::FusedDictionaryAndBuffer(
                 dictionary_size, buffer_size_)};
         }
     }
-    if (buffer_size_ < 1) [[unlikely]] {
-        if consteval {
-            throw "Buffer size has to be greater than 0";
-        } else {
-            throw std::logic_error{"Buffer size has to be greater than 0"};
-        }
+    if (buffer_size_) {
+        MemoryCopy(buffer_iter_, buffer);
     }
-    MemoryCopy(buffer_iter_, buffer);
 }
 
 template <typename Tp, typename AllocatorTp>
@@ -83,6 +78,30 @@ FusedDictionaryAndBuffer<Tp, AllocatorTp>::get_oldest_dictionary_full_match()
     // Always contiguous
     return SequenceView{dictionary_iter_,
                         std::next(dictionary_iter_, this->max_buffer_size())};
+}
+
+template <typename Tp, typename AllocatorTp>
+[[nodiscard]] constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::SequenceView
+FusedDictionaryAndBuffer<Tp, AllocatorTp>::get_sequence_at_relative_pos(
+    size_t position, size_t length) const {
+    if (position + length > dictionary_size_) [[unlikely]] {
+        if consteval {
+            throw "Given position overflows the buffer!";
+        } else {
+            throw std::logic_error{
+                std::format("Given position (pos={} + len={}) overflows the "
+                            "buffer (len={})!",
+                            position, length, dictionary_size_)};
+        }
+    }
+
+    auto sequence_iter = dictionary_iter_ + position;
+    // If iterator overflows right telomere then count the overflowing ammount
+    // from the beginning of the cyclic buffer
+    if (sequence_iter >= right_telomere_tag_) {
+        sequence_iter -= cyclic_buffer_.size() - buffer_size_ + 1;
+    }
+    return SequenceView{sequence_iter, length};
 }
 
 template <typename Tp, typename AllocatorTp>

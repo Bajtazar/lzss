@@ -105,6 +105,9 @@ class FusedDictionaryAndBuffer {
     [[nodiscard]] constexpr SequenceView get_oldest_dictionary_full_match()
         const noexcept;
 
+    [[nodiscard]] constexpr SequenceView get_sequence_at_relative_pos(
+        size_t position, size_t length) const;
+
     [[nodiscard]] constexpr size_t max_dictionary_size() const noexcept;
 
     [[nodiscard]] constexpr size_t max_buffer_size() const noexcept;
