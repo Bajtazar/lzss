@@ -19,18 +19,18 @@ concept BitInputIterator = std::input_iterator<Iter> && requires(Iter iter) {
 };
 
 template <class Iter>
-concept BitOutputIterator =
-    std::output_iterator<Iter, size_t> && requires(Iter iter) {
-        { iter.Position() } -> std::same_as<size_t>;
-    };
+concept BitOutputIterator = std::output_iterator<Iter, size_t> &&
+    requires(Iter iter) {
+    { iter.Position() } -> std::same_as<size_t>;
+};
 
 template <class Range>
 concept BitInputRange = std::ranges::input_range<Range> &&
-                        BitInputIterator<std::ranges::iterator_t<Range>>;
+    BitInputIterator<std::ranges::iterator_t<Range>>;
 
 template <class Range>
 concept BitOutputRange = std::ranges::output_range<Range, size_t> &&
-                         BitOutputIterator<std::ranges::iterator_t<Range>>;
+    BitOutputIterator<std::ranges::iterator_t<Range>>;
 
 template <typename Tp, typename Up>
 concept SameSize = (sizeof(Tp) == sizeof(Up));
@@ -78,16 +78,14 @@ class InputBitIteratorSource {
     [[nodiscard]] friend constexpr bool operator==(
         InputBitIteratorSource const& left,
         std::default_sentinel_t sentinel) noexcept
-        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>)
-    {
+        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>) {
         return left.iter_ == sentinel;
     }
 
     [[nodiscard]] friend constexpr bool operator==(
         std::default_sentinel_t sentinel,
         InputBitIteratorSource const& right) noexcept
-        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>)
-    {
+        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>) {
         return sentinel == right.iter_;
     }
 
@@ -170,16 +168,14 @@ class OutputBitIteratorSource {
     [[nodiscard]] friend constexpr bool operator==(
         OutputBitIteratorSource const& left,
         std::default_sentinel_t sentinel) noexcept
-        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>)
-    {
+        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>) {
         return left.iter_ == sentinel;
     }
 
     [[nodiscard]] friend constexpr bool operator==(
         std::default_sentinel_t sentinel,
         OutputBitIteratorSource const& right) noexcept
-        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>)
-    {
+        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>) {
         return sentinel == right.iter_;
     }
 
@@ -258,16 +254,14 @@ class LittleEndianInputBitIter {
     [[nodiscard]] friend constexpr bool operator==(
         LittleEndianInputBitIter const& left,
         std::default_sentinel_t sentinel) noexcept
-        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>)
-    {
+        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>) {
         return !left.source_ || *left.source_ == sentinel;
     }
 
     [[nodiscard]] friend constexpr bool operator==(
         std::default_sentinel_t sentinel,
         LittleEndianInputBitIter const& right) noexcept
-        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>)
-    {
+        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>) {
         return !right.source_ || sentinel == *right.source_;
     }
 
@@ -322,16 +316,14 @@ class LittleEndianOutputBitIter {
     [[nodiscard]] friend constexpr bool operator==(
         LittleEndianOutputBitIter const& left,
         std::default_sentinel_t sentinel) noexcept
-        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>)
-    {
+        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>) {
         return *left.source_ == sentinel;
     }
 
     [[nodiscard]] friend constexpr bool operator==(
         std::default_sentinel_t sentinel,
         LittleEndianOutputBitIter const& right) noexcept
-        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>)
-    {
+        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>) {
         return sentinel == *right.source_;
     }
 
@@ -383,16 +375,14 @@ class BigEndianInputBitIter {
     [[nodiscard]] friend constexpr bool operator==(
         BigEndianInputBitIter const& left,
         std::default_sentinel_t sentinel) noexcept
-        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>)
-    {
+        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>) {
         return !left.source_ || *left.source_ == sentinel;
     }
 
     [[nodiscard]] friend constexpr bool operator==(
         std::default_sentinel_t sentinel,
         BigEndianInputBitIter const& right) noexcept
-        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>)
-    {
+        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>) {
         return !right.source_ || sentinel == *right.source_;
     }
 
@@ -445,16 +435,14 @@ class BigEndianOutputBitIter {
     [[nodiscard]] friend constexpr bool operator==(
         BigEndianOutputBitIter const& left,
         std::default_sentinel_t sentinel) noexcept
-        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>)
-    {
+        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>) {
         return *left.source_ == sentinel;
     }
 
     [[nodiscard]] friend constexpr bool operator==(
         std::default_sentinel_t sentinel,
         BigEndianOutputBitIter const& right) noexcept
-        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>)
-    {
+        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>) {
         return sentinel == *right.source_;
     }
 
@@ -500,8 +488,7 @@ class LittleEndianInputBitRangeWrapper {
 };
 
 template <typename Range>
-    requires std::same_as<std::ranges::sentinel_t<Range>,
-                          std::default_sentinel_t>
+requires std::same_as<std::ranges::sentinel_t<Range>, std::default_sentinel_t>
 class LittleEndianInputBitRangeWrapper<Range> {
     using BeginSource =
         InputBitIteratorSource<std::ranges::iterator_t<const Range>>;
@@ -555,8 +542,7 @@ class BigEndianInputBitRangeWrapper {
 };
 
 template <typename Range>
-    requires std::same_as<std::ranges::sentinel_t<Range>,
-                          std::default_sentinel_t>
+requires std::same_as<std::ranges::sentinel_t<Range>, std::default_sentinel_t>
 class BigEndianInputBitRangeWrapper<Range> {
     using BeginSource =
         InputBitIteratorSource<std::ranges::iterator_t<const Range>>;
@@ -608,8 +594,7 @@ class LittleEndianOutputBitRangeWrapper {
 };
 
 template <typename Range>
-    requires std::same_as<std::ranges::sentinel_t<Range>,
-                          std::default_sentinel_t>
+requires std::same_as<std::ranges::sentinel_t<Range>, std::default_sentinel_t>
 class LittleEndianOutputBitRangeWrapper<Range> {
     using BeginSource = OutputBitIteratorSource<std::ranges::iterator_t<Range>>;
 
@@ -660,8 +645,7 @@ class BigEndianOutputBitRangeWrapper {
 };
 
 template <typename Range>
-    requires std::same_as<std::ranges::sentinel_t<Range>,
-                          std::default_sentinel_t>
+requires std::same_as<std::ranges::sentinel_t<Range>, std::default_sentinel_t>
 class BigEndianOutputBitRangeWrapper<Range> {
     using BeginSource = OutputBitIteratorSource<std::ranges::iterator_t<Range>>;
 

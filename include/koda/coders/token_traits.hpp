@@ -9,16 +9,15 @@
 namespace koda {
 
 template <typename Traits>
-concept TokenTraitsType =
-    requires { Traits::TokenType; } &&
-    requires(typename Traits::TokenType token, DummyBitInputRange input,
-             DummyBitOutputRange output) {
-        { Traits::EncodeToken(token, input) } -> std::same_as<void>;
-        {
-            Traits::DecodeToken(output)
-        } -> std::same_as<typename Traits::TokenType>;
-        { Traits::TokenBitSize(token) } -> std::same_as<float>;
-    };
+concept TokenTraitsType = requires {
+    Traits::TokenType;
+}
+&&requires(typename Traits::TokenType token, DummyBitInputRange input,
+           DummyBitOutputRange output) {
+    { Traits::EncodeToken(token, input) } -> std::same_as<void>;
+    { Traits::DecodeToken(output) } -> std::same_as<typename Traits::TokenType>;
+    { Traits::TokenBitSize(token) } -> std::same_as<float>;
+};
 
 template <typename Token>
 struct TokenTraits;

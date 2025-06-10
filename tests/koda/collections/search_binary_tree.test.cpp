@@ -15,9 +15,9 @@ using namespace koda::tests;
 namespace {
 
 template <size_t Window, size_t Length>
-    requires(Length >= Window)
-constexpr std::array<ViewableVector<uint8_t>, Length - Window>
-BuildSamplesFromString(const char (&sentence)[Length]) {
+requires(Length >= Window) constexpr std::array<
+    ViewableVector<uint8_t>,
+    Length - Window> BuildSamplesFromString(const char (&sentence)[Length]) {
     std::array<ViewableVector<uint8_t>, Length - Window> result;
     for (size_t i = 0; i < result.size(); ++i) {
         result[i] = ConvertToString(

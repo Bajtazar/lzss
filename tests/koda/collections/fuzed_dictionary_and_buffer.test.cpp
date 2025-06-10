@@ -2,8 +2,6 @@
 #include <koda/tests/tests.hpp>
 #include <koda/tests/viewable_vector.hpp>
 
-#include <gtest/gtest.h>
-
 #include <algorithm>
 #include <array>
 #include <cstring>
@@ -177,3 +175,22 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, AddEndSymbolTests) {
     ConstexprAssertEqual(dict.buffer_size(), 0);
 }
 EndConstexprTest(FuzedDictionaryAndBufferTest, AddEndSymbolTests);
+
+BeginConstexprTest(FuzedDictionaryAndBufferTest, PositionGetterStraight) {
+    koda::FusedDictionaryAndBuffer<uint16_t> dict{kDictSize, {}};
+
+    for (uint16_t i = 0; i < kDictSize; ++i) {
+        dict.AddSymbolToBuffer(i);
+    }
+
+    for (uint16_t len = 1; len <= kDictSize; ++len) {
+        for (uint16_t pos = 0; pos < (kDictSize - len); ++pos) {
+            const auto expected =
+                std::views::iota(pos, static_cast<uint16_t>(pos + len)) |
+                std::ranges::to<std::vector>();
+            auto sequence = dict.get_sequence_at_relative_pos(pos, len);
+            ConstexprAssertEqual(expected, sequence);
+        }
+    }
+}
+EndConstexprTest(FuzedDictionaryAndBufferTest, PositionGetterStraight);

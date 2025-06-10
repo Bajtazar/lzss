@@ -18,8 +18,8 @@ template <std::integral InputToken = uint8_t,
           SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder =
               DirectEncoder<LzssIntermediateToken<InputToken>>,
           typename AllocatorTp = std::allocator<InputToken>>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
-class LzssEncoder {
+requires(sizeof(InputToken) <=
+         sizeof(LzssIntermediateToken<InputToken>)) class LzssEncoder {
    public:
     constexpr explicit LzssEncoder(
         size_t dictionary_size, size_t look_ahead_size,
@@ -30,8 +30,8 @@ class LzssEncoder {
     constexpr explicit LzssEncoder(
         size_t dictionary_size, size_t look_ahead_size,
         std::optional<size_t> cyclic_buffer_size = std::nullopt,
-        const AllocatorTp& allocator = AllocatorTp{})
-        requires std::is_default_constructible_v<AuxiliaryEncoder>;
+        const AllocatorTp& allocator = AllocatorTp{}) requires
+        std::is_default_constructible_v<AuxiliaryEncoder>;
 
     constexpr void Encode(InputRange<InputToken> auto&& input,
                           BitOutputRange auto&& output);

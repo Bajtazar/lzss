@@ -25,9 +25,9 @@ constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::FusedDictionaryAndBuffer(
       left_telomere_tag_{std::next(cyclic_buffer_.begin(), buffer_size_ - 1)},
       right_telomere_tag_{std::prev(cyclic_buffer_.end(), buffer_size_ - 1)} {
     if (dictionary_size < buffer_size_) [[unlikely]] {
-        if consteval {
-            throw "Invalid dictionary size";
-        } else {
+        if
+            consteval { throw "Invalid dictionary size"; }
+        else {
             throw std::logic_error{std::format(
                 "Dictionary size ({}) cannot be smaller than buffer size ({})",
                 dictionary_size, buffer_size_)};
@@ -85,9 +85,9 @@ template <typename Tp, typename AllocatorTp>
 FusedDictionaryAndBuffer<Tp, AllocatorTp>::get_sequence_at_relative_pos(
     size_t position, size_t length) const {
     if (position + length > dictionary_size_) [[unlikely]] {
-        if consteval {
-            throw "Given position overflows the buffer!";
-        } else {
+        if
+            consteval { throw "Given position overflows the buffer!"; }
+        else {
             throw std::logic_error{
                 std::format("Given position (pos={} + len={}) overflows the "
                             "buffer (len={})!",
@@ -95,13 +95,14 @@ FusedDictionaryAndBuffer<Tp, AllocatorTp>::get_sequence_at_relative_pos(
         }
     }
 
-    auto sequence_iter = dictionary_iter_ + position;
+    auto sequence_iter = std::next(dictionary_iter_, position);
     // If iterator overflows right telomere then count the overflowing ammount
     // from the beginning of the cyclic buffer
     if (sequence_iter >= right_telomere_tag_) {
-        sequence_iter -= cyclic_buffer_.size() - buffer_size_ + 1;
+        std::advance(sequence_iter, static_cast<int64_t>(buffer_size_) - 1 -
+                                        cyclic_buffer_.size());
     }
-    return SequenceView{sequence_iter, length};
+    return SequenceView{sequence_iter, std::next(sequence_iter, length)};
 }
 
 template <typename Tp, typename AllocatorTp>
@@ -178,9 +179,9 @@ FusedDictionaryAndBuffer<Tp, AllocatorTp>::CalculateCyclicBufferSize(
     if (cyclic_buffer_size) {
         if (*cyclic_buffer_size < (dictionary_size + 2 * buffer_size - 1))
             [[unlikely]] {
-            if consteval {
-                throw "Given cyclic buffer size is too small";
-            } else {
+            if
+                consteval { throw "Given cyclic buffer size is too small"; }
+            else {
                 throw std::logic_error{std::format(
                     "Given cyclic buffer size is too small, expected at least "
                     "dictionary size + 2*buffer size-1 ({}), got ({})",
