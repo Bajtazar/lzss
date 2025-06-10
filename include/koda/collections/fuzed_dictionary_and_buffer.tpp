@@ -22,8 +22,12 @@ constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::FusedDictionaryAndBuffer(
       dictionary_sentinel_{dictionary_iter_},
       buffer_iter_{cyclic_buffer_.begin()},
       buffer_sentinel_{std::next(buffer_iter_, buffer_size_)},
-      left_telomere_tag_{std::next(cyclic_buffer_.begin(), buffer_size_ - 1)},
-      right_telomere_tag_{std::prev(cyclic_buffer_.end(), buffer_size_ - 1)} {
+      // buffer can be in fact empty, then only dictionary is being used. Useful
+      // for decoders
+      left_telomere_tag_{std::next(cyclic_buffer_.begin(),
+                                   buffer_size_ > 1 ? buffer_size_ - 1 : 0)},
+      right_telomere_tag_{std::prev(cyclic_buffer_.end(),
+                                    buffer_size_ > 1 ? buffer_size_ - 1 : 0)} {
     if (dictionary_size < buffer_size_) [[unlikely]] {
         if
             consteval { throw "Invalid dictionary size"; }

@@ -194,3 +194,14 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, PositionGetterStraight) {
     }
 }
 EndConstexprTest;
+
+BeginConstexprTest(FuzedDictionaryAndBufferTest, PositionGetterWrapped) {
+    koda::FusedDictionaryAndBuffer<uint16_t> dict{kDictSize, {}};
+
+    for (uint16_t i = 0; i <= kRepeatitons; ++i) {
+        dict.AddSymbolToBuffer(i);
+    }
+    // youngest symbol = kRepeatitons
+    // oldest symbol = kRepeatitons - kDictSize
+}
+EndConstexprTest;
