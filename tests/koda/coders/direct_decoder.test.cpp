@@ -57,7 +57,7 @@ BeginConstexprTest(DirectDecoderTest, DecodeBytes) {
 
     ConstexprAssertEqual(expected, reconstruction);
 }
-EndConstexprTest(DirectDecoderTest, DecodeBytes);
+EndConstexprTest;
 
 BeginConstexprTest(DirectDecoderTest, DecodeIntegers) {
     const std::vector<uint32_t> source_range{{0x43'32'12'45, 0x98'32'56'23}};
@@ -75,4 +75,4 @@ BeginConstexprTest(DirectDecoderTest, DecodeIntegers) {
 
     ConstexprAssertEqual(source_range, reconstruction);
 }
-EndConstexprTest(DirectDecoderTest, DecodeIntegers);
+EndConstexprTest;

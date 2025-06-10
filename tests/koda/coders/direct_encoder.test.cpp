@@ -21,7 +21,7 @@ BeginConstexprTest(DirectEncoderTest, EncodeBytes) {
 
     ConstexprAssertEqual(expected, target);
 }
-EndConstexprTest(DirectEncoderTest, EncodeBytes);
+EndConstexprTest;
 
 template <typename Tp>
 static constexpr std::vector<Tp> ShiftBits(std::vector<Tp> vector,
@@ -67,7 +67,7 @@ BeginConstexprTest(DirectEncoderTest, EncodeBytesWithStride) {
 
     ConstexprAssertEqual(expected, target);
 }
-EndConstexprTest(DirectEncoderTest, EncodeBytesWithStride);
+EndConstexprTest;
 
 BeginConstexprTest(DirectEncoderTest, EncodeIntegers) {
     const std::vector<uint32_t> source_range{{0x43'32'12'45, 0x98'32'56'23}};
@@ -85,4 +85,4 @@ BeginConstexprTest(DirectEncoderTest, EncodeIntegers) {
 
     ConstexprAssertEqual(expected_range, target);
 }
-EndConstexprTest(DirectEncoderTest, EncodeIntegers);
+EndConstexprTest;

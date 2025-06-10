@@ -36,7 +36,7 @@ BeginConstexprTest(LittleEndianInputBitIterTest, AppendBits) {
     ConstexprAssertNotEqual(iter, koda::LittleEndianInputBitIter{final});
     ConstexprAssertEqual(iter, koda::LittleEndianInputBitIter{sentinel});
 }
-EndConstexprTest(LittleEndianInputBitIterTest, AppendBits);
+EndConstexprTest;
 
 BeginConstexprTest(BigEndianInputBitIterTest, AppendBits) {
     std::vector<uint8_t> bytes = {0b101011};
@@ -67,7 +67,7 @@ BeginConstexprTest(BigEndianInputBitIterTest, AppendBits) {
     ConstexprAssertNotEqual(iter, koda::BigEndianInputBitIter{final});
     ConstexprAssertEqual(iter, koda::BigEndianInputBitIter{sentinel});
 }
-EndConstexprTest(BigEndianInputBitIterTest, AppendBits);
+EndConstexprTest;
 
 BeginConstexprTest(LittleEndianOutputBitIterTest, AppendBits) {
     std::vector<uint8_t> result;
@@ -97,7 +97,7 @@ BeginConstexprTest(LittleEndianOutputBitIterTest, AppendBits) {
     ConstexprAssertFalse(result.empty());
     ConstexprAssertEqual(result.front(), 0b10110101);
 }
-EndConstexprTest(LittleEndianOutputBitIterTest, AppendBits);
+EndConstexprTest;
 
 BeginConstexprTest(BigEndianOutputBitIterIterTest, AppendBits) {
     std::vector<uint8_t> result;
@@ -127,4 +127,4 @@ BeginConstexprTest(BigEndianOutputBitIterIterTest, AppendBits) {
     ConstexprAssertFalse(result.empty());
     ConstexprAssertEqual(result.front(), 0b10101101);
 }
-EndConstexprTest(BigEndianOutputBitIterIterTest, AppendBits);
+EndConstexprTest;

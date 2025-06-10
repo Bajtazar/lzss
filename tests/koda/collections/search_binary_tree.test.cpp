@@ -54,7 +54,7 @@ BeginConstexprTest(SearchBinaryTreeTest, Creation) {
     ConstexprAssertFalse(tree.FindMatch("xy"_u8));
     ConstexprAssertFalse(tree.FindMatch("x"_u8));
 }
-EndConstexprTest(SearchBinaryTreeTest, Creation);
+EndConstexprTest;
 
 BeginConstexprTest(SearchBinaryTreeTest, Uniqueness) {
     using Marker = koda::SearchBinaryTree<uint8_t>::RepeatitionMarker;
@@ -86,7 +86,7 @@ BeginConstexprTest(SearchBinaryTreeTest, Uniqueness) {
     ConstexprAssertTrue(ma_result == Marker(4, 2) ||
                         ma_result == Marker(18, 2));
 }
-EndConstexprTest(SearchBinaryTreeTest, Uniqueness);
+EndConstexprTest;
 
 BeginConstexprTest(SearchBinaryTreeTest, Removal) {
     auto vector = MakeSamples<4>();
@@ -104,4 +104,4 @@ BeginConstexprTest(SearchBinaryTreeTest, Removal) {
         ConstexprAssertFalse(tree.RemoveString(element));
     }
 }
-EndConstexprTest(SearchBinaryTreeTest, Removal);
+EndConstexprTest;

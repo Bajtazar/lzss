@@ -31,7 +31,7 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, Creation) {
     ConstexprAssertEqual(dict.get_buffer(), kBufferView);
     ConstexprAssertEqual(dict.get_oldest_dictionary_full_match(), kBufferView);
 }
-EndConstexprTest(FuzedDictionaryAndBufferTest, Creation);
+EndConstexprTest;
 
 BeginConstexprTest(FuzedDictionaryAndBufferTest, SimpleBufferAccomodation) {
     koda::FusedDictionaryAndBuffer dict{kDictSize, kBufferView};
@@ -68,7 +68,7 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, SimpleBufferAccomodation) {
     ConstexprAssertEqual(dict.get_oldest_dictionary_full_match(), kBufferView);
     ConstexprAssertEqual(dict.dictionary_size(), 5);
 }
-EndConstexprTest(FuzedDictionaryAndBufferTest, SimpleBufferAccomodation);
+EndConstexprTest;
 
 static constexpr std::vector<uint8_t> GeneratePseudoNumberSequence(
     size_t length) {
@@ -122,7 +122,7 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, LongRunBufferAndDict) {
         dict.AddSymbolToBuffer(elem);
     }
 }
-EndConstexprTest(FuzedDictionaryAndBufferTest, LongRunBufferAndDict);
+EndConstexprTest;
 
 BeginConstexprTest(FuzedDictionaryAndBufferTest, AddEndSymbolTests) {
     koda::FusedDictionaryAndBuffer<uint8_t> dict{kDictSize, kBufferView};
@@ -174,7 +174,7 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, AddEndSymbolTests) {
     ConstexprAssertEqual(dict.dictionary_size(), dict.max_dictionary_size());
     ConstexprAssertEqual(dict.buffer_size(), 0);
 }
-EndConstexprTest(FuzedDictionaryAndBufferTest, AddEndSymbolTests);
+EndConstexprTest;
 
 BeginConstexprTest(FuzedDictionaryAndBufferTest, PositionGetterStraight) {
     koda::FusedDictionaryAndBuffer<uint16_t> dict{kDictSize, {}};
@@ -193,4 +193,4 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, PositionGetterStraight) {
         }
     }
 }
-EndConstexprTest(FuzedDictionaryAndBufferTest, PositionGetterStraight);
+EndConstexprTest;

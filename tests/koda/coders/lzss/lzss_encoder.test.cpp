@@ -65,7 +65,7 @@ BeginConstexprTest(LzssEncoder, EncodeTokens) {
     ConstexprAssertEqual(encoder.auxiliary_encoder().tokens, expected_result);
     ConstexprAssertTrue(target.empty());
 }
-EndConstexprTest(LzssEncoder, EncodeTokens);
+EndConstexprTest;
 
 BeginConstexprTest(LzssEncoder, EncodeTokensRealScenario) {
     std::string input_sequence = "std::nullptr_t & nullptr";
@@ -105,7 +105,7 @@ BeginConstexprTest(LzssEncoder, EncodeTokensRealScenario) {
     ConstexprAssertEqual(encoder.auxiliary_encoder().tokens, expected_result);
     ConstexprAssertTrue(target.empty());
 }
-EndConstexprTest(LzssEncoder, EncodeTokensRealScenario);
+EndConstexprTest;
 
 BeginConstexprTest(LzssEncoder, EncodeTokensRealScenarioTooShortLookAhead) {
     std::string input_sequence = "std::nullptr_t & nullptr";
@@ -151,7 +151,7 @@ BeginConstexprTest(LzssEncoder, EncodeTokensRealScenarioTooShortLookAhead) {
     ConstexprAssertEqual(encoder.auxiliary_encoder().tokens, expected_result);
     ConstexprAssertTrue(target.empty());
 }
-EndConstexprTest(LzssEncoder, EncodeTokensRealScenarioTooShortLookAhead);
+EndConstexprTest;
 
 BeginConstexprTest(LzssEncoder, EncodeTokensRepeatitions) {
     std::string input_sequence = "kot kot kot kot kot kot kot";
@@ -184,7 +184,7 @@ BeginConstexprTest(LzssEncoder, EncodeTokensRepeatitions) {
     ConstexprAssertEqual(encoder.auxiliary_encoder().tokens, expected_result);
     ConstexprAssertTrue(target.empty());
 }
-EndConstexprTest(LzssEncoder, EncodeTokensRepeatitions);
+EndConstexprTest;
 
 BeginConstexprTest(LzssEncoder, EncodeTokensShortDictionary) {
     std::string input_sequence = "kot abcdefghijkelmouprst kot";
@@ -233,4 +233,4 @@ BeginConstexprTest(LzssEncoder, EncodeTokensShortDictionary) {
     ConstexprAssertEqual(encoder.auxiliary_encoder().tokens, expected_result);
     ConstexprAssertTrue(target.empty());
 }
-EndConstexprTest(LzssEncoder, EncodeTokensShortDictionary);
+EndConstexprTest;
