@@ -2,6 +2,8 @@
 #include <koda/tests/tests.hpp>
 #include <koda/tests/viewable_vector.hpp>
 
+#include <gtest/gtest.h>
+
 #include <algorithm>
 #include <array>
 #include <cstring>
@@ -201,12 +203,27 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, PositionGetterStraight) {
 EndConstexprTest;
 
 BeginConstexprTest(FuzedDictionaryAndBufferTest, PositionGetterWrapped) {
-    koda::FusedDictionaryAndBuffer<uint16_t> dict{kDictSize, {}};
+    static constexpr uint16_t kBufferLen = 4;
 
-    for (uint16_t i = 0; i <= kRepeatitons; ++i) {
+    koda::FusedDictionaryAndBuffer<uint16_t> dict{
+        kDictSize, koda::FusedDictionaryAndBuffer<uint16_t>::SequenceView{
+                       std::views::iota(uint16_t{0}, kBufferLen) |
+                       std::ranges::to<std::vector>()}};
+
+    for (uint16_t i = kBufferLen; i <= kRepeatitons; ++i) {
         dict.AddSymbolToBuffer(i);
     }
-    // youngest symbol = kRepeatitons
-    // oldest symbol = kRepeatitons - kDictSize
+
+    for (uint16_t pos = 0; pos < kDictSize; ++pos) {
+        uint16_t length =
+            pos + kBufferLen > kDictSize ? kDictSize - pos : kBufferLen;
+        uint16_t symbol = pos + kRepeatitons - kDictSize - kBufferLen + 1;
+        auto sequence = dict.get_sequence_at_relative_pos(pos, length);
+        const auto expected =
+            std::views::iota(symbol, static_cast<uint16_t>(symbol + length)) |
+            std::ranges::to<std::vector>();
+
+        ConstexprAssertEqual(expected, sequence);
+    }
 }
 EndConstexprTest;
