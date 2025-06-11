@@ -8,9 +8,9 @@
 
 namespace koda {
 
-template <BitInputRange Range>
+template <typename TokenTp, BitInputRange Range>
 struct TokenTraitsDecodingResult {
-    TokenType token;
+    TokenTp token;
     Range range;
 };
 

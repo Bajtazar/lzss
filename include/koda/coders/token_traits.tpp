@@ -6,21 +6,27 @@
 namespace koda {
 
 template <std::integral Token>
-/*static*/ constexpr void TokenTraits<Token>::EncodeToken(
+/*static*/ constexpr auto TokenTraits<Token>::EncodeToken(
     TokenType token, BitOutputRange auto&& output) {
-    std::ranges::copy(LittleEndianInputBitRangeWrapper{std::ranges::subrange{
-                          &token, std::next(&token)}},
-                      std::ranges::begin(output));
+    auto copy_res =
+        std::ranges::copy(std::ranges::subrange{&token, std::next(&token)} |
+                              views::LittleEndianInput,
+                          std::ranges::begin(output));
+
+    return std::ranges::subrange{std::move(copy_res.out),
+                                 std::ranges::end(output)};
 }
 
 template <std::integral Token>
-[[nodiscard]] /*static*/ constexpr TokenTraits<Token>::TokenType
-TokenTraits<Token>::DecodeToken(BitInputRange auto&& input) {
+[[nodiscard]] /*static*/ constexpr auto TokenTraits<Token>::DecodeToken(
+    BitInputRange auto&& input) {
     TokenType result;
-    auto source = koda::MakeLittleEndianOutputSource(&result);
-    std::ranges::copy(input | std::views::take(sizeof(Token) * 8),
-                      LittleEndianOutputBitIter{source});
-    return result;
+    auto copy_res =
+        std::ranges::copy(input | std::views::take(sizeof(Token) * 8),
+                          LittleEndianOutputBitIter{&result});
+    return TokenTraitsDecodingResult{
+        std::move(result),
+        std::ranges::subrange{std::move(copy_res.in), std::ranges::end(input)}};
 }
 
 template <std::integral Token>

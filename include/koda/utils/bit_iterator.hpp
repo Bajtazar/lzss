@@ -325,6 +325,61 @@ class BigEndianOutputBitIter : public BitIteratorBase<Iter> {
     }
 };
 
+namespace ranges {
+
+template <typename Range>
+class LittleEndianInputView
+    : std::ranges::view_interface<LittleEndianInputView<Range>> {
+   public:
+    using iterator_type = std::ranges::iterator_t<Range>;
+    using sentinel_type = std::ranges::sentinel_t<Range>;
+
+    template <std::ranges::viewable_range RangeTp>
+    constexpr LittleEndianInputView(RangeTp&& range)
+        : range_(std::forward<RangeTp>(range)) {}
+
+    [[nodiscard]] constexpr LittleEndianInputBitIter<iterator_type> begin()
+        const {
+        return std::ranges::begin(range_);
+    }
+
+    [[nodiscard]] constexpr LittleEndianInputBitIter<sentinel_type> end() const
+        requires(!std::same_as<sentinel_type, std::default_sentinel_t>)
+    {
+        return std::ranges::end(range_);
+    }
+
+    [[nodiscard]] constexpr std::default_sentinel_t end() const
+        requires std::same_as<sentinel_type, std::default_sentinel_t>
+    {
+        return std::default_sentinel;
+    }
+
+   private:
+    Range range_;
+};
+
+template <std::ranges::viewable_range Range>
+LittleEndianInputView(Range&& range)
+    -> LittleEndianInputView<std::ranges::views::all_t<Range>>;
+
+}  // namespace ranges
+
+namespace views {
+
+struct LittleEndianInputAdaptorClosure
+    : public std::ranges::range_adaptor_closure<
+          LittleEndianInputAdaptorClosure> {
+    template <std::ranges::sized_range Range>
+    [[nodiscard]] constexpr auto operator()(Range&& range) const {
+        return ranges::LittleEndianInputView{std::forward<Range>(range)};
+    }
+};
+
+inline constexpr LittleEndianInputAdaptorClosure LittleEndianInput{};
+
+}  // namespace views
+
 }  // namespace koda
 
 #include <koda/utils/bit_iterator.tpp>
