@@ -300,12 +300,12 @@ class BigEndianOutputBitIter : public BitIteratorBase<Iter> {
 
     explicit constexpr BigEndianOutputBitIter(Iter iterator) noexcept(
         std::is_nothrow_move_constructible_v<Iter>)
-        : BitIteratorBase<Iter>{std::move(iterator), this->ByteLength() - 1} {}
+        : BitIteratorBase<Iter>{std::move(iterator), 0} {}
 
     explicit constexpr BigEndianOutputBitIter() noexcept(
         std::is_nothrow_move_constructible_v<Iter>)
         requires std::constructible_from<Iter>
-        : BitIteratorBase<Iter>{this->ByteLength() - 1} {}
+        : BitIteratorBase<Iter>{0} {}
 
     constexpr BigEndianOutputBitIter(BigEndianOutputBitIter&& other) noexcept(
         std::is_nothrow_move_constructible_v<Iter>) = default;
@@ -324,11 +324,10 @@ class BigEndianOutputBitIter : public BitIteratorBase<Iter> {
         std::is_nothrow_copy_assignable_v<Iter>) = default;
 
     constexpr BigEndianOutputBitIter& operator=(bit value) noexcept {
-        this->current_value_ = (this->current_value_ << 1) | (value ? 0 : 1);
-        if (!((this->bit_iter_)--)) {
-            *(this->iter_)++ = this->current_value_;
-            this->current_value_ = 0;
-            this->bit_iter_ = this->ByteLength() - 1;
+        this->current_value_ = (this->current_value_ << 1) | (value ? 1 : 0);
+        if (++this->bit_iter_ == this->ByteLength()) {
+            *this->iter_++ = this->current_value_;
+            this->bit_iter_ = this->current_value_ = 0;
         }
         return *this;
     }
@@ -341,6 +340,10 @@ class BigEndianOutputBitIter : public BitIteratorBase<Iter> {
 
     [[nodiscard]] constexpr BigEndianOutputBitIter& operator++(int) noexcept {
         return *this;
+    }
+
+    [[nodiscard]] constexpr size_t Position() const noexcept {
+        return this->ByteLength() - 1 - this->bit_iter_;
     }
 };
 
