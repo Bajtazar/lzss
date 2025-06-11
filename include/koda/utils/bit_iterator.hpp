@@ -59,10 +59,6 @@ class BitIteratorBase {
         return sizeof(TemporaryTp) * CHAR_BIT;
     }
 
-    [[nodiscard]] constexpr size_t Position() const noexcept {
-        return bit_iter_;
-    }
-
    protected:
     using TemporaryTp = std::iter_value_t<Iter>;
 
@@ -92,7 +88,6 @@ class BitIteratorBase {
     Iter iter_ = {};
     mutable TemporaryTp current_value_ = {};
     uint16_t bit_iter_;
-    mutable bool should_fetch_ = true;
 };
 
 template <typename Iter>
@@ -130,9 +125,9 @@ class LittleEndianInputBitIter : public BitIteratorBase<Iter> {
         std::is_nothrow_copy_assignable_v<Iter>) = default;
 
     [[nodiscard]] constexpr bit operator*() const noexcept {
-        if (this->should_fetch_) {
+        if (should_fetch_) {
             this->current_value_ = *this->iter_ >> this->bit_iter_;
-            this->should_fetch_ = false;
+            should_fetch_ = false;
         }
         return this->current_value_ & kParityBitMask;
     }
@@ -140,7 +135,7 @@ class LittleEndianInputBitIter : public BitIteratorBase<Iter> {
     constexpr LittleEndianInputBitIter& operator++() noexcept {
         if (++this->bit_iter_ == this->ByteLength()) {
             this->bit_iter_ = 0;
-            this->should_fetch_ = true;
+            should_fetch_ = true;
             ++this->iter_;
         } else {
             this->current_value_ >>= 1;
@@ -154,10 +149,16 @@ class LittleEndianInputBitIter : public BitIteratorBase<Iter> {
         return temp;
     }
 
+    [[nodiscard]] constexpr size_t Position() const noexcept {
+        return this->bit_iter_;
+    }
+
    private:
     using TemporaryTp = std::iter_value_t<Iter>;
 
     static constexpr TemporaryTp kParityBitMask = 1;
+
+    mutable bool should_fetch_ = true;
 };
 
 template <typename Iter>
@@ -214,6 +215,10 @@ class LittleEndianOutputBitIter : public BitIteratorBase<Iter> {
         int) noexcept {
         return *this;
     }
+
+    [[nodiscard]] constexpr size_t Position() const noexcept {
+        return this->bit_iter_;
+    }
 };
 
 template <typename Iter>
@@ -225,12 +230,12 @@ class BigEndianInputBitIter : public BitIteratorBase<Iter> {
 
     explicit constexpr BigEndianInputBitIter(Iter iterator) noexcept(
         std::is_nothrow_move_constructible_v<Iter>)
-        : BitIteratorBase<Iter>{std::move(iterator), this->ByteLength() - 1} {}
+        : BitIteratorBase<Iter>{std::move(iterator), 0} {}
 
     explicit constexpr BigEndianInputBitIter() noexcept(
         std::is_nothrow_move_constructible_v<Iter>)
         requires std::constructible_from<Iter>
-        : BitIteratorBase<Iter>{this->ByteLength() - 1} {}
+        : BitIteratorBase<Iter>{0} {}
 
     constexpr BigEndianInputBitIter(BigEndianInputBitIter&& other) noexcept(
         std::is_nothrow_move_constructible_v<Iter>) = default;
@@ -249,17 +254,17 @@ class BigEndianInputBitIter : public BitIteratorBase<Iter> {
         std::is_nothrow_copy_assignable_v<Iter>) = default;
 
     [[nodiscard]] constexpr bit operator*() const noexcept {
-        if (this->should_fetch_) {
+        if (should_fetch_) {
             this->current_value_ = *this->iter_ << this->bit_iter_;
-            this->should_fetch_ = false;
+            should_fetch_ = false;
         }
         return this->current_value_ & kSignBitMask;
     }
 
     constexpr BigEndianInputBitIter& operator++() noexcept {
-        if (!(this->bit_iter_--)) {
-            this->bit_iter_ = this->ByteLength() - 1;
-            this->should_fetch_ = true;
+        if (++this->bit_iter_ == this->ByteLength()) {
+            this->bit_iter_ = 0;
+            should_fetch_ = true;
             ++this->iter_;
         } else {
             this->current_value_ <<= 1;
@@ -273,10 +278,17 @@ class BigEndianInputBitIter : public BitIteratorBase<Iter> {
         return temp;
     }
 
+    [[nodiscard]] constexpr size_t Position() const noexcept {
+        return this->ByteLength() - 1 - this->bit_iter_;
+    }
+
    private:
     using TemporaryTp = std::iter_value_t<Iter>;
 
-    static constexpr TemporaryTp kSignBitMask = 1 << (sizeof(TemporaryTp) - 1);
+    static constexpr TemporaryTp kSignBitMask =
+        1 << (BitIteratorBase<Iter>::ByteLength() - 1);
+
+    mutable bool should_fetch_ = true;
 };
 
 template <typename Iter>
