@@ -20,11 +20,18 @@ concept SizeAwareEncoder =
         { encoder.TokenBitSize(token) } -> std::same_as<float>;
     };
 
+template <typename TokenTp, BitInputRange InputRangeTp,
+          std::ranges::output_range<Tp> OutputRangeTp>
+struct DecodingResult {
+    InputRangeTp input_range;
+    OutputRangeTp output_range;
+};
+
 template <typename DecoderTp, typename Tp>
 concept Decoder = requires(DecoderTp decoder, DummyBitInputRange input,
                            DummyOutputRange<Tp> output) {
-    decoder.Decode(input, output);
-    decoder(input, output);
+    { decoder.Decode(input, output) } -> SpecializationOf<DecodingResult>;
+    { decoder(input, output) } -> SpecializationOf<DecodingResult>;
 };
 
 template <typename DecoderTp, typename Tp>
