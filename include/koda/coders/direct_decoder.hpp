@@ -12,10 +12,10 @@ struct DirectDecoder {
 
     constexpr float TokenBitSize(Token token) const;
 
-    constexpr void Decode(BitInputRange auto&& input,
+    constexpr auto Decode(BitInputRange auto&& input,
                           std::ranges::output_range<Token> auto&& output);
 
-    constexpr void operator()(BitInputRange auto&& input,
+    constexpr auto operator()(BitInputRange auto&& input,
                               std::ranges::output_range<Token> auto&& output);
 };
 

@@ -12,25 +12,31 @@ constexpr float DirectDecoder<Token>::TokenBitSize(Token token) const {
 }
 
 template <typename Token>
-constexpr void DirectDecoder<Token>::Decode(
+constexpr auto DirectDecoder<Token>::Decode(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
-    const auto sentinel = std::ranges::end(input);
     auto output_iter = std::ranges::begin(output);
-    const auto output_sent = std::ranges::end(output);
-    for (auto iter = std::ranges::begin(input);
-         iter != sentinel && output_iter != output_sent;) {
-        *output_iter++ =
-            Traits::template DecodeToken(std::ranges::subrange{iter, sentinel});
+
+    std::ranges::subrange input_range{std::ranges::begin(input),
+                                      std::ranges::end(input)};
+    while (std::ranges::begin(input_range) != std::ranges::end(input_range)) {
+        std::tie(*output_iter++, input_range) =
+            Traits::template DecodeToken(input_range);
     }
+    return std::ranges::subrange{std::move(output_iter),
+                                 std::ranges::end(output)};
 }
 
 template <typename Token>
-constexpr void DirectDecoder<Token>::operator()(
+constexpr auto DirectDecoder<Token>::operator()(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
-    Decode(std::forward<decltype(input)>(input),
-           std::forward<decltype(output)>(output));
+    auto decoding_res = Decode(std::forward<decltype(input)>(input),
+                               std::forward<decltype(output)>(output));
+    auto iter = std::ranges::begin(decoding_res);
+    iter.Flush();
+    return std::ranges::subrange{std::move(iter),
+                                 std::ranges::end(decoding_res)};
 }
 
 }  // namespace koda
