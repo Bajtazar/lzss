@@ -35,10 +35,6 @@ concept BitOutputRange = std::ranges::output_range<Range, bool> &&
 template <typename Iter>
 class BitIteratorBase {
    public:
-    using bit = bool;
-    using value_type = bit;
-    using difference_type = std::ptrdiff_t;
-
     [[nodiscard]] friend constexpr bool operator==(
         BitIteratorBase const& left, BitIteratorBase const& right) noexcept {
         return (left.iter_ == right.iter_) &&
@@ -70,11 +66,13 @@ class BitIteratorBase {
    protected:
     using TemporaryTp = std::iter_value_t<Iter>;
 
-    explicit constexpr BitIterator(Iter iterator, uint16_t start_iter) noexcept(
-        std::is_nothrow_move_constructible_v<Iter>)
+    explicit constexpr BitIteratorBase(
+        Iter iterator,
+        uint16_t
+            start_iter) noexcept(std::is_nothrow_move_constructible_v<Iter>)
         : iter_{std::move(iterator)}, bit_iter_{start_iter} {}
 
-    explicit constexpr BitIterator(uint16_t start_iter) noexcept(
+    explicit constexpr BitIteratorBase(uint16_t start_iter) noexcept(
         std::is_nothrow_move_constructible_v<Iter>)
         requires std::constructible_from<Iter>
         : bit_iter_{start_iter} {}
@@ -88,29 +86,33 @@ class BitIteratorBase {
 template <typename Iter>
 class LittleEndianInputBitIter : public BitIteratorBase<Iter> {
    public:
+    using bit = bool;
+    using value_type = bit;
+    using difference_type = std::ptrdiff_t;
+
     explicit constexpr LittleEndianInputBitIter(Iter iterator) noexcept(
         std::is_nothrow_move_constructible_v<Iter>)
-        : BitInputIteratorBase<Iter>{std::move(iterator), 0} {}
+        : BitIteratorBase<Iter>{std::move(iterator), 0} {}
 
     explicit constexpr LittleEndianInputBitIter() noexcept(
         std::is_nothrow_move_constructible_v<Iter>)
         requires std::constructible_from<Iter>
-        : BitInputIteratorBase<Iter>{0} {}
+        : BitIteratorBase<Iter>{0} {}
 
     [[nodiscard]] constexpr bit operator*() const noexcept {
-        if (should_fetch_) {
-            current_value_ = *iter_;
-            should_fetch_ = false;
+        if (this->should_fetch_) {
+            this->current_value_ = *(this->iter_);
+            this->should_fetch_ = false;
         }
-        return current_value_ & kParityBitMask;
+        return this->current_value_ & kParityBitMask;
     }
 
     constexpr LittleEndianInputBitIter& operator++() noexcept {
-        if (++bit_iter_ == ByteLength()) {
-            bit_iter_ = 0;
-            should_fetch_ = true;
+        if (++(this->bit_iter_) == this->ByteLength()) {
+            this->bit_iter_ = 0;
+            this->should_fetch_ = true;
         } else {
-            current_value_ >>= 1;
+            this->current_value_ >>= 1;
         }
         return *this;
     }
@@ -122,26 +124,32 @@ class LittleEndianInputBitIter : public BitIteratorBase<Iter> {
     }
 
    private:
+    using TemporaryTp = std::iter_value_t<Iter>;
+
     static constexpr TemporaryTp kParityBitMask = 1;
 };
 
 template <typename Iter>
 class LittleEndianOutputBitIter : public BitIteratorBase<Iter> {
    public:
+    using bit = bool;
+    using value_type = bit;
+    using difference_type = std::ptrdiff_t;
+
     explicit constexpr LittleEndianOutputBitIter(Iter iterator) noexcept(
         std::is_nothrow_move_constructible_v<Iter>)
-        : BitInputIteratorBase<Iter>{std::move(iterator), 0} {}
+        : BitIteratorBase<Iter>{std::move(iterator), 0} {}
 
     explicit constexpr LittleEndianOutputBitIter() noexcept(
         std::is_nothrow_move_constructible_v<Iter>)
         requires std::constructible_from<Iter>
-        : BitInputIteratorBase<Iter>{0} {}
+        : BitIteratorBase<Iter>{0} {}
 
     constexpr LittleEndianOutputBitIter& operator=(bit value) noexcept {
-        current_value_ |= (value ? 1 : 0) << bit_iter_;
-        if (++bit_iter_ == ByteLength()) {
-            *iter_++ = current_value_;
-            bit_iter_ = current_value_ = 0;
+        this->current_value_ |= (value ? 1 : 0) << this->bit_iter_;
+        if (++(this->bit_iter_) == this->ByteLength()) {
+            *(this->iter_)++ = this->current_value_;
+            this->bit_iter_ = this->current_value_ = 0;
         }
         return *this;
     }
@@ -160,63 +168,73 @@ class LittleEndianOutputBitIter : public BitIteratorBase<Iter> {
 };
 
 template <typename Iter>
-class BigEndianInputBitIter : public BitInputIteratorBase<Iter> {
+class BigEndianInputBitIter : public BitIteratorBase<Iter> {
    public:
+    using bit = bool;
+    using value_type = bit;
+    using difference_type = std::ptrdiff_t;
+
     explicit constexpr BigEndianInputBitIter(Iter iterator) noexcept(
         std::is_nothrow_move_constructible_v<Iter>)
-        : BitInputIteratorBase<Iter>{std::move(iterator), ByteLength() - 1} {}
+        : BitIteratorBase<Iter>{std::move(iterator), this->ByteLength() - 1} {}
 
     explicit constexpr BigEndianInputBitIter() noexcept(
         std::is_nothrow_move_constructible_v<Iter>)
         requires std::constructible_from<Iter>
-        : BitInputIteratorBase<Iter>{ByteLength() - 1} {}
+        : BitIteratorBase<Iter>{this->ByteLength() - 1} {}
 
     [[nodiscard]] constexpr bit operator*() const noexcept {
-        if (should_fetch_) {
-            current_value_ = *iter_;
-            should_fetch_ = false;
+        if (this->should_fetch_) {
+            this->current_value_ = *(this->iter_);
+            this->should_fetch_ = false;
         }
-        return current_value_ & kSignBitMask;
+        return this->current_value_ & kSignBitMask;
     }
 
-    constexpr LittleEndianInputBitIter& operator++() noexcept {
-        if (!(bit_iter_--)) {
-            bit_iter_ = ByteLength() - 1;
-            should_fetch_ = true;
+    constexpr BigEndianInputBitIter& operator++() noexcept {
+        if (!((this->bit_iter_)--)) {
+            this->bit_iter_ = this->ByteLength() - 1;
+            this->should_fetch_ = true;
         } else {
-            current_value_ <<= 1;
+            this->current_value_ <<= 1;
         }
         return *this;
     }
 
-    [[nodiscard]] constexpr LittleEndianInputBitIter operator++(int) noexcept {
+    [[nodiscard]] constexpr BigEndianInputBitIter operator++(int) noexcept {
         auto temp = *this;
         ++(*this);
         return temp;
     }
 
    private:
+    using TemporaryTp = std::iter_value_t<Iter>;
+
     static constexpr TemporaryTp kSignBitMask = 1 << (sizeof(TemporaryTp) - 1);
 };
 
 template <typename Iter>
 class BigEndianOutputBitIter : public BitIteratorBase<Iter> {
    public:
-    explicit constexpr BigEndianInputBitIter(Iter iterator) noexcept(
-        std::is_nothrow_move_constructible_v<Iter>)
-        : BitInputIteratorBase<Iter>{std::move(iterator), ByteLength() - 1} {}
+    using bit = bool;
+    using value_type = bit;
+    using difference_type = std::ptrdiff_t;
 
-    explicit constexpr BigEndianInputBitIter() noexcept(
+    explicit constexpr BigEndianOutputBitIter(Iter iterator) noexcept(
+        std::is_nothrow_move_constructible_v<Iter>)
+        : BitIteratorBase<Iter>{std::move(iterator), this->ByteLength() - 1} {}
+
+    explicit constexpr BigEndianOutputBitIter() noexcept(
         std::is_nothrow_move_constructible_v<Iter>)
         requires std::constructible_from<Iter>
-        : BitInputIteratorBase<Iter>{ByteLength() - 1} {}
+        : BitIteratorBase<Iter>{this->ByteLength() - 1} {}
 
     constexpr BigEndianOutputBitIter& operator=(bit value) noexcept {
-        current_value_ = (current_value_ << 1) | (value ? 0 : 1);
-        if (!(bit_iter_--)) {
-            *iter_++ = current_value_;
-            current_value_ = 0;
-            bit_iter_ = ByteLength() - 1
+        this->current_value_ = (this->current_value_ << 1) | (value ? 0 : 1);
+        if (!((this->bit_iter_)--)) {
+            *(this->iter_)++ = this->current_value_;
+            this->current_value_ = 0;
+            this->bit_iter_ = this->ByteLength() - 1;
         }
         return *this;
     }
