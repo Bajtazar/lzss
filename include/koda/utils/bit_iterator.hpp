@@ -35,6 +35,15 @@ concept BitOutputRange = std::ranges::output_range<Range, bool> &&
 template <typename Iter>
 class BitIteratorBase {
    public:
+    explicit constexpr BitIteratorBase(Iter iterator) noexcept(
+        std::is_nothrow_move_constructible_v<Iter>)
+        : iter_{std::move(iterator)} {}
+
+    explicit constexpr BitIteratorBase() noexcept(
+        std::is_nothrow_move_constructible_v<Iter>)
+        requires std::constructible_from<Iter>
+    = default;
+
     [[nodiscard]] friend constexpr bool operator==(
         BitIteratorBase const& left, BitIteratorBase const& right) noexcept {
         return (left.iter_ == right.iter_) &&
@@ -62,17 +71,6 @@ class BitIteratorBase {
    protected:
     using TemporaryTp = std::iter_value_t<Iter>;
 
-    explicit constexpr BitIteratorBase(
-        Iter iterator,
-        uint16_t
-            start_iter) noexcept(std::is_nothrow_move_constructible_v<Iter>)
-        : iter_{std::move(iterator)}, bit_iter_{start_iter} {}
-
-    explicit constexpr BitIteratorBase(uint16_t start_iter) noexcept(
-        std::is_nothrow_move_constructible_v<Iter>)
-        requires std::constructible_from<Iter>
-        : bit_iter_{start_iter} {}
-
     constexpr BitIteratorBase(BitIteratorBase&& other) noexcept(
         std::is_nothrow_move_constructible_v<Iter>) = default;
 
@@ -87,7 +85,7 @@ class BitIteratorBase {
 
     Iter iter_ = {};
     mutable TemporaryTp current_value_ = {};
-    uint16_t bit_iter_;
+    uint16_t bit_iter_ = 0;
 };
 
 template <typename Iter>
@@ -97,14 +95,7 @@ class LittleEndianInputBitIter : public BitIteratorBase<Iter> {
     using value_type = bit;
     using difference_type = std::ptrdiff_t;
 
-    explicit constexpr LittleEndianInputBitIter(Iter iterator) noexcept(
-        std::is_nothrow_move_constructible_v<Iter>)
-        : BitIteratorBase<Iter>{std::move(iterator), 0} {}
-
-    explicit constexpr LittleEndianInputBitIter() noexcept(
-        std::is_nothrow_move_constructible_v<Iter>)
-        requires std::constructible_from<Iter>
-        : BitIteratorBase<Iter>{0} {}
+    using BitIteratorBase<Iter>::BitIteratorBase;
 
     constexpr LittleEndianInputBitIter(
         LittleEndianInputBitIter&&
@@ -168,14 +159,7 @@ class LittleEndianOutputBitIter : public BitIteratorBase<Iter> {
     using value_type = bit;
     using difference_type = std::ptrdiff_t;
 
-    explicit constexpr LittleEndianOutputBitIter(Iter iterator) noexcept(
-        std::is_nothrow_move_constructible_v<Iter>)
-        : BitIteratorBase<Iter>{std::move(iterator), 0} {}
-
-    explicit constexpr LittleEndianOutputBitIter() noexcept(
-        std::is_nothrow_move_constructible_v<Iter>)
-        requires std::constructible_from<Iter>
-        : BitIteratorBase<Iter>{0} {}
+    using BitIteratorBase<Iter>::BitIteratorBase;
 
     constexpr LittleEndianOutputBitIter(
         LittleEndianOutputBitIter&&
@@ -228,14 +212,7 @@ class BigEndianInputBitIter : public BitIteratorBase<Iter> {
     using value_type = bit;
     using difference_type = std::ptrdiff_t;
 
-    explicit constexpr BigEndianInputBitIter(Iter iterator) noexcept(
-        std::is_nothrow_move_constructible_v<Iter>)
-        : BitIteratorBase<Iter>{std::move(iterator), 0} {}
-
-    explicit constexpr BigEndianInputBitIter() noexcept(
-        std::is_nothrow_move_constructible_v<Iter>)
-        requires std::constructible_from<Iter>
-        : BitIteratorBase<Iter>{0} {}
+    using BitIteratorBase<Iter>::BitIteratorBase;
 
     constexpr BigEndianInputBitIter(BigEndianInputBitIter&& other) noexcept(
         std::is_nothrow_move_constructible_v<Iter>) = default;
@@ -298,14 +275,7 @@ class BigEndianOutputBitIter : public BitIteratorBase<Iter> {
     using value_type = bit;
     using difference_type = std::ptrdiff_t;
 
-    explicit constexpr BigEndianOutputBitIter(Iter iterator) noexcept(
-        std::is_nothrow_move_constructible_v<Iter>)
-        : BitIteratorBase<Iter>{std::move(iterator), 0} {}
-
-    explicit constexpr BigEndianOutputBitIter() noexcept(
-        std::is_nothrow_move_constructible_v<Iter>)
-        requires std::constructible_from<Iter>
-        : BitIteratorBase<Iter>{0} {}
+    using BitIteratorBase<Iter>::BitIteratorBase;
 
     constexpr BigEndianOutputBitIter(BigEndianOutputBitIter&& other) noexcept(
         std::is_nothrow_move_constructible_v<Iter>) = default;
