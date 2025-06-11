@@ -8,15 +8,21 @@
 
 namespace koda {
 
+template <BitInputRange Range>
+struct TokenTraitsDecodingResult {
+    TokenType token;
+    Range range;
+};
+
 template <typename Traits>
 concept TokenTraitsType =
     requires { Traits::TokenType; } &&
     requires(typename Traits::TokenType token, DummyBitInputRange input,
              DummyBitOutputRange output) {
-        { Traits::EncodeToken(token, input) } -> std::same_as<void>;
+        { Traits::EncodeToken(token, input) } -> BitOutputRange;
         {
             Traits::DecodeToken(output)
-        } -> std::same_as<typename Traits::TokenType>;
+        } -> SpecializationOf<TokenTraitsDecodingResult>;
         { Traits::TokenBitSize(token) } -> std::same_as<float>;
     };
 
@@ -27,11 +33,10 @@ template <std::integral Token>
 struct TokenTraits<Token> {
     using TokenType = Token;
 
-    static constexpr void EncodeToken(TokenType token,
+    static constexpr auto EncodeToken(TokenType token,
                                       BitOutputRange auto&& output);
 
-    [[nodiscard]] static constexpr TokenType DecodeToken(
-        BitInputRange auto&& input);
+    [[nodiscard]] static constexpr auto DecodeToken(BitInputRange auto&& input);
 
     [[nodiscard]] static constexpr float TokenBitSize(TokenType token);
 };
