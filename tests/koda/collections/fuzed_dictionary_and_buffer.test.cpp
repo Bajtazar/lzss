@@ -14,7 +14,7 @@ using namespace koda::tests;
 static constexpr size_t kDictSize = 32;
 static constexpr std::array<uint8_t, 4> kBuffer{0x12, 0x43, 0x55, 0x54};
 static constexpr std::basic_string_view<uint8_t> kBufferView{kBuffer};
-static constexpr size_t kRepeatitons = 10'000;
+static constexpr size_t kRepeatitons = 10'020;  // final buffer should wrap
 
 template <std::integral... Ints>
 static constexpr ViewableVector<uint8_t> AsString(Ints... chars) {

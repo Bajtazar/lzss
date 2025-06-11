@@ -415,8 +415,7 @@ SearchBinaryTree<Tp, AllocatorTp>::FindNodeToRemoval(StringView key_view) {
 template <typename Tp, typename AllocatorTp>
 constexpr SearchBinaryTree<Tp, AllocatorTp>::Node*
 SearchBinaryTree<Tp, AllocatorTp>::FindSuccessor(Node* node) {
-    for (; node->left; node = node->left)
-        ;
+    for (; node->left; node = node->left);
     return node;
 }
 

@@ -15,10 +15,10 @@ concept Encoder = requires(EncoderTp encoder, DummyInputRange<Tp> input,
 };
 
 template <typename EncoderTp, typename Tp>
-concept SizeAwareEncoder = Encoder<EncoderTp, Tp> &&
-    requires(EncoderTp encoder, Tp token) {
-    { encoder.TokenBitSize(token) } -> std::same_as<float>;
-};
+concept SizeAwareEncoder =
+    Encoder<EncoderTp, Tp> && requires(EncoderTp encoder, Tp token) {
+        { encoder.TokenBitSize(token) } -> std::same_as<float>;
+    };
 
 template <typename DecoderTp, typename Tp>
 concept Decoder = requires(DecoderTp decoder, DummyBitInputRange input,
@@ -28,9 +28,9 @@ concept Decoder = requires(DecoderTp decoder, DummyBitInputRange input,
 };
 
 template <typename DecoderTp, typename Tp>
-concept SizeAwareDecoder = Decoder<DecoderTp, Tp> &&
-    requires(DecoderTp decoder, Tp token) {
-    { decoder.TokenBitSize(token) } -> std::same_as<float>;
-};
+concept SizeAwareDecoder =
+    Decoder<DecoderTp, Tp> && requires(DecoderTp decoder, Tp token) {
+        { decoder.TokenBitSize(token) } -> std::same_as<float>;
+    };
 
 }  // namespace koda
