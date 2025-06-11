@@ -33,20 +33,63 @@ concept BitOutputRange = std::ranges::output_range<Range, bool> &&
                          BitOutputIterator<std::ranges::iterator_t<Range>>;
 
 template <typename Iter>
-class LittleEndianInputBitIter {
-   public:
+class BitIteratorBase {
+public:
     using bit = bool;
     using value_type = bit;
     using difference_type = std::ptrdiff_t;
 
-    explicit constexpr LittleEndianInputBitIter(
-        Iter iterator) noexcept(std::is_nothrow_move_constructible_v<Iter>)
-        : iter_{std::move(iterator)} {}
+    [[nodiscard]] friend constexpr bool operator==(
+        BitIteratorBase const& left,
+        BitIteratorBase const& right) noexcept {
+        return (left.iter_ == right.iter_) && (left.bit_iter_ == right.bit_iter_);
+    }
 
-    explicit constexpr LittleEndianInputBitIter() noexcept(
+    [[nodiscard]] friend constexpr bool operator==(
+        BitIteratorBase const& left,
+        std::default_sentinel_t sentinel) noexcept
+        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>)
+    {
+        return left.iter_ == sentinel;
+    }
+
+    [[nodiscard]] friend constexpr bool operator==(
+        std::default_sentinel_t sentinel,
+        BitIteratorBase const& right) noexcept
+        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>)
+    {
+        return sentinel == right.iter_;
+    }
+
+    [[nodiscard]] static inline consteval size_t ByteLength() noexcept {
+        return sizeof(TemporaryTp) * CHAR_BIT;
+    }
+
+    [[nodiscard]] constexpr size_t Position() const noexcept {
+        return bit_iter_;
+    }
+
+protected:
+    using TemporaryTp = std::iter_value_t<Iter>;
+
+    explicit constexpr BitIterator(
+        Iter iterator, uint16_t start_iter) noexcept(std::is_nothrow_move_constructible_v<Iter>)
+        : iter_{std::move(iterator), bit_iter_{start_iter} {}
+
+    explicit constexpr BitIterator(uint16_t start_iter) noexcept(
         std::is_nothrow_move_constructible_v<Iter>
-    ) requires std::constructible_from<Iter> = default;
+    ) requires std::constructible_from<Iter>
+        :  bit_iter_{start_iter} {}
 
+    Iter iter_ = {};
+    mutable TemporaryTp current_value_ = {};
+    uint16_t bit_iter_;
+    mutable bool should_fetch_ = true;
+};
+
+template <typename Iter>
+class BitInputIteratorBase : public BitIteratorBase<Iter> {
+public:
     [[nodiscard]] constexpr bit operator*() const noexcept {
         if (should_fetch_) {
             current_value_ = *iter_;
@@ -54,6 +97,21 @@ class LittleEndianInputBitIter {
         }
         return current_value_ & 1;
     }
+protected:
+    using BitIteratorBase<Iter>::BitIterator;
+};
+
+template <typename Iter>
+class LittleEndianInputBitIter : public BitInputIteratorBase<Iter> {
+   public:
+    explicit constexpr LittleEndianInputBitIter(
+        Iter iterator) noexcept(std::is_nothrow_move_constructible_v<Iter>)
+        : BitInputIteratorBase<Iter>{std::move(iterator), 0} {}
+
+    explicit constexpr LittleEndianInputBitIter() noexcept(
+        std::is_nothrow_move_constructible_v<Iter>
+    ) requires std::constructible_from<Iter>
+        : BitInputIteratorBase<Iter>{0} {}
 
     constexpr LittleEndianInputBitIter& operator++() noexcept {
         if (++bit_iter_ == ByteLength()) {
@@ -70,44 +128,6 @@ class LittleEndianInputBitIter {
         ++(*this);
         return temp;
     }
-
-    [[nodiscard]] friend constexpr bool operator==(
-        LittleEndianInputBitIter const& left,
-        LittleEndianInputBitIter const& right) noexcept {
-        return (left.iter_ == right.iter_) && (left.bit_iter_ == right.bit_iter_);
-    }
-
-    [[nodiscard]] friend constexpr bool operator==(
-        LittleEndianInputBitIter const& left,
-        std::default_sentinel_t sentinel) noexcept
-        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>)
-    {
-        return left.iter_ == sentinel;
-    }
-
-    [[nodiscard]] friend constexpr bool operator==(
-        std::default_sentinel_t sentinel,
-        LittleEndianInputBitIter const& right) noexcept
-        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>)
-    {
-        return sentinel == right.iter_;
-    }
-
-    [[nodiscard]] static inline consteval size_t ByteLength() noexcept {
-        return sizeof(TemporaryTp) * CHAR_BIT;
-    }
-
-    [[nodiscard]] constexpr size_t Position() const noexcept {
-        return bit_iter_;
-    }
-
-   private:
-    using TemporaryTp = std::iter_value_t<Iter>;
-
-    Iter iter_ = {};
-    mutable TemporaryTp current_value_ = {};
-    uint16_t bit_iter_ = 0;
-    mutable bool should_fetch_ = true;
 };
 
 template <typename Iter>
@@ -118,8 +138,7 @@ class LittleEndianOutputBitIter {
     using difference_type = std::ptrdiff_t;
 
     explicit constexpr LittleEndianOutputBitIter(
-        OutputBitIteratorSource<Iter>& source) noexcept
-        : source_{std::addressof(source)} {}
+        Iterator iter) {}
 
     explicit constexpr LittleEndianOutputBitIter() noexcept = default;
 
@@ -171,7 +190,12 @@ class LittleEndianOutputBitIter {
     }
 
    private:
-    OutputBitIteratorSource<Iter>* source_ = nullptr;
+    using TemporaryTp = std::iter_value_t<Iter>;
+
+    Iter iter_ = {};
+    mutable TemporaryTp current_value_ = {};
+    uint16_t bit_iter_ = 0;
+    mutable bool should_fetch_ = true;
 };
 
 template <typename Iter>
