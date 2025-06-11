@@ -34,28 +34,26 @@ concept BitOutputRange = std::ranges::output_range<Range, bool> &&
 
 template <typename Iter>
 class BitIteratorBase {
-public:
+   public:
     using bit = bool;
     using value_type = bit;
     using difference_type = std::ptrdiff_t;
 
     [[nodiscard]] friend constexpr bool operator==(
-        BitIteratorBase const& left,
-        BitIteratorBase const& right) noexcept {
-        return (left.iter_ == right.iter_) && (left.bit_iter_ == right.bit_iter_);
+        BitIteratorBase const& left, BitIteratorBase const& right) noexcept {
+        return (left.iter_ == right.iter_) &&
+               (left.bit_iter_ == right.bit_iter_);
     }
 
     [[nodiscard]] friend constexpr bool operator==(
-        BitIteratorBase const& left,
-        std::default_sentinel_t sentinel) noexcept
+        BitIteratorBase const& left, std::default_sentinel_t sentinel) noexcept
         requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>)
     {
         return left.iter_ == sentinel;
     }
 
     [[nodiscard]] friend constexpr bool operator==(
-        std::default_sentinel_t sentinel,
-        BitIteratorBase const& right) noexcept
+        std::default_sentinel_t sentinel, BitIteratorBase const& right) noexcept
         requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>)
     {
         return sentinel == right.iter_;
@@ -69,17 +67,17 @@ public:
         return bit_iter_;
     }
 
-protected:
+   protected:
     using TemporaryTp = std::iter_value_t<Iter>;
 
-    explicit constexpr BitIterator(
-        Iter iterator, uint16_t start_iter) noexcept(std::is_nothrow_move_constructible_v<Iter>)
-        : iter_{std::move(iterator), bit_iter_{start_iter} {}
+    explicit constexpr BitIterator(Iter iterator, uint16_t start_iter) noexcept(
+        std::is_nothrow_move_constructible_v<Iter>)
+        : iter_{std::move(iterator)}, bit_iter_{start_iter} {}
 
     explicit constexpr BitIterator(uint16_t start_iter) noexcept(
-        std::is_nothrow_move_constructible_v<Iter>
-    ) requires std::constructible_from<Iter>
-        :  bit_iter_{start_iter} {}
+        std::is_nothrow_move_constructible_v<Iter>)
+        requires std::constructible_from<Iter>
+        : bit_iter_{start_iter} {}
 
     Iter iter_ = {};
     mutable TemporaryTp current_value_ = {};
@@ -88,8 +86,17 @@ protected:
 };
 
 template <typename Iter>
-class BitInputIteratorBase : public BitIteratorBase<Iter> {
-public:
+class LittleEndianInputBitIter : public BitIteratorBase<Iter> {
+   public:
+    explicit constexpr LittleEndianInputBitIter(Iter iterator) noexcept(
+        std::is_nothrow_move_constructible_v<Iter>)
+        : BitInputIteratorBase<Iter>{std::move(iterator), 0} {}
+
+    explicit constexpr LittleEndianInputBitIter() noexcept(
+        std::is_nothrow_move_constructible_v<Iter>)
+        requires std::constructible_from<Iter>
+        : BitInputIteratorBase<Iter>{0} {}
+
     [[nodiscard]] constexpr bit operator*() const noexcept {
         if (should_fetch_) {
             current_value_ = *iter_;
@@ -97,21 +104,6 @@ public:
         }
         return current_value_ & 1;
     }
-protected:
-    using BitIteratorBase<Iter>::BitIterator;
-};
-
-template <typename Iter>
-class LittleEndianInputBitIter : public BitInputIteratorBase<Iter> {
-   public:
-    explicit constexpr LittleEndianInputBitIter(
-        Iter iterator) noexcept(std::is_nothrow_move_constructible_v<Iter>)
-        : BitInputIteratorBase<Iter>{std::move(iterator), 0} {}
-
-    explicit constexpr LittleEndianInputBitIter() noexcept(
-        std::is_nothrow_move_constructible_v<Iter>
-    ) requires std::constructible_from<Iter>
-        : BitInputIteratorBase<Iter>{0} {}
 
     constexpr LittleEndianInputBitIter& operator++() noexcept {
         if (++bit_iter_ == ByteLength()) {
@@ -137,8 +129,7 @@ class LittleEndianOutputBitIter {
     using value_type = bit;
     using difference_type = std::ptrdiff_t;
 
-    explicit constexpr LittleEndianOutputBitIter(
-        Iterator iter) {}
+    explicit constexpr LittleEndianOutputBitIter(Iterator iter) {}
 
     explicit constexpr LittleEndianOutputBitIter() noexcept = default;
 
@@ -199,64 +190,47 @@ class LittleEndianOutputBitIter {
 };
 
 template <typename Iter>
-class BigEndianInputBitIter {
+class BigEndianInputBitIter : public BitInputIteratorBase<Iter> {
    public:
     using bit = bool;
     using value_type = bit;
     using difference_type = std::ptrdiff_t;
 
-    explicit constexpr BigEndianInputBitIter(
-        InputBitIteratorSource<Iter>& source) noexcept
-        : source_{std::addressof(source)} {}
+    explicit constexpr BigEndianInputBitIter(Iter iterator) noexcept(
+        std::is_nothrow_move_constructible_v<Iter>)
+        : BitInputIteratorBase<Iter>{std::move(iterator), ByteLength() - 1} {}
 
-    explicit constexpr BigEndianInputBitIter() noexcept = default;
+    explicit constexpr BigEndianInputBitIter() noexcept(
+        std::is_nothrow_move_constructible_v<Iter>)
+        requires std::constructible_from<Iter>
+        : BitInputIteratorBase<Iter>{ByteLength() - 1} {}
 
     [[nodiscard]] constexpr bit operator*() const noexcept {
-        return source_->value();
+        if (should_fetch_) {
+            current_value_ = *iter_;
+            should_fetch_ = false;
+        }
+        return current_value_ & kSignBitMask;
     }
 
-    constexpr BigEndianInputBitIter& operator++() noexcept {
-        source_->IncrementBigEndianess();
+    constexpr LittleEndianInputBitIter& operator++() noexcept {
+        if (!(bit_iter_--)) {
+            bit_iter_ = ByteLength() - 1;
+            should_fetch_ = true;
+        } else {
+            current_value_ <<= 1;
+        }
         return *this;
     }
 
-    [[nodiscard]] constexpr BigEndianInputBitIter operator++(int) noexcept {
-        source_->IncrementBigEndianess();
-        return *this;
-    }
-
-    [[nodiscard]] friend constexpr bool operator==(
-        BigEndianInputBitIter const& left,
-        BigEndianInputBitIter const& right) noexcept {
-        return *left.source_ == *right.source_;
-    }
-
-    [[nodiscard]] friend constexpr bool operator==(
-        BigEndianInputBitIter const& left,
-        std::default_sentinel_t sentinel) noexcept
-        requires(WeaklyEqualityComparable<Iter, std::default_sentinel_t>)
-    {
-        return !left.source_ || *left.source_ == sentinel;
-    }
-
-    [[nodiscard]] friend constexpr bool operator==(
-        std::default_sentinel_t sentinel,
-        BigEndianInputBitIter const& right) noexcept
-        requires(WeaklyEqualityComparable<std::default_sentinel_t, Iter>)
-    {
-        return !right.source_ || sentinel == *right.source_;
-    }
-
-    [[nodiscard]] static inline consteval size_t ByteLength() noexcept {
-        return InputBitIteratorSource<Iter>::ByteLength();
-    }
-
-    [[nodiscard]] constexpr size_t Position() const noexcept {
-        return source_->Position();
+    [[nodiscard]] constexpr LittleEndianInputBitIter operator++(int) noexcept {
+        auto temp = *this;
+        ++(*this);
+        return temp;
     }
 
    private:
-    InputBitIteratorSource<Iter>* source_ = nullptr;
+    static constexpr TemporaryTp kSignBitMask = 1 << (sizeof(TemporaryTp) - 1);
 };
 
 template <typename Iter>
@@ -334,16 +308,19 @@ class BigEndianOutputBitIter {
 //     using sentinel_type =
 //         LittleEndianInputBitIter<std::ranges::sentinel_t<const Range>>;
 
-//     constexpr explicit LittleEndianInputBitRangeWrapper(const Range& range)
+//     constexpr explicit LittleEndianInputBitRangeWrapper(const Range&
+//     range)
 //         : begin_{BeginSource::MakeLittleEndianSource(
 //               std::ranges::begin(range))},
-//           end_{EndSource::MakeLittleEndianSource(std::ranges::end(range))} {}
+//           end_{EndSource::MakeLittleEndianSource(std::ranges::end(range))}
+//           {}
 
 //     [[nodiscard]] constexpr iterator_type begin() {
 //         return iterator_type{begin_};
 //     }
 
-//     [[nodiscard]] constexpr sentinel_type end() { return sentinel_type{end_}; }
+//     [[nodiscard]] constexpr sentinel_type end() { return
+//     sentinel_type{end_}; }
 
 //    private:
 //     BeginSource begin_;
@@ -361,15 +338,18 @@ class BigEndianOutputBitIter {
 //     using iterator_type =
 //         LittleEndianInputBitIter<std::ranges::iterator_t<const Range>>;
 
-//     constexpr explicit LittleEndianInputBitRangeWrapper(const Range& range)
+//     constexpr explicit LittleEndianInputBitRangeWrapper(const Range&
+//     range)
 //         : begin_{
-//               BeginSource::MakeLittleEndianSource(std::ranges::begin(range))} {}
+//               BeginSource::MakeLittleEndianSource(std::ranges::begin(range))}
+//               {}
 
 //     [[nodiscard]] constexpr iterator_type begin() {
 //         return iterator_type{begin_};
 //     }
 
-//     [[nodiscard]] constexpr std::default_sentinel_t end() const noexcept {
+//     [[nodiscard]] constexpr std::default_sentinel_t end() const noexcept
+//     {
 //         return std::default_sentinel;
 //     }
 
@@ -391,14 +371,17 @@ class BigEndianOutputBitIter {
 //         BigEndianInputBitIter<std::ranges::sentinel_t<const Range>>;
 
 //     constexpr explicit BigEndianInputBitRangeWrapper(const Range& range)
-//         : begin_{BeginSource::MakeBigEndianSource(std::ranges::begin(range))},
-//           end_{EndSource::MakeBigEndianSource(std::ranges::end(range))} {}
+//         :
+//         begin_{BeginSource::MakeBigEndianSource(std::ranges::begin(range))},
+//           end_{EndSource::MakeBigEndianSource(std::ranges::end(range))}
+//           {}
 
 //     [[nodiscard]] constexpr iterator_type begin() {
 //         return iterator_type{begin_};
 //     }
 
-//     [[nodiscard]] constexpr sentinel_type end() { return sentinel_type{end_}; }
+//     [[nodiscard]] constexpr sentinel_type end() { return
+//     sentinel_type{end_}; }
 
 //    private:
 //     BeginSource begin_;
@@ -417,13 +400,16 @@ class BigEndianOutputBitIter {
 //         BigEndianInputBitIter<std::ranges::iterator_t<const Range>>;
 
 //     constexpr explicit BigEndianInputBitRangeWrapper(const Range& range)
-//         : begin_{BeginSource::MakeBigEndianSource(std::ranges::begin(range))} {}
+//         :
+//         begin_{BeginSource::MakeBigEndianSource(std::ranges::begin(range))}
+//         {}
 
 //     [[nodiscard]] constexpr iterator_type begin() {
 //         return iterator_type{begin_};
 //     }
 
-//     [[nodiscard]] constexpr std::default_sentinel_t end() const noexcept {
+//     [[nodiscard]] constexpr std::default_sentinel_t end() const noexcept
+//     {
 //         return std::default_sentinel;
 //     }
 
@@ -433,8 +419,9 @@ class BigEndianOutputBitIter {
 
 // template <typename Range>
 // class LittleEndianOutputBitRangeWrapper {
-//     using BeginSource = OutputBitIteratorSource<std::ranges::iterator_t<Range>>;
-//     using EndSource = OutputBitIteratorSource<std::ranges::sentinel_t<Range>>;
+//     using BeginSource =
+//     OutputBitIteratorSource<std::ranges::iterator_t<Range>>; using
+//     EndSource = OutputBitIteratorSource<std::ranges::sentinel_t<Range>>;
 
 //    public:
 //     using iterator_type =
@@ -445,13 +432,15 @@ class BigEndianOutputBitIter {
 //     constexpr explicit LittleEndianOutputBitRangeWrapper(Range&& range)
 //         : begin_{BeginSource::MakeLittleEndianSource(
 //               std::ranges::begin(range))},
-//           end_{EndSource::MakeLittleEndianSource(std::ranges::end(range))} {}
+//           end_{EndSource::MakeLittleEndianSource(std::ranges::end(range))}
+//           {}
 
 //     [[nodiscard]] constexpr iterator_type begin() {
 //         return iterator_type{begin_};
 //     }
 
-//     [[nodiscard]] constexpr sentinel_type end() { return sentinel_type{end_}; }
+//     [[nodiscard]] constexpr sentinel_type end() { return
+//     sentinel_type{end_}; }
 
 //    private:
 //     BeginSource begin_;
@@ -462,7 +451,8 @@ class BigEndianOutputBitIter {
 //     requires std::same_as<std::ranges::sentinel_t<Range>,
 //                           std::default_sentinel_t>
 // class LittleEndianOutputBitRangeWrapper<Range> {
-//     using BeginSource = OutputBitIteratorSource<std::ranges::iterator_t<Range>>;
+//     using BeginSource =
+//     OutputBitIteratorSource<std::ranges::iterator_t<Range>>;
 
 //    public:
 //     using iterator_type =
@@ -470,13 +460,15 @@ class BigEndianOutputBitIter {
 
 //     constexpr explicit LittleEndianOutputBitRangeWrapper(Range&& range)
 //         : begin_{
-//               BeginSource::MakeLittleEndianSource(std::ranges::begin(range))} {}
+//               BeginSource::MakeLittleEndianSource(std::ranges::begin(range))}
+//               {}
 
 //     [[nodiscard]] constexpr iterator_type begin() {
 //         return iterator_type{begin_};
 //     }
 
-//     [[nodiscard]] constexpr std::default_sentinel_t end() const noexcept {
+//     [[nodiscard]] constexpr std::default_sentinel_t end() const noexcept
+//     {
 //         return std::default_sentinel;
 //     }
 
@@ -486,8 +478,9 @@ class BigEndianOutputBitIter {
 
 // template <typename Range>
 // class BigEndianOutputBitRangeWrapper {
-//     using BeginSource = OutputBitIteratorSource<std::ranges::iterator_t<Range>>;
-//     using EndSource = OutputBitIteratorSource<std::ranges::sentinel_t<Range>>;
+//     using BeginSource =
+//     OutputBitIteratorSource<std::ranges::iterator_t<Range>>; using
+//     EndSource = OutputBitIteratorSource<std::ranges::sentinel_t<Range>>;
 
 //    public:
 //     using iterator_type =
@@ -496,14 +489,17 @@ class BigEndianOutputBitIter {
 //         BigEndianOutputBitIter<std::ranges::sentinel_t<Range>>;
 
 //     constexpr explicit BigEndianOutputBitRangeWrapper(Range&& range)
-//         : begin_{BeginSource::MakeBigEndianSource(std::ranges::begin(range))},
-//           end_{EndSource::MakeBigEndianSource(std::ranges::end(range))} {}
+//         :
+//         begin_{BeginSource::MakeBigEndianSource(std::ranges::begin(range))},
+//           end_{EndSource::MakeBigEndianSource(std::ranges::end(range))}
+//           {}
 
 //     [[nodiscard]] constexpr iterator_type begin() {
 //         return iterator_type{begin_};
 //     }
 
-//     [[nodiscard]] constexpr sentinel_type end() { return sentinel_type{end_}; }
+//     [[nodiscard]] constexpr sentinel_type end() { return
+//     sentinel_type{end_}; }
 
 //    private:
 //     BeginSource begin_;
@@ -514,20 +510,24 @@ class BigEndianOutputBitIter {
 //     requires std::same_as<std::ranges::sentinel_t<Range>,
 //                           std::default_sentinel_t>
 // class BigEndianOutputBitRangeWrapper<Range> {
-//     using BeginSource = OutputBitIteratorSource<std::ranges::iterator_t<Range>>;
+//     using BeginSource =
+//     OutputBitIteratorSource<std::ranges::iterator_t<Range>>;
 
 //    public:
 //     using iterator_type =
 //         BigEndianOutputBitIter<std::ranges::iterator_t<Range>>;
 
 //     constexpr explicit BigEndianOutputBitRangeWrapper(Range&& range)
-//         : begin_{BeginSource::MakeBigEndianSource(std::ranges::begin(range))} {}
+//         :
+//         begin_{BeginSource::MakeBigEndianSource(std::ranges::begin(range))}
+//         {}
 
 //     [[nodiscard]] constexpr iterator_type begin() {
 //         return iterator_type{begin_};
 //     }
 
-//     [[nodiscard]] constexpr std::default_sentinel_t end() const noexcept {
+//     [[nodiscard]] constexpr std::default_sentinel_t end() const noexcept
+//     {
 //         return std::default_sentinel;
 //     }
 
