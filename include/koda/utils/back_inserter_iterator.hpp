@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iterator>
+#include <ranges>
 
 namespace koda {
 
@@ -27,5 +28,52 @@ struct BackInserterIterator : public std::back_insert_iterator<ContainterTp> {
 
     constexpr BackInserterIterator operator++(int) { return *this; }
 };
+
+namespace ranges {
+
+template <typename Range>
+    requires std::ranges::output_range<Range, std::ranges::range_value_t<Range>>
+class InsertFromBackView
+    : public std::ranges::view_interface<InsertFromBackView<Range>> {
+   public:
+    template <std::ranges::viewable_range RangeFwdTp>
+    constexpr InsertFromBackView(RangeFwdTp&& range)
+        : range_{std::forward<RangeFwdTp>(range)} {}
+
+    [[nodiscard]] constexpr auto begin() {
+        return BackInserterIterator{range_};
+    }
+
+    [[nodiscard]] static consteval std::default_sentinel_t end() noexcept {
+        return std::default_sentinel;
+    }
+
+    [[nodiscard]] constexpr auto&& range(this auto&& self) {
+        return std::forward_like<decltype(self)>(self.range_);
+    }
+
+   private:
+    Range& range_;
+};
+
+template <std::ranges::viewable_range Range>
+InsertFromBackView(Range&& range)
+    -> InsertFromBackView<std::remove_cvref_t<Range>>;
+
+}  // namespace ranges
+
+namespace views {
+
+struct InsertFromBackAdaptorClosure
+    : public std::ranges::range_adaptor_closure<InsertFromBackAdaptorClosure> {
+    template <std::ranges::sized_range Range>
+    [[nodiscard]] constexpr auto operator()(Range&& range) const {
+        return ranges::InsertFromBackView{std::forward<Range>(range)};
+    }
+};
+
+inline constexpr InsertFromBackAdaptorClosure InsertFromBack{};
+
+}  // namespace views
 
 }  // namespace koda
