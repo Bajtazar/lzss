@@ -2,56 +2,56 @@
 
 namespace koda {
 
-template <std::integral InputToken,
-          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
-          typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
-constexpr LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::LzssEncoder(
+template <std::integral Token,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
+constexpr LzssEncoder<Token, AuxiliaryEncoder, Allocator>::LzssEncoder(
     size_t dictionary_size, size_t look_ahead_size,
     AuxiliaryEncoder auxiliary_encoder,
-    std::optional<size_t> cyclic_buffer_size, const AllocatorTp& allocator)
+    std::optional<size_t> cyclic_buffer_size, const Allocator& allocator)
     : dictionary_and_buffer_{FusedDictAndBufferInfo{
           dictionary_size, std::move(cyclic_buffer_size)}},
       search_tree_{look_ahead_size, allocator},
       auxiliary_encoder_{std::move(auxiliary_encoder)} {}
 
-template <std::integral InputToken,
-          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
-          typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
-constexpr LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::LzssEncoder(
+template <std::integral Token,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
+constexpr LzssEncoder<Token, AuxiliaryEncoder, Allocator>::LzssEncoder(
     size_t dictionary_size, size_t look_ahead_size,
-    std::optional<size_t> cyclic_buffer_size, const AllocatorTp& allocator)
+    std::optional<size_t> cyclic_buffer_size, const Allocator& allocator)
     requires std::is_default_constructible_v<AuxiliaryEncoder>
     : LzssEncoder{dictionary_size, look_ahead_size, AuxiliaryEncoder{},
                   std::move(cyclic_buffer_size), allocator} {}
 
-template <std::integral InputToken,
-          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
-          typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
+template <std::integral Token,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 [[nodiscard]] constexpr auto&&
-LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::auxiliary_encoder(
+LzssEncoder<Token, AuxiliaryEncoder, Allocator>::auxiliary_encoder(
     this auto&& self) {
     return std::forward_like<decltype(self)>(self.auxiliary_encoder_);
 }
 
-template <std::integral InputToken,
-          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
-          typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
-constexpr auto LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::Flush(
+template <std::integral Token,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
+constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::Flush(
     BitOutputRange auto&& output) {
     return auxiliary_encoder_.Flush(
         FlushData(std::forward<decltype(output)>(output)));
 }
 
-template <std::integral InputToken,
-          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
-          typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
-constexpr auto LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::Encode(
-    InputRange<InputToken> auto&& input, BitOutputRange auto&& output) {
+template <std::integral Token,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
+constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::Encode(
+    InputRange<Token> auto&& input, BitOutputRange auto&& output) {
     if (std::holds_alternative<FusedDictAndBufferInfo>(
             dictionary_and_buffer_)) {
         return EncodeData(InitializeBuffer(input), output);
@@ -59,17 +59,17 @@ constexpr auto LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::Encode(
     return EncodeData(input, output);
 }
 
-template <std::integral InputToken,
-          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
-          typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
+template <std::integral Token,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto
-LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::InitializeBuffer(
-    InputRange<InputToken> auto&& input) {
+LzssEncoder<Token, AuxiliaryEncoder, Allocator>::InitializeBuffer(
+    InputRange<Token> auto&& input) {
     const size_t look_ahead_size = search_tree_.string_size();
 
-    std::vector<InputToken> init_view{
-        std::from_range, input | std::views::take(look_ahead_size)};
+    std::vector<Token> init_view{std::from_range,
+                                 input | std::views::take(look_ahead_size)};
 
     auto [dict_size, cyclic_buffer_size] =
         std::get<FusedDictAndBufferInfo>(dictionary_and_buffer_);
@@ -80,18 +80,17 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::InitializeBuffer(
     return input | std::views::drop(look_ahead_size);
 }
 
-template <std::integral InputToken,
-          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
-          typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
-constexpr auto
-LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::EncodeData(
-    InputRange<InputToken> auto&& input, BitOutputRange auto&& output) {
-    [[assume(std::holds_alternative<FusedDictionaryAndBuffer<InputToken>>(
+template <std::integral Token,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
+constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
+    InputRange<Token> auto&& input, BitOutputRange auto&& output) {
+    [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(
         dictionary_and_buffer_))]];
 
     auto& dict =
-        std::get<FusedDictionaryAndBuffer<InputToken>>(dictionary_and_buffer_);
+        std::get<FusedDictionaryAndBuffer<Token>>(dictionary_and_buffer_);
 
     std::ranges::subrange out_range{std::ranges::begin(output),
                                     std::ranges::end(output)};
@@ -105,13 +104,13 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::EncodeData(
     return out_range;
 }
 
-template <std::integral InputToken,
-          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
-          typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
+template <std::integral Token,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto
-LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::EncodeTokenOrMatch(
-    InputToken token, const Match& match, BitOutputRange auto&& output) {
+LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
+    Token token, const Match& match, BitOutputRange auto&& output) {
     IMToken symbol_token{token};
 
     if (!match) {
@@ -136,13 +135,13 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::EncodeTokenOrMatch(
         std::ranges::subrange{&match_token, std::next(&match_token)}, output);
 }
 
-template <std::integral InputToken,
-          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
-          typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
+template <std::integral Token,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto
-LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::PeformEncodigStep(
-    FusedDictionaryAndBuffer<InputToken>& dict, SequenceView look_ahead,
+LzssEncoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
+    FusedDictionaryAndBuffer<Token>& dict, SequenceView look_ahead,
     BitOutputRange auto&& output) {
     if (!match_count_) {
         auto new_output = EncodeTokenOrMatch(look_ahead[0],
@@ -157,30 +156,28 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::PeformEncodigStep(
     return output;
 }
 
-template <std::integral InputToken,
-          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
-          typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
-constexpr void LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::
-    TryToRemoveStringFromSearchTree(
-        FusedDictionaryAndBuffer<InputToken>& dict) {
+template <std::integral Token,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
+constexpr void LzssEncoder<Token, AuxiliaryEncoder, Allocator>::
+    TryToRemoveStringFromSearchTree(FusedDictionaryAndBuffer<Token>& dict) {
     if (dict.dictionary_size() == dict.max_dictionary_size()) {
         search_tree_.RemoveString(dict.get_oldest_dictionary_full_match());
     }
 }
 
-template <std::integral InputToken,
-          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
-          typename AllocatorTp>
-    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
-constexpr auto
-LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::FlushData(
+template <std::integral Token,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
+constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
     BitOutputRange auto&& output) {
-    [[assume(std::holds_alternative<FusedDictionaryAndBuffer<InputToken>>(
+    [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(
         dictionary_and_buffer_))]];
 
     auto& dict =
-        std::get<FusedDictionaryAndBuffer<InputToken>>(dictionary_and_buffer_);
+        std::get<FusedDictionaryAndBuffer<Token>>(dictionary_and_buffer_);
 
     std::ranges::subrange out_range{std::ranges::begin(output),
                                     std::ranges::end(output)};

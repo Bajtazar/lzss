@@ -8,7 +8,7 @@
 #include <iterator>
 #include <vector>
 
-static_assert(koda::Encoder<koda::DirectEncoder<uint8_t>, uint8_t>);
+static_assert(koda::SizeAwareEncoder<koda::DirectEncoder<uint8_t>, uint8_t>);
 
 BeginConstexprTest(DirectEncoderTest, EncodeBytes) {
     const std::vector<uint8_t> expected{{0x43, 0x74, 0x35, 0x33}};
