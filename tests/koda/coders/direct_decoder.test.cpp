@@ -48,7 +48,7 @@ BeginConstexprTest(DirectDecoderTest, DecodeIntegers) {
 
     koda::DirectDecoder<uint32_t> decoder;
 
-    std::vector<uint8_t> reconstruction;
+    std::vector<uint32_t> reconstruction;
 
     decoder.Decode(encoded | koda::views::LittleEndianInput,
                    reconstruction | koda::views::InsertFromBack);
