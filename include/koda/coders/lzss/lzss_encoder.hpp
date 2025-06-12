@@ -33,12 +33,12 @@ class LzssEncoder {
         const AllocatorTp& allocator = AllocatorTp{})
         requires std::is_default_constructible_v<AuxiliaryEncoder>;
 
-    constexpr void Encode(InputRange<InputToken> auto&& input,
+    constexpr auto Encode(InputRange<InputToken> auto&& input,
                           BitOutputRange auto&& output);
 
-    constexpr void Flush(BitOutputRange auto&& output);
+    constexpr auto Flush(BitOutputRange auto&& output);
 
-    constexpr void operator()(InputRange<InputToken> auto&& input,
+    constexpr auto operator()(InputRange<InputToken> auto&& input,
                               BitOutputRange auto&& output);
 
     [[nodiscard]] constexpr auto&& auxiliary_encoder(this auto&& self);
@@ -60,19 +60,19 @@ class LzssEncoder {
     AuxiliaryEncoder auxiliary_encoder_;
     uint16_t match_count_ = 0;
 
-    constexpr auto InitializeBuffer(InputRange<InputToken> auto& input);
+    constexpr auto InitializeBuffer(InputRange<InputToken> auto&& input);
 
-    constexpr void EncodeData(InputRange<InputToken> auto& input,
-                              BitOutputRange auto& output);
+    constexpr auto EncodeData(InputRange<InputToken> auto&& input,
+                              BitOutputRange auto&& output);
 
-    constexpr void FlushData(BitOutputRange auto& output);
+    constexpr auto FlushData(BitOutputRange auto&& output);
 
-    constexpr void EncodeTokenOrMatch(InputToken token, const Match& match,
-                                      BitOutputRange auto& output);
+    constexpr auto EncodeTokenOrMatch(InputToken token, const Match& match,
+                                      BitOutputRange auto&& output);
 
-    constexpr void PeformEncodigStep(FusedDictionaryAndBuffer<InputToken>& dict,
+    constexpr auto PeformEncodigStep(FusedDictionaryAndBuffer<InputToken>& dict,
                                      SequenceView look_ahead,
-                                     BitOutputRange auto& output);
+                                     BitOutputRange auto&& output);
 };
 
 }  // namespace koda
