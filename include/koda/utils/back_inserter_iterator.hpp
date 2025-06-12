@@ -40,7 +40,7 @@ class InsertFromBackView
     constexpr InsertFromBackView(RangeFwdTp&& range)
         : range_{std::forward<RangeFwdTp>(range)} {}
 
-    [[nodiscard]] constexpr auto begin() {
+    [[nodiscard]] constexpr BackInserterIterator<Range> begin() const {
         return BackInserterIterator{range_.get()};
     }
 
