@@ -67,6 +67,8 @@ struct DummyBitOutputIterator {
 
     size_t Position();
 
+    void Flush();
+
     DummyBitOutputIterator& operator++();
 
     DummyBitOutputIterator& operator++(int);

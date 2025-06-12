@@ -1,11 +1,12 @@
 #pragma once
 
+#include <koda/coders/coder.hpp>
 #include <koda/coders/token_traits.hpp>
 
 namespace koda {
 
 template <typename Token>
-struct DirectEncoder {
+struct DirectEncoder : public EncoderInterface<Token, DirectEncoder<Token>> {
     using Traits = TokenTraits<Token>;
 
     constexpr explicit DirectEncoder() noexcept = default;
@@ -16,9 +17,6 @@ struct DirectEncoder {
                           BitOutputRange auto&& output);
 
     constexpr auto Flush(BitOutputRange auto&& output);
-
-    constexpr auto operator()(InputRange<Token> auto&& input,
-                              BitOutputRange auto&& output);
 };
 
 }  // namespace koda

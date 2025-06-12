@@ -1,12 +1,13 @@
 #pragma once
 
+#include <koda/utils/concepts.hpp>
 #include <koda/utils/type_dummies.hpp>
 
 #include <cinttypes>
 
 namespace koda {
 
-template <typename Derived>
+template <typename InputToken, typename Derived>
 class EncoderInterface {
    public:
     constexpr explicit EncoderInterface() noexcept = default;
@@ -14,8 +15,8 @@ class EncoderInterface {
     constexpr auto operator()(InputRange<InputToken> auto&& input,
                               BitOutputRange auto&& output) {
         auto updated_output =
-            self().Flush(Encode(std::forward<decltype(input)>(input),
-                                std::forward<decltype(output)>(output)));
+            self().Flush(self().Encode(std::forward<decltype(input)>(input),
+                                       std::forward<decltype(output)>(output)));
         auto iter = std::ranges::begin(updated_output);
         iter.Flush();
         return std::ranges::subrange{iter, std::ranges::end(updated_output)};
@@ -25,13 +26,14 @@ class EncoderInterface {
     constexpr Derived& self() noexcept { return *static_cast<Derived*>(this); }
 };
 
-template <typename Derived>
+template <typename InputToken, typename Derived>
 class DecoderInterface {
    public:
     constexpr explicit DecoderInterface() noexcept = default;
 
-    constexpr auto operator()(InputRange<InputToken> auto&& input,
-                              BitOutputRange auto&& output) {
+    constexpr auto operator()(
+        BitInputRange auto&& input,
+        std::ranges::output_range<InputToken> auto&& output) {
         return self().Decode(std::forward<decltype(input)>(input),
                              std::forward<decltype(output)>(output));
     }

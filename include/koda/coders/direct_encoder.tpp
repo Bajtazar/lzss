@@ -27,11 +27,4 @@ constexpr auto DirectEncoder<Token>::Flush(BitOutputRange auto&& output) {
     return std::forward<decltype(output)>(output);
 }
 
-template <typename Token>
-constexpr auto DirectEncoder<Token>::operator()(InputRange<Token> auto&& input,
-                                                BitOutputRange auto&& output) {
-    return Encode(std::forward<decltype(input)>(input),
-                  std::forward<decltype(output)>(output));
-}
-
 }  // namespace koda
