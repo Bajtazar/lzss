@@ -38,6 +38,17 @@ class LzssDecoder
     [[nodiscard]] constexpr auto&& auxiliary_decoder(this auto&& self);
 
    private:
+    using SequenceView = typename FusedDictionaryAndBuffer<Token>::SequenceView;
+    using IMToken = LzssIntermediateToken<Token>;
+
+    struct FusedDictAndBufferInfo {
+        size_t dictionary_size;
+        std::optional<size_t> cyclic_buffer_size;
+    };
+
+    std::variant<FusedDictionaryAndBuffer<Token>, FusedDictAndBufferInfo>
+        dictionary_and_buffer_;
+    AuxiliaryDecoder decoder_;
 };
 
 }  // namespace koda
