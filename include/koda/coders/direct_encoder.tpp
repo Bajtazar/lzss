@@ -12,23 +12,26 @@ constexpr float DirectEncoder<Token>::TokenBitSize(Token token) const {
 }
 
 template <typename Token>
-constexpr void DirectEncoder<Token>::Encode(InputRange<Token> auto&& input,
+constexpr auto DirectEncoder<Token>::Encode(InputRange<Token> auto&& input,
                                             BitOutputRange auto&& output) {
-    std::ranges::for_each(
-        std::forward<decltype(input)>(input),
-        std::bind_back(Traits::template EncodeToken<decltype(output)>,
-                       std::forward<decltype(output)>(output)));
+    std::ranges::subrange out_range{std::ranges::begin(output),
+                                    std::ranges::end(output)};
+    for (const auto& token : input) {
+        out_range = Traits::EncodeToken(token, out_range);
+    }
+    return out_range;
 }
 
 template <typename Token>
-constexpr void DirectEncoder<Token>::Flush(
-    [[maybe_unused]] BitOutputRange auto&& output) {}
+constexpr auto DirectEncoder<Token>::Flush(BitOutputRange auto&& output) {
+    return std::forward<decltype(output)>(output);
+}
 
 template <typename Token>
-constexpr void DirectEncoder<Token>::operator()(InputRange<Token> auto&& input,
+constexpr auto DirectEncoder<Token>::operator()(InputRange<Token> auto&& input,
                                                 BitOutputRange auto&& output) {
-    Encode(std::forward<decltype(input)>(input),
-           std::forward<decltype(output)>(output));
+    return Encode(std::forward<decltype(input)>(input),
+                  std::forward<decltype(output)>(output));
 }
 
 }  // namespace koda

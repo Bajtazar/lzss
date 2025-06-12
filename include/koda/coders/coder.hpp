@@ -9,9 +9,9 @@ namespace koda {
 template <typename EncoderTp, typename Tp>
 concept Encoder = requires(EncoderTp encoder, DummyInputRange<Tp> input,
                            DummyBitOutputRange output) {
-    { encoder.Encode(input, output) } -> std::ranges::output_range<Tp>;
-    { encoder.Flush(output) } -> std::ranges::output_range<Tp>;
-    { encoder(input, output) } -> std::ranges::output_range<Tp>;
+    { encoder.Encode(input, output) } -> BitOutputRange;
+    { encoder.Flush(output) } -> BitOutputRange;
+    { encoder(input, output) } -> BitOutputRange;
 };
 
 template <typename EncoderTp, typename Tp>

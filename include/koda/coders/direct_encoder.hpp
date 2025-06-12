@@ -12,12 +12,12 @@ struct DirectEncoder {
 
     constexpr float TokenBitSize(Token token) const;
 
-    constexpr void Encode(InputRange<Token> auto&& input,
+    constexpr auto Encode(InputRange<Token> auto&& input,
                           BitOutputRange auto&& output);
 
-    constexpr void Flush(BitOutputRange auto&& output);
+    constexpr auto Flush(BitOutputRange auto&& output);
 
-    constexpr void operator()(InputRange<Token> auto&& input,
+    constexpr auto operator()(InputRange<Token> auto&& input,
                               BitOutputRange auto&& output);
 };
 
