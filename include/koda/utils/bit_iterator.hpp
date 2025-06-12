@@ -325,30 +325,27 @@ class BigEndianOutputBitIter : public BitIteratorBase<Iter> {
     }
 };
 
-namespace ranges {
+namespace details {
 
-template <typename Range>
-class LittleEndianInputView
-    : std::ranges::view_interface<LittleEndianInputView<Range>> {
+template <typename RangeTp, template <typename> class BitIteratorTp>
+class BitView
+    : public std::ranges::view_interface<BitView<RangeTp, BitIteratorTp>> {
    public:
-    using iterator_type = std::ranges::iterator_t<Range>;
-    using sentinel_type = std::ranges::sentinel_t<Range>;
+    using iterator_type = std::ranges::iterator_t<RangeTp>;
+    using sentinel_type = std::ranges::sentinel_t<RangeTp>;
 
-    template <std::ranges::viewable_range RangeTp>
-    constexpr LittleEndianInputView(RangeTp&& range)
-        : range_(std::forward<RangeTp>(range)) {}
+    template <std::ranges::viewable_range RangeFwdTp>
+    constexpr BitView(RangeFwdTp&& range)
+        : range_{std::forward<RangeFwdTp>(range)} {}
 
-    [[nodiscard]] constexpr LittleEndianInputBitIter<iterator_type> begin()
-        const {
-        return LittleEndianInputBitIter<iterator_type>{
-            std::ranges::begin(range_)};
+    [[nodiscard]] constexpr BitIteratorTp<iterator_type> begin() const {
+        return BitIteratorTp<iterator_type>{std::ranges::begin(range_)};
     }
 
-    [[nodiscard]] constexpr LittleEndianInputBitIter<sentinel_type> end() const
+    [[nodiscard]] constexpr BitIteratorTp<sentinel_type> end() const
         requires(!std::same_as<sentinel_type, std::default_sentinel_t>)
     {
-        return LittleEndianInputBitIter<sentinel_type>{
-            std::ranges::end(range_)};
+        return BitIteratorTp<sentinel_type>{std::ranges::end(range_)};
     }
 
     [[nodiscard]] constexpr std::default_sentinel_t end() const
@@ -358,27 +355,64 @@ class LittleEndianInputView
     }
 
    private:
-    Range range_;
+    RangeTp range_;
 };
 
-template <std::ranges::viewable_range Range>
-LittleEndianInputView(Range&& range)
-    -> LittleEndianInputView<std::ranges::views::all_t<Range>>;
+template <std::ranges::viewable_range Range,
+          template <typename> class BitIteratorTp>
+BitView(Range&& range)
+    -> BitView<std::ranges::views::all_t<Range>, BitIteratorTp>;
+
+template <template <typename> class BitViewTp>
+struct BitViewAdaptorClosure : public std::ranges::range_adaptor_closure<
+                                   BitViewAdaptorClosure<BitViewTp>> {
+    template <std::ranges::sized_range Range>
+    [[nodiscard]] constexpr auto operator()(Range&& range) const {
+        return BitViewTp{std::forward<Range>(range)};
+    }
+};
+
+}  // namespace details
+
+namespace ranges {
+
+template <typename RangeTp>
+using LittleEndianInputView =
+    details::BitView<RangeTp, LittleEndianInputBitIter>;
+
+template <typename RangeTp>
+using BigEndianInputView = details::BitView<RangeTp, BigEndianInputBitIter>;
+
+template <typename RangeTp>
+using LittleEndianOutputView =
+    details::BitView<RangeTp, LittleEndianOutputBitIter>;
+
+template <typename RangeTp>
+using BigEndianOutputView = details::BitView<RangeTp, BigEndianOutputBitIter>;
 
 }  // namespace ranges
 
 namespace views {
 
-struct LittleEndianInputAdaptorClosure
-    : public std::ranges::range_adaptor_closure<
-          LittleEndianInputAdaptorClosure> {
-    template <std::ranges::sized_range Range>
-    [[nodiscard]] constexpr auto operator()(Range&& range) const {
-        return ranges::LittleEndianInputView{std::forward<Range>(range)};
-    }
-};
+using LittleEndianInputAdaptorClosure =
+    details::BitViewAdaptorClosure<ranges::LittleEndianInputView>;
+
+using BigEndianInputAdaptorClosure =
+    details::BitViewAdaptorClosure<ranges::BigEndianInputView>;
+
+using LittleEndianOutputAdaptorClosure =
+    details::BitViewAdaptorClosure<ranges::LittleEndianOutputView>;
+
+using BigEndianOutputAdaptorClosure =
+    details::BitViewAdaptorClosure<ranges::BigEndianOutputView>;
 
 inline constexpr LittleEndianInputAdaptorClosure LittleEndianInput{};
+
+inline constexpr BigEndianInputAdaptorClosure BigEndianInput{};
+
+inline constexpr LittleEndianOutputAdaptorClosure LittleEndianOutput{};
+
+inline constexpr BigEndianOutputAdaptorClosure BigEndianOutput{};
 
 }  // namespace views
 
