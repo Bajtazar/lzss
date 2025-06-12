@@ -10,13 +10,33 @@
 namespace koda {
 
 template <std::integral Token = uint8_t,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder =
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryDecoder =
               DirectDecoder<LzssIntermediateToken<Token>>,
           typename Allocator = std::allocator<Token>>
     requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
-class LzssDecoder : public DecoderInterface < Token,
-                    LzssDecoder<Token, AuxiliaryEncoder, Allocator> {
+class LzssDecoder
+    : public DecoderInterface<Token,
+                              LzssDecoder<Token, AuxiliaryDecoder, Allocator>> {
    public:
+    constexpr explicit LzssDecoder(
+        size_t dictionary_size, size_t look_ahead_size,
+        AuxiliaryDecoder auxiliary_decoder,
+        std::optional<size_t> cyclic_buffer_size = std::nullopt,
+        const Allocator& allocator = Allocator{});
+
+    constexpr explicit LzssDecoder(
+        size_t dictionary_size, size_t look_ahead_size,
+        std::optional<size_t> cyclic_buffer_size = std::nullopt,
+        const Allocator& allocator = Allocator{})
+        requires std::is_default_constructible_v<AuxiliaryDecoder>;
+
+    constexpr auto Initialize(BitInputRange auto&& input);
+
+    constexpr auto Decode(BitInputRange auto&& input,
+                          std::ranges::output_range<Token> auto&& output);
+
+    [[nodiscard]] constexpr auto&& auxiliary_decoder(this auto&& self);
+
    private:
 };
 
