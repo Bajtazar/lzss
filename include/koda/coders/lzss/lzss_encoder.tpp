@@ -52,7 +52,7 @@ template <std::integral InputToken,
           SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
           typename AllocatorTp>
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
-constexpr void LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::Flush(
+constexpr auto LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::Flush(
     BitOutputRange auto&& output) {
     return auxiliary_encoder_.Flush(
         FlushData(std::forward<decltype(output)>(output)));
@@ -127,7 +127,7 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::EncodeTokenOrMatch(
     IMToken symbol_token{token};
 
     if (!match) {
-        return uxiliary_encoder_.Encode(
+        return auxiliary_encoder_.Encode(
             std::ranges::subrange{&symbol_token, std::next(&symbol_token)},
             output);
     }
