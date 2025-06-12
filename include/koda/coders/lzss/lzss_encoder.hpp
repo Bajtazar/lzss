@@ -73,6 +73,9 @@ class LzssEncoder {
     constexpr auto PeformEncodigStep(FusedDictionaryAndBuffer<InputToken>& dict,
                                      SequenceView look_ahead,
                                      BitOutputRange auto&& output);
+
+    constexpr void TryToRemoveStringFromSearchTree(
+        FusedDictionaryAndBuffer<InputToken>& dict);
 };
 
 }  // namespace koda

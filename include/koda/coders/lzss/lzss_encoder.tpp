@@ -157,17 +157,28 @@ LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::PeformEncodigStep(
     FusedDictionaryAndBuffer<InputToken>& dict, SequenceView look_ahead,
     BitOutputRange auto&& output) {
     if (!match_count_) {
-        return EncodeTokenOrMatch(look_ahead[0],
-                                  search_tree_.FindMatch(look_ahead),
-                                  std::move(output));
-    } else {
-        --match_count_;
+        auto new_output = EncodeTokenOrMatch(look_ahead[0],
+                                             search_tree_.FindMatch(look_ahead),
+                                             std::move(output));
+        TryToRemoveStringFromSearchTree(dict);
+        return new_output;
     }
 
+    --match_count_;
+    TryToRemoveStringFromSearchTree(dict);
+    return output;
+}
+
+template <std::integral InputToken,
+          SizeAwareEncoder<LzssIntermediateToken<InputToken>> AuxiliaryEncoder,
+          typename AllocatorTp>
+    requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
+constexpr void LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>::
+    TryToRemoveStringFromSearchTree(
+        FusedDictionaryAndBuffer<InputToken>& dict) {
     if (dict.dictionary_size() == dict.max_dictionary_size()) {
         search_tree_.RemoveString(dict.get_oldest_dictionary_full_match());
     }
-    return output;
 }
 
 template <std::integral InputToken,
