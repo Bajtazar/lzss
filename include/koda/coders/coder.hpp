@@ -6,6 +6,28 @@
 
 namespace koda {
 
+template <typename Derived>
+class EncoderInterface {
+   public:
+    constexpr explicit EncoderInterface() noexcept = default;
+
+    constexpr auto operator()(InputRange<InputToken> auto&& input,
+                              BitOutputRange auto&& output) {
+        auto updated_output =
+            self().Encode(std::forward<decltype(input)>(input),
+                          std::forward<decltype(output)>(output));
+        auto updated_output =
+            self().Flush(Encode(std::forward<decltype(input)>(input),
+                                std::forward<decltype(output)>(output)));
+        auto iter = std::ranges::begin(updated_output);
+        iter.Flush();
+        return std::ranges::subrange{iter, std::ranges::end(updated_output)};
+    }
+
+   private:
+    constexpr Derived& self() noexcept { return *static_cast<Derived*>(this); }
+};
+
 template <typename EncoderTp, typename Tp>
 concept Encoder = requires(EncoderTp encoder, DummyInputRange<Tp> input,
                            DummyBitOutputRange output) {
