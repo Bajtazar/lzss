@@ -19,7 +19,9 @@ template <std::integral InputToken = uint8_t,
               DirectEncoder<LzssIntermediateToken<InputToken>>,
           typename AllocatorTp = std::allocator<InputToken>>
     requires(sizeof(InputToken) <= sizeof(LzssIntermediateToken<InputToken>))
-class LzssEncoder {
+class LzssEncoder
+    : public EncoderInterface<
+          InputToken, LzssEncoder<InputToken, AuxiliaryEncoder, AllocatorTp>> {
    public:
     constexpr explicit LzssEncoder(
         size_t dictionary_size, size_t look_ahead_size,
@@ -37,9 +39,6 @@ class LzssEncoder {
                           BitOutputRange auto&& output);
 
     constexpr auto Flush(BitOutputRange auto&& output);
-
-    constexpr auto operator()(InputRange<InputToken> auto&& input,
-                              BitOutputRange auto&& output);
 
     [[nodiscard]] constexpr auto&& auxiliary_encoder(this auto&& self);
 
