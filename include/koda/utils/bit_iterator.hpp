@@ -340,13 +340,15 @@ class LittleEndianInputView
 
     [[nodiscard]] constexpr LittleEndianInputBitIter<iterator_type> begin()
         const {
-        return std::ranges::begin(range_);
+        return LittleEndianInputBitIter<iterator_type>{
+            std::ranges::begin(range_)};
     }
 
     [[nodiscard]] constexpr LittleEndianInputBitIter<sentinel_type> end() const
         requires(!std::same_as<sentinel_type, std::default_sentinel_t>)
     {
-        return std::ranges::end(range_);
+        return LittleEndianInputBitIter<sentinel_type>{
+            std::ranges::end(range_)};
     }
 
     [[nodiscard]] constexpr std::default_sentinel_t end() const
