@@ -366,7 +366,7 @@ BitView(Range&& range)
 template <template <typename> class BitViewTp>
 struct BitViewAdaptorClosure : public std::ranges::range_adaptor_closure<
                                    BitViewAdaptorClosure<BitViewTp>> {
-    template <std::ranges::sized_range Range>
+    template <std::ranges::viewable_range Range>
     [[nodiscard]] constexpr auto operator()(Range&& range) const {
         return BitViewTp{std::forward<Range>(range)};
     }

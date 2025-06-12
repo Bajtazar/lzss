@@ -41,7 +41,7 @@ class InsertFromBackView
         : range_{std::forward<RangeFwdTp>(range)} {}
 
     [[nodiscard]] constexpr auto begin() {
-        return BackInserterIterator{range_};
+        return BackInserterIterator{range_.get()};
     }
 
     [[nodiscard]] static consteval std::default_sentinel_t end() noexcept {
@@ -53,7 +53,7 @@ class InsertFromBackView
     }
 
    private:
-    Range& range_;
+    std::reference_wrapper<Range> range_;
 };
 
 template <std::ranges::viewable_range Range>
@@ -66,7 +66,7 @@ namespace views {
 
 struct InsertFromBackAdaptorClosure
     : public std::ranges::range_adaptor_closure<InsertFromBackAdaptorClosure> {
-    template <std::ranges::sized_range Range>
+    template <std::ranges::viewable_range Range>
     [[nodiscard]] constexpr auto operator()(Range&& range) const {
         return ranges::InsertFromBackView{std::forward<Range>(range)};
     }
