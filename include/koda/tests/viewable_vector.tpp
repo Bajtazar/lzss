@@ -3,13 +3,13 @@
 namespace koda::tests {
 
 template <typename Tp>
-constexpr ViewableVector<Tp>::operator std::basic_string_view<uint8_t>()
-    const noexcept {
+[[nodiscard]] constexpr ViewableVector<Tp>::operator std::basic_string_view<
+    uint8_t>() const noexcept {
     return {this->data(), this->size()};
 }
 
 template <std::ranges::input_range Range>
-constexpr ViewableVector<uint8_t> ConvertToString(Range&& range) {
+[[nodiscard]] constexpr ViewableVector<uint8_t> ConvertToString(Range&& range) {
     ViewableVector<uint8_t> result;
     std::ranges::transform(
         std::forward<Range>(range), std::back_inserter(result),
@@ -20,8 +20,8 @@ constexpr ViewableVector<uint8_t> ConvertToString(Range&& range) {
     return result;
 }
 
-constexpr ViewableVector<uint8_t> operator""_u8(const char* string,
-                                                std::size_t size) {
+[[nodiscard]] constexpr ViewableVector<uint8_t> operator""_u8(
+    const char* string, std::size_t size) {
     return ConvertToString(std::ranges::subrange{string, string + size});
 }
 
