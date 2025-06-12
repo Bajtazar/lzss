@@ -1,3 +1,4 @@
+#include <koda/coders/coder.hpp>
 #include <koda/coders/direct_encoder.hpp>
 #include <koda/tests/tests.hpp>
 #include <koda/utils/back_inserter_iterator.hpp>
@@ -7,17 +8,16 @@
 #include <iterator>
 #include <vector>
 
+static_assert(koda::Encoder<koda::DirectEncoder<uint8_t>, uint8_t>);
+
 BeginConstexprTest(DirectEncoderTest, EncodeBytes) {
     const std::vector<uint8_t> expected{{0x43, 0x74, 0x35, 0x33}};
     std::vector<uint8_t> target;
-    auto source =
-        koda::MakeLittleEndianOutputSource(koda::BackInserterIterator{target});
-    std::ranges::subrange range{koda::LittleEndianOutputBitIter{source},
-                                std::default_sentinel};
 
     koda::DirectEncoder<uint8_t> encoder;
 
-    encoder.Encode(expected, range);
+    encoder.Encode(expected, target | koda::views::InsertFromBack |
+                                 koda::views::LittleEndianOutput);
 
     ConstexprAssertEqual(expected, target);
 }
@@ -44,22 +44,21 @@ BeginConstexprTest(DirectEncoderTest, EncodeBytesWithStride) {
     expected.back() |= 0b10110000;
 
     std::vector<uint8_t> target;
-    auto source =
-        koda::MakeLittleEndianOutputSource(koda::BackInserterIterator{target});
-    std::ranges::subrange range{koda::LittleEndianOutputBitIter{source},
-                                std::default_sentinel};
+    auto view =
+        target | koda::views::InsertFromBack | koda::views::LittleEndianOutput;
 
     koda::DirectEncoder<uint8_t> encoder;
 
-    auto iter = range.begin();
+    auto iter = view.begin();
     *iter++ = 0;
     *iter++ = 0;
     *iter++ = 1;
     *iter++ = 0;
 
-    encoder.Encode(start, range);
+    auto out_range =
+        encoder.Encode(start, std::ranges::subrange{iter, view.end()});
 
-    auto iter2 = range.begin();
+    auto iter2 = out_range.begin();
     *iter2++ = 1;
     *iter2++ = 1;
     *iter2++ = 0;
@@ -73,15 +72,13 @@ BeginConstexprTest(DirectEncoderTest, EncodeIntegers) {
     const std::vector<uint32_t> source_range{{0x43'32'12'45, 0x98'32'56'23}};
     const std::vector<uint8_t> expected_range{
         {0x45, 0x12, 0x32, 0x43, 0x23, 0x56, 0x32, 0x98}};
+
     std::vector<uint8_t> target;
-    auto source =
-        koda::MakeLittleEndianOutputSource(koda::BackInserterIterator{target});
-    std::ranges::subrange range{koda::LittleEndianOutputBitIter{source},
-                                std::default_sentinel};
 
     koda::DirectEncoder<uint32_t> encoder;
 
-    encoder.Encode(source_range, range);
+    encoder.Encode(source_range, target | koda::views::InsertFromBack |
+                                     koda::views::LittleEndianOutput);
 
     ConstexprAssertEqual(expected_range, target);
 }
