@@ -13,26 +13,14 @@ static_assert(koda::Decoder<koda::DirectDecoder<uint8_t>, uint8_t>);
 
 namespace {
 
-constexpr std::vector<uint8_t> ScenarioIEncode(
-    const std::vector<uint8_t>& expected) {
+template <typename Tp>
+constexpr std::vector<uint8_t> Encode(const std::vector<Tp>& expected) {
     std::vector<uint8_t> target;
 
-    koda::DirectEncoder<uint8_t> encoder;
+    koda::DirectEncoder<Tp> encoder;
 
     encoder.Encode(expected, target | koda::views::InsertFromBack |
                                  koda::views::LittleEndianOutput);
-
-    return target;
-}
-
-constexpr std::vector<uint8_t> ScenarioIIEncode(
-    const std::vector<uint32_t>& source_range) {
-    std::vector<uint8_t> target;
-
-    koda::DirectEncoder<uint32_t> encoder;
-
-    encoder.Encode(source_range, target | koda::views::InsertFromBack |
-                                     koda::views::LittleEndianOutput);
 
     return target;
 }
@@ -41,7 +29,7 @@ constexpr std::vector<uint8_t> ScenarioIIEncode(
 
 BeginConstexprTest(DirectDecoderTest, DecodeBytes) {
     const std::vector<uint8_t> expected{{0x43, 0x74, 0x35, 0x33}};
-    auto encoded = ScenarioIEncode(expected);
+    auto encoded = Encode(expected);
 
     koda::DirectDecoder<uint8_t> decoder;
 
@@ -56,7 +44,7 @@ EndConstexprTest;
 
 BeginConstexprTest(DirectDecoderTest, DecodeIntegers) {
     const std::vector<uint32_t> source_range{{0x43'32'12'45, 0x98'32'56'23}};
-    auto encoded = ScenarioIIEncode(source_range);
+    auto encoded = Encode(source_range);
 
     koda::DirectDecoder<uint32_t> decoder;
 
