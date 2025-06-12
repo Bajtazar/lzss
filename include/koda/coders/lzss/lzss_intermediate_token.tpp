@@ -76,7 +76,7 @@ LzssIntermediateToken<InputToken>::get_marker() const noexcept {
 }
 
 template <std::integral InputToken>
-/*static*/ constexpr void
+/*static*/ constexpr auto
 TokenTraits<LzssIntermediateToken<InputToken>>::EncodeToken(
     TokenType token, BitOutputRange auto&& output) {
     auto iter = std::ranges::begin(output);
@@ -89,29 +89,33 @@ TokenTraits<LzssIntermediateToken<InputToken>>::EncodeToken(
     auto [position, length] = *token.get_marker();
     *iter = 1;
     ++iter;
-    TokenTraits<uint32_t>::EncodeToken(position,
-                                       std::forward<decltype(output)>(output));
-    TokenTraits<uint16_t>::EncodeToken(length,
-                                       std::forward<decltype(output)>(output));
+    auto pos_range = TokenTraits<uint32_t>::EncodeToken(
+        position, std::forward<decltype(output)>(output));
+    return TokenTraits<uint16_t>::EncodeToken(length, std::move(pos_range));
 }
 
 template <std::integral InputToken>
-[[nodiscard]] /*static*/ constexpr TokenTraits<
-    LzssIntermediateToken<InputToken>>::TokenType
+[[nodiscard]] /*static*/ constexpr auto
 TokenTraits<LzssIntermediateToken<InputToken>>::DecodeToken(
     BitInputRange auto&& input) {
     auto iter = std::ranges::begin(input);
 
     if (auto value = *iter; (++iter, value)) {
-        auto position = TokenTraits<uint32_t>::DecodeToken(
+        auto [position, pos_range] = TokenTraits<uint32_t>::DecodeToken(
             std::forward<decltype(input)>(input));
-        auto length = TokenTraits<uint16_t>::DecodeToken(
-            std::forward<decltype(input)>(input));
-        return LzssIntermediateToken<InputToken>{position, length};
+        auto [length, len_range] =
+            TokenTraits<uint16_t>::DecodeToken(std::move(pos_range));
+
+        return TokenTraitsDecodingResult{
+            LzssIntermediateToken<InputToken>{position, length},
+            std::move(len_range)};
     }
-    return LzssIntermediateToken<InputToken>{
+    auto [token, range] =
         TokenTraits<typename LzssIntermediateToken<InputToken>::Symbol>::
-            DecodeToken(std::forward<decltype(input)>(input))};
+            DecodeToken(std::forward<decltype(input)>(input));
+
+    return TokenTraitsDecodingResult{
+        LzssIntermediateToken<InputToken>{std::move(token)}, std::move(range)};
 }
 
 template <std::integral InputToken>

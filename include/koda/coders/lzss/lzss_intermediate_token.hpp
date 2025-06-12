@@ -59,11 +59,10 @@ template <std::integral InputToken>
 struct TokenTraits<LzssIntermediateToken<InputToken>> {
     using TokenType = LzssIntermediateToken<InputToken>;
 
-    static constexpr void EncodeToken(TokenType token,
+    static constexpr auto EncodeToken(TokenType token,
                                       BitOutputRange auto&& output);
 
-    [[nodiscard]] static constexpr TokenType DecodeToken(
-        BitInputRange auto&& input);
+    [[nodiscard]] static constexpr auto DecodeToken(BitInputRange auto&& input);
 
     [[nodiscard]] static constexpr float TokenBitSize(TokenType token);
 };

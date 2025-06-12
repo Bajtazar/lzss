@@ -3,6 +3,8 @@
 #include <koda/utils/back_inserter_iterator.hpp>
 #include <koda/utils/bit_iterator.hpp>
 
+static_assert(koda::Encoder<koda::LzssEncoder<uint8_t>, uint8_t>);
+
 namespace {
 template <typename Tp>
 struct LzssDummyAuxEncoder {
