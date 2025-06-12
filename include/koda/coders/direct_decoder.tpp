@@ -20,8 +20,9 @@ constexpr auto DirectDecoder<Token>::Decode(
     std::ranges::subrange input_range{std::ranges::begin(input),
                                       std::ranges::end(input)};
     while (std::ranges::begin(input_range) != std::ranges::end(input_range)) {
-        std::tie(*output_iter++, input_range) =
-            Traits::template DecodeToken(input_range);
+        auto [token, updated_input_range] = Traits::DecodeToken(input_range);
+        *output_iter++ = std::move(token);
+        input_range = std::move(updated_input_range);
     }
     return std::ranges::subrange{std::move(output_iter),
                                  std::ranges::end(output)};
@@ -31,12 +32,8 @@ template <typename Token>
 constexpr auto DirectDecoder<Token>::operator()(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
-    auto decoding_res = Decode(std::forward<decltype(input)>(input),
-                               std::forward<decltype(output)>(output));
-    auto iter = std::ranges::begin(decoding_res);
-    iter.Flush();
-    return std::ranges::subrange{std::move(iter),
-                                 std::ranges::end(decoding_res)};
+    return Decode(std::forward<decltype(input)>(input),
+                  std::forward<decltype(output)>(output));
 }
 
 }  // namespace koda

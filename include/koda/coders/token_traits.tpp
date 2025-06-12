@@ -25,8 +25,8 @@ template <std::integral Token>
         std::ranges::copy(input | std::views::take(sizeof(Token) * 8),
                           LittleEndianOutputBitIter{&result});
     return TokenTraitsDecodingResult{
-        std::move(result),
-        std::ranges::subrange{std::move(copy_res.in), std::ranges::end(input)}};
+        std::move(result), std::ranges::subrange{std::move(copy_res.in.base()),
+                                                 std::ranges::end(input)}};
 }
 
 template <std::integral Token>
