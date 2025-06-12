@@ -34,8 +34,9 @@ class DecoderInterface {
     constexpr auto operator()(
         BitInputRange auto&& input,
         std::ranges::output_range<InputToken> auto&& output) {
-        return self().Decode(std::forward<decltype(input)>(input),
-                             std::forward<decltype(output)>(output));
+        return self().Decode(
+            self().Initialize(std::forward<decltype(input)>(input)),
+            std::forward<decltype(output)>(output));
     }
 
    private:
@@ -59,6 +60,7 @@ concept SizeAwareEncoder =
 template <typename DecoderTp, typename Tp>
 concept Decoder = requires(DecoderTp decoder, DummyBitInputRange input,
                            DummyOutputRange<Tp> output) {
+    { decoder.Initialize(input) } -> BitInputRange;
     { decoder.Decode(input, output) } -> std::ranges::output_range<Tp>;
     { decoder(input, output) } -> std::ranges::output_range<Tp>;
 };

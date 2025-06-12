@@ -15,6 +15,8 @@ struct DirectDecoder : public DecoderInterface<Token, DirectDecoder<Token>> {
 
     constexpr auto Decode(BitInputRange auto&& input,
                           std::ranges::output_range<Token> auto&& output);
+
+    constexpr auto Initialize(BitInputRange auto&& input);
 };
 
 }  // namespace koda

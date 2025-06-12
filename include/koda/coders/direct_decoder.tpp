@@ -28,4 +28,9 @@ constexpr auto DirectDecoder<Token>::Decode(
                                  std::ranges::end(output)};
 }
 
+template <typename Token>
+constexpr auto DirectDecoder<Token>::Initialize(BitInputRange auto&& input) {
+    return std::forward<decltype(input)>(input);
+}
+
 }  // namespace koda
