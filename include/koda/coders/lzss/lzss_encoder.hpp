@@ -55,8 +55,8 @@ class LzssEncoder
     std::variant<FusedDictionaryAndBuffer<Token>, FusedDictAndBufferInfo>
         dictionary_and_buffer_;
     SearchBinaryTree<Token> search_tree_;
-    AuxiliaryEncoder auxiliary_encoder_;
     uint16_t match_count_ = 0;
+    [[no_unique_address]] AuxiliaryEncoder auxiliary_encoder_;
 
     constexpr auto InitializeBuffer(InputRange<Token> auto&& input);
 

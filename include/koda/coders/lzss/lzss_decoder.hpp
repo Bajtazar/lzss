@@ -43,12 +43,16 @@ class LzssDecoder
 
     struct FusedDictAndBufferInfo {
         size_t dictionary_size;
+        size_t look_ahead_size;
         std::optional<size_t> cyclic_buffer_size;
+        [[no_unique_address]] Allocator allocator;
     };
 
     std::variant<FusedDictionaryAndBuffer<Token>, FusedDictAndBufferInfo>
         dictionary_and_buffer_;
-    AuxiliaryDecoder decoder_;
+    [[no_unique_address]] AuxiliaryDecoder decoder_;
 };
 
 }  // namespace koda
+
+#include <koda/coders/lzss/lzss_decoder.hpp>
