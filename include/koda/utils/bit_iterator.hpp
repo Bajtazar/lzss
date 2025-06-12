@@ -182,7 +182,8 @@ class LittleEndianOutputBitIter : public BitIteratorBase<Iter> {
     constexpr LittleEndianOutputBitIter& operator=(bit value) noexcept {
         this->current_value_ |= (value ? 1 : 0) << this->bit_iter_;
         if (++this->bit_iter_ == this->ByteLength()) {
-            Flush();
+            *(this->iter_)++ = this->current_value_;
+            this->bit_iter_ = this->current_value_ = 0;
         }
         return *this;
     }
@@ -200,8 +201,10 @@ class LittleEndianOutputBitIter : public BitIteratorBase<Iter> {
     }
 
     constexpr void Flush() noexcept {
-        *(this->iter_)++ = this->current_value_;
-        this->bit_iter_ = this->current_value_ = 0;
+        if (this->bit_iter_) {
+            *(this->iter_)++ = this->current_value_;
+            this->bit_iter_ = this->current_value_ = 0;
+        }
     }
 
     [[nodiscard]] constexpr size_t Position() const noexcept {
@@ -300,7 +303,8 @@ class BigEndianOutputBitIter : public BitIteratorBase<Iter> {
     constexpr BigEndianOutputBitIter& operator=(bit value) noexcept {
         this->current_value_ = (this->current_value_ << 1) | (value ? 1 : 0);
         if (++this->bit_iter_ == this->ByteLength()) {
-            Flush();
+            *(this->iter_)++ = this->current_value_;
+            this->bit_iter_ = this->current_value_ = 0;
         }
         return *this;
     }
@@ -316,8 +320,11 @@ class BigEndianOutputBitIter : public BitIteratorBase<Iter> {
     }
 
     constexpr void Flush() noexcept {
-        *(this->iter_)++ = this->current_value_;
-        this->bit_iter_ = this->current_value_ = 0;
+        if (this->bit_iter_) {
+            *(this->iter_)++ = this->current_value_
+                               << (this->ByteLength() - 1 - this->bit_iter_);
+            this->bit_iter_ = this->current_value_ = 0;
+        }
     }
 
     [[nodiscard]] constexpr size_t Position() const noexcept {
