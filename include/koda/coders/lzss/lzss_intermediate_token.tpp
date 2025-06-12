@@ -2,20 +2,24 @@
 
 namespace koda {
 
-template <std::integral InputToken>
-constexpr LzssIntermediateToken<InputToken>::LzssIntermediateToken(
-    InputToken symbol) noexcept
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
+constexpr LzssIntermediateToken<InputToken, PositionTp, LengthTp>::
+    LzssIntermediateToken(InputToken symbol) noexcept
     : symbol_{symbol}, holds_distance_match_pair_{false} {}
 
-template <std::integral InputToken>
-constexpr LzssIntermediateToken<InputToken>::LzssIntermediateToken(
-    uint32_t match_position, uint16_t match_length) noexcept
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
+constexpr LzssIntermediateToken<InputToken, PositionTp, LengthTp>::
+    LzssIntermediateToken(PositionTp match_position,
+                          LengthTp match_length) noexcept
     : repeatition_marker_{match_position, match_length},
       holds_distance_match_pair_{true} {}
 
-template <std::integral InputToken>
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
 [[nodiscard]] constexpr std::partial_ordering
-LzssIntermediateToken<InputToken>::operator<=>(
+LzssIntermediateToken<InputToken, PositionTp, LengthTp>::operator<=>(
     const LzssIntermediateToken& right) const noexcept {
     if (auto symbol = get_symbol()) {
         if (auto other = right.get_symbol()) {
@@ -29,8 +33,10 @@ LzssIntermediateToken<InputToken>::operator<=>(
     return std::partial_ordering::unordered;
 }
 
-template <std::integral InputToken>
-[[nodiscard]] constexpr bool LzssIntermediateToken<InputToken>::operator==(
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
+[[nodiscard]] constexpr bool
+LzssIntermediateToken<InputToken, PositionTp, LengthTp>::operator==(
     const LzssIntermediateToken& right) const noexcept {
     if (auto symbol = get_symbol()) {
         if (auto other = right.get_symbol()) {
@@ -44,90 +50,103 @@ template <std::integral InputToken>
     return false;
 }
 
-template <std::integral InputToken>
-[[nodiscard]] constexpr bool LzssIntermediateToken<InputToken>::holds_symbol()
-    const noexcept {
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
+[[nodiscard]] constexpr bool LzssIntermediateToken<
+    InputToken, PositionTp, LengthTp>::holds_symbol() const noexcept {
     return holds_distance_match_pair_ == false;
 }
 
-template <std::integral InputToken>
-[[nodiscard]] constexpr bool LzssIntermediateToken<InputToken>::holds_marker()
-    const noexcept {
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
+[[nodiscard]] constexpr bool LzssIntermediateToken<
+    InputToken, PositionTp, LengthTp>::holds_marker() const noexcept {
     return holds_distance_match_pair_ == true;
 }
 
-template <std::integral InputToken>
-[[nodiscard]] constexpr std::optional<InputToken>
-LzssIntermediateToken<InputToken>::get_symbol() const noexcept {
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
+[[nodiscard]] constexpr std::optional<InputToken> LzssIntermediateToken<
+    InputToken, PositionTp, LengthTp>::get_symbol() const noexcept {
     if (holds_symbol()) {
         return symbol_;
     }
     return std::nullopt;
 }
 
-template <std::integral InputToken>
-[[nodiscard]] constexpr std::optional<
-    typename LzssIntermediateToken<InputToken>::RepeatitionMarker>
-LzssIntermediateToken<InputToken>::get_marker() const noexcept {
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
+[[nodiscard]] constexpr std::optional<typename LzssIntermediateToken<
+    InputToken, PositionTp, LengthTp>::RepeatitionMarker>
+LzssIntermediateToken<InputToken, PositionTp, LengthTp>::get_marker()
+    const noexcept {
     if (holds_marker()) {
         return repeatition_marker_;
     }
     return std::nullopt;
 }
 
-template <std::integral InputToken>
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
 /*static*/ constexpr auto
-TokenTraits<LzssIntermediateToken<InputToken>>::EncodeToken(
-    TokenType token, BitOutputRange auto&& output) {
+TokenTraits<LzssIntermediateToken<InputToken, PositionTp, LengthTp>>::
+    EncodeToken(TokenType token, BitOutputRange auto&& output) {
     auto iter = std::ranges::begin(output);
     if (auto symbol = token.get_symbol()) {
         *iter = 0;
         ++iter;
-        return TokenTraits<typename LzssIntermediateToken<InputToken>::Symbol>::
+        return TokenTraits<typename LzssIntermediateToken<
+            InputToken, PositionTp, LengthTp>::Symbol>::
             EncodeToken(*symbol, std::forward<decltype(output)>(output));
     }
     auto [position, length] = *token.get_marker();
     *iter = 1;
     ++iter;
-    auto pos_range = TokenTraits<uint32_t>::EncodeToken(
+    auto pos_range = TokenTraits<PositionTp>::EncodeToken(
         position, std::forward<decltype(output)>(output));
-    return TokenTraits<uint16_t>::EncodeToken(length, std::move(pos_range));
+    return TokenTraits<LengthTp>::EncodeToken(length, std::move(pos_range));
 }
 
-template <std::integral InputToken>
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
 [[nodiscard]] /*static*/ constexpr auto
-TokenTraits<LzssIntermediateToken<InputToken>>::DecodeToken(
-    BitInputRange auto&& input) {
+TokenTraits<LzssIntermediateToken<InputToken, PositionTp, LengthTp>>::
+    DecodeToken(BitInputRange auto&& input) {
     auto iter = std::ranges::begin(input);
 
     if (auto value = *iter; (++iter, value)) {
-        auto [position, pos_range] = TokenTraits<uint32_t>::DecodeToken(
+        auto [position, pos_range] = TokenTraits<PositionTp>::DecodeToken(
             std::forward<decltype(input)>(input));
         auto [length, len_range] =
-            TokenTraits<uint16_t>::DecodeToken(std::move(pos_range));
+            TokenTraits<LengthTp>::DecodeToken(std::move(pos_range));
 
         return TokenTraitsDecodingResult{
-            LzssIntermediateToken<InputToken>{position, length},
+            LzssIntermediateToken<InputToken, PositionTp, LengthTp>{position,
+                                                                    length},
             std::move(len_range)};
     }
     auto [token, range] =
-        TokenTraits<typename LzssIntermediateToken<InputToken>::Symbol>::
+        TokenTraits<typename LzssIntermediateToken<InputToken, PositionTp,
+                                                   LengthTp>::Symbol>::
             DecodeToken(std::forward<decltype(input)>(input));
 
     return TokenTraitsDecodingResult{
-        LzssIntermediateToken<InputToken>{std::move(token)}, std::move(range)};
+        LzssIntermediateToken<InputToken, PositionTp, LengthTp>{
+            std::move(token)},
+        std::move(range)};
 }
 
-template <std::integral InputToken>
-[[nodiscard]] /*static*/ constexpr float
-TokenTraits<LzssIntermediateToken<InputToken>>::TokenBitSize(TokenType token) {
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
+[[nodiscard]] /*static*/ constexpr float TokenTraits<LzssIntermediateToken<
+    InputToken, PositionTp, LengthTp>>::TokenBitSize(TokenType token) {
     if (auto symbol = token.get_symbol()) {
-        return TokenTraits<typename LzssIntermediateToken<InputToken>::Symbol>::
-            TokenBitSize(*symbol);
+        return TokenTraits<typename LzssIntermediateToken<
+            InputToken, PositionTp, LengthTp>::Symbol>::TokenBitSize(*symbol);
     }
     auto [position, length] = *token.get_marker();
-    return static_cast<float>(TokenTraits<uint32_t>::TokenBitSize(position) +
-                              TokenTraits<uint16_t>::TokenBitSize(length)) /
+    return static_cast<float>(TokenTraits<PositionTp>::TokenBitSize(position) +
+                              TokenTraits<LengthTp>::TokenBitSize(length)) /
            length;
 }
 

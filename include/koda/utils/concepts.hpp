@@ -28,4 +28,7 @@ constexpr bool IsSpecializationV = IsSpecialization<Template, Tp>::value;
 template <typename Tp, template <typename...> class Template>
 concept SpecializationOf = IsSpecializationV<Template, Tp>;
 
+template <typename Tp>
+concept UnsignedIntegral = std::integral<Tp> && std::is_unsigned_v<Tp>;
+
 }  // namespace koda

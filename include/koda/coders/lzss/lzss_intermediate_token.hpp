@@ -1,6 +1,7 @@
 #pragma once
 
 #include <koda/coders/token_traits.hpp>
+#include <koda/utils/concepts.hpp>
 
 #include <cinttypes>
 #include <cstddef>
@@ -8,14 +9,15 @@
 
 namespace koda {
 
-template <std::integral InputToken>
+template <std::integral InputToken, UnsignedIntegral PositionTp = uint32_t,
+          UnsignedIntegral LengthTp = uint16_t>
 class [[nodiscard]] LzssIntermediateToken {
    public:
     using Symbol = InputToken;
 
     struct RepeatitionMarker {
-        uint32_t match_position;
-        uint16_t match_length;
+        PositionTp match_position;
+        LengthTp match_length;
 
         [[nodiscard]] constexpr auto operator<=>(
             const RepeatitionMarker& right) const noexcept = default;
@@ -26,8 +28,8 @@ class [[nodiscard]] LzssIntermediateToken {
 
     constexpr explicit LzssIntermediateToken(InputToken symbol) noexcept;
 
-    constexpr explicit LzssIntermediateToken(uint32_t match_position,
-                                             uint16_t match_length) noexcept;
+    constexpr explicit LzssIntermediateToken(PositionTp match_position,
+                                             LengthTp match_length) noexcept;
 
     [[nodiscard]] constexpr bool holds_symbol() const noexcept;
 
@@ -55,9 +57,10 @@ class [[nodiscard]] LzssIntermediateToken {
     bool holds_distance_match_pair_;
 };
 
-template <std::integral InputToken>
-struct TokenTraits<LzssIntermediateToken<InputToken>> {
-    using TokenType = LzssIntermediateToken<InputToken>;
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
+struct TokenTraits<LzssIntermediateToken<InputToken, PositionTp, LengthTp>> {
+    using TokenType = LzssIntermediateToken<InputToken, PositionTp, LengthTp>;
 
     static constexpr auto EncodeToken(TokenType token,
                                       BitOutputRange auto&& output);
