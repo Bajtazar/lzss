@@ -13,7 +13,7 @@ struct DirectDecoder : public DecoderInterface<Token, DirectDecoder<Token>> {
 
     constexpr float TokenBitSize(Token token) const;
 
-    constexpr auto Decode(BitInputRange auto&& input,
+    constexpr auto Decode(BitInputRange auto&& input, size_t stream_length,
                           std::ranges::output_range<Token> auto&& output);
 
     constexpr auto Initialize(BitInputRange auto&& input);

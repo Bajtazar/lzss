@@ -32,16 +32,35 @@ class DecoderInterface {
     constexpr explicit DecoderInterface() noexcept = default;
 
     constexpr auto operator()(
-        BitInputRange auto&& input,
+        BitInputRange auto&& input, size_t stream_length,
         std::ranges::output_range<InputToken> auto&& output) {
-        return self().Decode(
-            self().Initialize(std::forward<decltype(input)>(input)),
-            std::forward<decltype(output)>(output));
+        auto [istream, init_size] =
+            self().Initialize(std::forward<decltype(input)>(input));
+        return self().Decode(std::move(istream), stream_length - init_size,
+                             std::forward<decltype(output)>(output));
     }
 
    private:
     constexpr Derived& self() noexcept { return *static_cast<Derived*>(this); }
 };
+
+template <typename Range>
+struct DecoderResult {
+    using range_type = Range;
+
+    Range range;
+    size_t init_tokens;
+};
+
+template <typename Result>
+concept DecoderInitializationResult =
+    SpecializationOf<Result, DecoderResult> &&
+    BitInputRange<typename Result::range_type>;
+
+template <typename Result, typename Tp>
+concept DecoderDecodingResult =
+    SpecializationOf<Result, DecoderResult> &&
+    std::ranges::output_range<typename Result::range_type, Tp>;
 
 template <typename EncoderTp, typename Tp>
 concept Encoder = requires(EncoderTp encoder, DummyInputRange<Tp> input,
@@ -58,12 +77,15 @@ concept SizeAwareEncoder =
     };
 
 template <typename DecoderTp, typename Tp>
-concept Decoder = requires(DecoderTp decoder, DummyBitInputRange input,
-                           DummyOutputRange<Tp> output) {
-    { decoder.Initialize(input) } -> BitInputRange;
-    { decoder.Decode(input, output) } -> std::ranges::output_range<Tp>;
-    { decoder(input, output) } -> std::ranges::output_range<Tp>;
-};
+concept Decoder =
+    requires(DecoderTp decoder, size_t stream_length, DummyBitInputRange input,
+             DummyOutputRange<Tp> output) {
+        { decoder.Initialize(input) } -> DecoderInitializationResult;
+        {
+            decoder.Decode(input, stream_length, output)
+        } -> DecoderDecodingResult<Tp>;
+        { decoder(input, stream_length, output) } -> DecoderDecodingResult<Tp>;
+    };
 
 template <typename DecoderTp, typename Tp>
 concept SizeAwareDecoder =
