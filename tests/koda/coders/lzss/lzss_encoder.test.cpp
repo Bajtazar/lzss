@@ -3,6 +3,8 @@
 #include <koda/utils/back_inserter_iterator.hpp>
 #include <koda/utils/bit_iterator.hpp>
 
+#include <gtest/gtest.h>
+
 static_assert(koda::Encoder<koda::LzssEncoder<uint8_t>, uint8_t>);
 
 namespace {
@@ -217,6 +219,23 @@ BeginConstexprTest(LzssEncoder, EncodeTokensShortDictionary) {
     };
 
     std::vector<uint8_t> target;
+
+    koda::LzssEncoder<char,
+                      LzssDummyAuxEncoder<koda::LzssIntermediateToken<char>>>
+        encoder{8, 3};
+    encoder(input_sequence, target | koda::views::InsertFromBack |
+                                koda::views::LittleEndianOutput);
+
+    ConstexprAssertEqual(encoder.auxiliary_encoder().tokens, expected_result);
+    ConstexprAssertTrue(target.empty());
+}
+EndConstexprTest;
+
+BeginConstexprTest(LzssEncoder, EncodeRepeatingSequence) {
+    std::string input_sequence = "aaaa";
+    std::vector<uint8_t> target;
+    std::vector expected_result = {koda::LzssIntermediateToken<char>{'a'},
+                                   koda::LzssIntermediateToken<char>{0, 3}};
 
     koda::LzssEncoder<char,
                       LzssDummyAuxEncoder<koda::LzssIntermediateToken<char>>>
