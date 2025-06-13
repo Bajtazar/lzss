@@ -55,7 +55,7 @@ BeginConstexprTest(DirectEncoderTest, EncodeBytesWithStride) {
     *iter++ = 1;
     *iter++ = 0;
 
-    auto out_range =
+    auto [_, out_range] =
         encoder.Encode(start, std::ranges::subrange{iter, view.end()});
 
     auto iter2 = out_range.begin();

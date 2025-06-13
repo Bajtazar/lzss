@@ -26,9 +26,9 @@ constexpr auto DirectDecoder<Token>::Decode(
         *output_iter = std::move(token);
         input_range = std::move(updated_input_range);
     }
-    return DecoderResult{std::move(input_range),
-                         std::ranges::subrange{std::move(output_iter),
-                                               std::move(output_sentinel)}};
+    return CoderResult{std::move(input_range),
+                       std::ranges::subrange{std::move(output_iter),
+                                             std::move(output_sentinel)}};
 }
 
 template <typename Token>

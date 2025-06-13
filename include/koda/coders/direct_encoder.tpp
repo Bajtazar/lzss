@@ -16,10 +16,14 @@ constexpr auto DirectEncoder<Token>::Encode(InputRange<Token> auto&& input,
                                             BitOutputRange auto&& output) {
     std::ranges::subrange out_range{std::ranges::begin(output),
                                     std::ranges::end(output)};
-    for (const auto& token : input) {
-        out_range = Traits::EncodeToken(token, out_range);
+    auto input_iter = std::ranges::begin(input);
+    auto input_sent = std::ranges::end(input);
+    for (; (input_iter != input_sent) && !out_range.empty(); ++input_iter) {
+        out_range = Traits::EncodeToken(*input_iter, out_range);
     }
-    return out_range;
+    return CoderResult{
+        std::ranges::subrange{std::move(input_iter), std::move(input_sent)},
+        std::move(out_range)};
 }
 
 template <typename Token>

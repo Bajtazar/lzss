@@ -7,6 +7,12 @@
 
 namespace koda {
 
+template <typename InputRange, typename OutputRange>
+struct CoderResult {
+    InputRange input_range;
+    OutputRange output_range;
+};
+
 template <typename InputToken, typename Derived>
 class EncoderInterface {
    public:
@@ -14,12 +20,30 @@ class EncoderInterface {
 
     constexpr auto operator()(InputRange<InputToken> auto&& input,
                               BitOutputRange auto&& output) {
-        auto updated_output =
-            self().Flush(self().Encode(std::forward<decltype(input)>(input),
-                                       std::forward<decltype(output)>(output)));
+        auto [irange, orange] =
+            self().Encode(std::forward<decltype(input)>(input),
+                          std::forward<decltype(output)>(output));
+        auto updated_output = self().Flush(std::move(orange));
         auto iter = std::ranges::begin(updated_output);
         iter.Flush();
-        return std::ranges::subrange{iter, std::ranges::end(updated_output)};
+        return CoderResult{
+            std::move(irange),
+            std::ranges::subrange{std::move(iter),
+                                  std::ranges::end(updated_output)}};
+    }
+
+    constexpr auto operator()(size_t stream_length,
+                              InputRange<InputToken> auto&& input,
+                              BitOutputRange auto&& output) {
+        return (*this)(input | std::views::take(stream_length),
+                       std::forward<decltype(output)>(output));
+    }
+
+    constexpr auto EncodeN(size_t stream_length,
+                           InputRange<InputToken> auto&& input,
+                           BitOutputRange auto&& output) {
+        return self().Encode(input | std::views::take(stream_length),
+                             std::forward<decltype(output)>(output));
     }
 
    private:
@@ -46,8 +70,9 @@ class DecoderInterface {
                        output | std::views::take(stream_length));
     }
 
-    constexpr auto DecodeN(size_t stream_length, BitInputRange auto&& input,
-                          std::ranges::output_range<InputToken> auto&& output) {
+    constexpr auto DecodeN(
+        size_t stream_length, BitInputRange auto&& input,
+        std::ranges::output_range<InputToken> auto&& output) {
         return self().Decode(std::forward<decltype(input)>(input),
                              output | std::views::take(stream_length));
     }
@@ -56,25 +81,20 @@ class DecoderInterface {
     constexpr Derived& self() noexcept { return *static_cast<Derived*>(this); }
 };
 
-template <typename Tp, BitInputRange InputRange,
-          std::ranges::output_range<Tp> OutputRange>
-struct DecoderResult {
-    InputRange input_range;
-    OutputRange output_range;
-};
-
-template <typename InputRange, typename OutputRange>
-DecoderResult(InputRange&& input_range, OutputRange&& output_range)
-    -> DecoderResult<std::ranges::range_value_t<OutputRange>, InputRange,
-                     OutputRange>;
-
 template <typename EncoderTp, typename Tp>
-concept Encoder = requires(EncoderTp encoder, DummyInputRange<Tp> input,
-                           DummyBitOutputRange output) {
-    { encoder.Encode(input, output) } -> BitOutputRange;
-    { encoder.Flush(output) } -> BitOutputRange;
-    { encoder(input, output) } -> BitOutputRange;
-};
+concept Encoder =
+    requires(EncoderTp encoder, size_t stream_length, DummyInputRange<Tp> input,
+             DummyBitOutputRange output) {
+        { encoder.Encode(input, output) } -> SpecializationOf<CoderResult>;
+        {
+            encoder.EncodeN(stream_length, input, output)
+        } -> SpecializationOf<CoderResult>;
+        { encoder.Flush(output) } -> BitOutputRange;
+        { encoder(input, output) } -> SpecializationOf<CoderResult>;
+        {
+            encoder(stream_length, input, output)
+        } -> SpecializationOf<CoderResult>;
+    };
 
 template <typename EncoderTp, typename Tp>
 concept SizeAwareEncoder =
@@ -87,14 +107,14 @@ concept Decoder =
     requires(DecoderTp decoder, size_t stream_length, DummyBitInputRange input,
              DummyOutputRange<Tp> output) {
         { decoder.Initialize(input) } -> BitInputRange;
-        { decoder.Decode(input, output) } -> SpecializationOf<DecoderResult>;
+        { decoder.Decode(input, output) } -> SpecializationOf<CoderResult>;
         {
             decoder.DecodeN(stream_length, input, output)
-        } -> SpecializationOf<DecoderResult>;
-        { decoder(input, output) } -> SpecializationOf<DecoderResult>;
+        } -> SpecializationOf<CoderResult>;
+        { decoder(input, output) } -> SpecializationOf<CoderResult>;
         {
             decoder(stream_length, input, output)
-        } -> SpecializationOf<DecoderResult>;
+        } -> SpecializationOf<CoderResult>;
     };
 
 template <typename DecoderTp, typename Tp>
