@@ -39,6 +39,19 @@ class DecoderInterface {
                              std::forward<decltype(output)>(output));
     }
 
+    constexpr auto operator()(
+        size_t stream_length, BitInputRange auto&& input,
+        std::ranges::output_range<InputToken> auto&& output) {
+        return (*this)(std::forward<decltype(input)>(input),
+                       output | std::views::take(stream_length));
+    }
+
+    constexpr auto DecodeN(size_t stream_length, BitInputRange auto&& input,
+                          std::ranges::output_range<InputToken> auto&& output) {
+        return self().Decode(std::forward<decltype(input)>(input),
+                             output | std::views::take(stream_length));
+    }
+
    private:
     constexpr Derived& self() noexcept { return *static_cast<Derived*>(this); }
 };
@@ -75,7 +88,13 @@ concept Decoder =
              DummyOutputRange<Tp> output) {
         { decoder.Initialize(input) } -> BitInputRange;
         { decoder.Decode(input, output) } -> SpecializationOf<DecoderResult>;
+        {
+            decoder.DecodeN(stream_length, input, output)
+        } -> SpecializationOf<DecoderResult>;
         { decoder(input, output) } -> SpecializationOf<DecoderResult>;
+        {
+            decoder(stream_length, input, output)
+        } -> SpecializationOf<DecoderResult>;
     };
 
 template <typename DecoderTp, typename Tp>
