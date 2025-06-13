@@ -16,7 +16,7 @@ struct CoderResult {
 template <typename InputToken, typename Derived>
 class EncoderInterface {
    public:
-    constexpr explicit EncoderInterface() noexcept = default;
+    constexpr EncoderInterface() noexcept = default;
 
     constexpr auto operator()(InputRange<InputToken> auto&& input,
                               BitOutputRange auto&& output) {
@@ -53,7 +53,7 @@ class EncoderInterface {
 template <typename InputToken, typename Derived>
 class DecoderInterface {
    public:
-    constexpr explicit DecoderInterface() noexcept = default;
+    constexpr DecoderInterface() noexcept = default;
 
     constexpr auto operator()(
         BitInputRange auto&& input,

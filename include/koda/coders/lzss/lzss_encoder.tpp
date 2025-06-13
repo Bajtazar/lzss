@@ -94,14 +94,17 @@ constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
 
     std::ranges::subrange out_range{std::ranges::begin(output),
                                     std::ranges::end(output)};
-
-    for (auto token : input) {
+    auto input_iter = std::ranges::begin(input);
+    auto input_sent = std::ranges::end(input);
+    for (; (input_iter != input_sent) && !out_range.empty(); ++input_iter) {
         auto look_ahead = dict.get_buffer();
         out_range = PeformEncodigStep(dict, look_ahead, std::move(out_range));
         search_tree_.AddString(look_ahead);
-        dict.AddSymbolToBuffer(token);
+        dict.AddSymbolToBuffer(*input_iter);
     }
-    return out_range;
+    return CoderResult{
+        std::ranges::subrange{std::move(input_iter), std::move(input_sent)},
+        std::move(out_range)};
 }
 
 template <std::integral Token,
@@ -144,9 +147,9 @@ LzssEncoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
     FusedDictionaryAndBuffer<Token>& dict, SequenceView look_ahead,
     BitOutputRange auto&& output) {
     if (!match_count_) {
-        auto new_output = EncodeTokenOrMatch(look_ahead[0],
-                                             search_tree_.FindMatch(look_ahead),
-                                             std::move(output));
+        auto [_, new_output] = EncodeTokenOrMatch(
+            look_ahead[0], search_tree_.FindMatch(look_ahead),
+            std::move(output));
         TryToRemoveStringFromSearchTree(dict);
         return new_output;
     }

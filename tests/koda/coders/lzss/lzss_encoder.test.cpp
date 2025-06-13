@@ -7,8 +7,12 @@ static_assert(koda::Encoder<koda::LzssEncoder<uint8_t>, uint8_t>);
 
 namespace {
 template <typename Tp>
-struct LzssDummyAuxEncoder {
-    bool should_pass_all_markers = true;
+struct LzssDummyAuxEncoder
+    : public koda::EncoderInterface<Tp, LzssDummyAuxEncoder<Tp>> {
+    constexpr explicit LzssDummyAuxEncoder(bool should_pass_all_markers = true)
+        : should_pass_all_markers{should_pass_all_markers} {}
+
+    bool should_pass_all_markers;
     std::vector<Tp> tokens = {};
 
     constexpr float TokenBitSize(Tp token) const {
@@ -19,19 +23,17 @@ struct LzssDummyAuxEncoder {
     }
 
     constexpr auto Encode(koda::InputRange<Tp> auto&& input,
-                          [[maybe_unused]] koda::BitOutputRange auto&& output) {
+                          koda::BitOutputRange auto&& output) {
         tokens.insert_range(tokens.end(), std::forward<decltype(input)>(input));
-        return std::forward<decltype(output)>(output);
+        return koda::CoderResult{
+            std::ranges::subrange{std::ranges::begin(input),
+                                  std::ranges::end(input)},
+            std::ranges::subrange{std::ranges::begin(output),
+                                  std::ranges::end(output)}};
     }
 
-    constexpr auto Flush([[maybe_unused]] koda::BitOutputRange auto&& output) {
+    constexpr auto Flush(koda::BitOutputRange auto&& output) {
         return std::forward<decltype(output)>(output);
-    }
-
-    constexpr auto operator()(koda::InputRange<Tp> auto&& input,
-                              koda::BitOutputRange auto&& output) {
-        return Encode(std::forward<decltype(input)>(input),
-                      std::forward<decltype(output)>(output));
     }
 };
 
