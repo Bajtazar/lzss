@@ -35,19 +35,30 @@ class EncoderInterface {
     constexpr auto operator()(size_t stream_length,
                               InputRange<InputToken> auto&& input,
                               BitOutputRange auto&& output) {
-        return (*this)(input | std::views::take(stream_length),
-                       std::forward<decltype(output)>(output));
+        return RemoveCountedIters(
+            (*this)(input | std::views::take(stream_length),
+                    std::forward<decltype(output)>(output)));
     }
 
     constexpr auto EncodeN(size_t stream_length,
                            InputRange<InputToken> auto&& input,
                            BitOutputRange auto&& output) {
-        return self().Encode(input | std::views::take(stream_length),
-                             std::forward<decltype(output)>(output));
+        return RemoveCountedIters(
+            self().Encode(input | std::views::take(stream_length),
+                          std::forward<decltype(output)>(output)));
     }
 
    private:
     constexpr Derived& self() noexcept { return *static_cast<Derived*>(this); }
+
+    template <InputRange<InputToken> InputRange, BitOutputRange OutputRange>
+    constexpr auto RemoveCountedIters(
+        CoderResult<InputRange, OutputRange>&& result) {
+        return CoderResult{
+            std::ranges::subrange{std::ranges::begin(result.input_range).base(),
+                                  std::ranges::end(result.input_range).base()},
+            std::move(result.output_range)};
+    }
 };
 
 template <typename InputToken, typename Derived>
