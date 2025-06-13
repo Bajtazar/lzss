@@ -35,7 +35,7 @@ BeginConstexprTest(DirectDecoderTest, DecodeBytes) {
 
     std::vector<uint8_t> reconstruction;
 
-    decoder.Decode(encoded | koda::views::LittleEndianInput, expected.size(),
+    decoder.Decode(encoded | koda::views::LittleEndianInput,
                    reconstruction | koda::views::InsertFromBack);
 
     ConstexprAssertEqual(expected, reconstruction);
@@ -50,7 +50,7 @@ BeginConstexprTest(DirectDecoderTest, DecodeIntegers) {
 
     std::vector<uint32_t> reconstruction;
 
-    decoder.Decode(encoded | koda::views::LittleEndianInput, expected.size(),
+    decoder.Decode(encoded | koda::views::LittleEndianInput,
                    reconstruction | koda::views::InsertFromBack);
 
     ConstexprAssertEqual(expected, reconstruction);
