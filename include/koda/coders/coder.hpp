@@ -77,19 +77,31 @@ class DecoderInterface {
     constexpr auto operator()(
         size_t stream_length, BitInputRange auto&& input,
         std::ranges::output_range<InputToken> auto&& output) {
-        return (*this)(std::forward<decltype(input)>(input),
-                       output | std::views::take(stream_length));
+        return RemoveCountedIters(
+            (*this)(std::forward<decltype(input)>(input),
+                    output | std::views::take(stream_length)));
     }
 
     constexpr auto DecodeN(
         size_t stream_length, BitInputRange auto&& input,
         std::ranges::output_range<InputToken> auto&& output) {
-        return self().Decode(std::forward<decltype(input)>(input),
-                             output | std::views::take(stream_length));
+        return RemoveCountedIters(
+            self().Decode(std::forward<decltype(input)>(input),
+                          output | std::views::take(stream_length)));
     }
 
    private:
     constexpr Derived& self() noexcept { return *static_cast<Derived*>(this); }
+
+    template <BitInputRange InputRange,
+              std::ranges::output_range<InputToken> OutputRange>
+    constexpr auto RemoveCountedIters(
+        CoderResult<InputRange, OutputRange>&& result) {
+        return CoderResult{std::move(result.input_range),
+                           std::ranges::subrange{
+                               std::ranges::begin(result.output_range).base(),
+                               std::ranges::end(result.output_range).base()}};
+    }
 };
 
 template <typename EncoderTp, typename Tp>
