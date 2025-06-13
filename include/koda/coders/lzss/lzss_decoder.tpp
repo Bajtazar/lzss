@@ -1,5 +1,7 @@
 #pragma once
 
+#include <koda/utils/back_inserter_iterator.hpp>
+
 namespace koda {
 
 template <std::integral Token = uint8_t,
@@ -13,7 +15,7 @@ constexpr LzssDecoder<token, AuxiliaryDecoder, Allocator>::LzssDecoder(
     : dictionary_and_buffer_{FusedDictAndBufferInfo{
           dictionary_size, look_ahead_size, std::move(cyclic_buffer_size),
           std::move(allocator)}},
-      decoder_{std::move(auxiliary_decoder)} {}
+      auxiliary_decoder_{std::move(auxiliary_decoder)} {}
 
 template <std::integral Token = uint8_t,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
@@ -31,10 +33,55 @@ template <std::integral Token = uint8_t,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
     requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
+constexpr auto LzssDecoder<token, AuxiliaryDecoder, Allocator>::Initialize(
+    BitInputRange auto&& input) {
+    return LoadFusedDict(
+        decoder_.Initialize(std::forward<decltype(input)>(input)));
+}
+
+template <std::integral Token = uint8_t,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 [[nodiscard]] constexpr auto&&
 LzssDecoder<token, AuxiliaryDecoder, Allocator>::auxiliary_decoder(
     this auto&& self) {
-    return std::forward_like<decltype(self)>(self.decoder_);
+    return std::forward_like<decltype(self)>(self.auxiliary_decoder_);
+}
+
+template <std::integral Token = uint8_t,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
+constexpr auto LzssDecoder<token, AuxiliaryDecoder, Allocator>::LoadFusedDict(
+    BitInputRange auto&& input) {
+    auto& info = std::get<FusedDictAndBufferInfo>(dictionary_and_buffer_);
+
+    std::vector<IMToken> start_tokens;
+    start_tokens.resize(info.look_ahead_size);
+
+    auto [istream, _] = auxiliary_decoder_.DecodeN(
+        info.look_ahead_size, std::forward<decltype(input)>(input),
+        start_tokens);
+
+    std::vector<Token> tokens{
+        std::from_range,
+        start_tokens | std::views::transform([](const auto& token) {
+            if (auto symbol = token.get_symbol()) {
+                return *symbol;
+            }
+            if consteval {
+                throw "Token is not a symbol!";
+            } else {
+                throw std::runtime_error{"Token is not a symbol!"};
+            }
+        })};
+
+    dictionary_and_buffer_ = FusedDictionaryAndBuffer<Token>{
+        info.dictionary_size, SequenceView{tokens},
+        std::move(info.cyclic_buffer_size), std::move(info.allocator)};
+
+    return istream;
 }
 
 }  // namespace koda

@@ -50,7 +50,9 @@ class LzssDecoder
 
     std::variant<FusedDictionaryAndBuffer<Token>, FusedDictAndBufferInfo>
         dictionary_and_buffer_;
-    [[no_unique_address]] AuxiliaryDecoder decoder_;
+    [[no_unique_address]] AuxiliaryDecoder auxiliary_decoder_;
+
+    constexpr auto LoadFusedDict(BitInputRange auto&& input);
 };
 
 }  // namespace koda
