@@ -61,6 +61,9 @@ constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::FusedDictionaryAndBuffer(
 template <typename Tp, typename AllocatorTp>
 constexpr bool FusedDictionaryAndBuffer<Tp, AllocatorTp>::AddSymbolToBuffer(
     ValueType symbol) {
+    // This can only occur during the beginning of the decoding when the buffer
+    // is not yet expanded so there is no point in even checking the need for
+    // the memory reajustment
     if (std::distance(buffer_iter_, buffer_sentinel_) != buffer_size_) {
         *buffer_sentinel_++ = symbol;
         return true;
