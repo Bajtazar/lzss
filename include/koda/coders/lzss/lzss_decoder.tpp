@@ -42,8 +42,7 @@ class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::InitializationView {
                 const auto [pos, len] = *token.get_marker();
                 const auto old_end = tokens.size();
                 tokens.resize(old_end + len);
-                MemoryMove(std::next(tokens.begin(), old_end),
-                           std::next(tokens.begin(), pos), len);
+                MemoryMove(tokens.begin() + old_end, tokens.begin() + pos, len);
             }
             return *this;
         }
@@ -66,6 +65,14 @@ class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::InitializationView {
 
     [[nodiscard]] static consteval std::default_sentinel_t end() noexcept {
         return std::default_sentinel;
+    }
+
+    SequenceView initial_buffer() {
+        return {tokens_.begin(), tokens_.begin() + look_ahead_size_};
+    }
+
+    SequenceView tail() {
+        return {tokens_.begin() + look_ahead_size_, tokens_.end()};
     }
 
     const std::vector<Token>& tokens() { return tokens_; }
@@ -136,13 +143,19 @@ constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::LoadFusedDict(
     auto [istream, _] = auxiliary_decoder_.Decode(
         std::forward<decltype(input)>(input), init_view);
 
-    const auto& tokens = init_view.tokens();
-
     dictionary_and_buffer_ = FusedDictionaryAndBuffer<Token>{
-        info.dictionary_size,
-        SequenceView{tokens.begin(),
-                     std::next(tokens.begin(), info.look_ahead_size)},
+        info.dictionary_size, init_view.initial_buffer(),
         std::move(info.cyclic_buffer_size), std::move(info.allocator)};
+
+    // If sequence has been found at the end of the direct buffer loading
+    if (auto tail = init_view.tail(); !tail.empty()) {
+        auto& dict =
+            std::get<FusedDictionaryAndBuffer<Token>>(dictionary_and_buffer_);
+
+        for (const auto& symbol : tail) {
+            dict.AddSymbolToBuffer(symbol);
+        }
+    }
 
     return istream;
 }
