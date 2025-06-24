@@ -38,6 +38,9 @@ template <std::contiguous_iterator TargetIter,
         std::is_trivially_copyable_v<std::iter_value_t<TargetIter>>)
 constexpr void MemoryMove(TargetIter target, SourceRange&& source);
 
+template <std::ranges::range RangeTp>
+constexpr auto AsSubrange(RangeTp&& range);
+
 }  // namespace koda
 
 #include <koda/utils/utils.tpp>

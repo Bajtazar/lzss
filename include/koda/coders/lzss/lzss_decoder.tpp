@@ -1,6 +1,7 @@
 #pragma once
 
 #include <koda/utils/back_inserter_iterator.hpp>
+#include <koda/utils/utils.hpp>
 
 namespace koda {
 
@@ -177,7 +178,7 @@ constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::Decode(
         auto new_output =
             ProcessCachedSequence(std::forward<decltype(output)>(output));
         if (cached_sequence_) {
-            return CoderResult{std::forward<decltype(input)>(input),
+            return CoderResult{AsSubrange(std::forward<decltype(input)>(input)),
                                std::move(new_output)};
         }
         return ProcessData(std::forward<decltype(input)>(input),
@@ -227,7 +228,8 @@ constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::ProcessData(
     std::ranges::output_range<Token> auto&& output) {
     SlidingDecoderView decoder_view{
         std::get<FusedDictionaryAndBuffer<Token>>(dictionary_and_buffer_),
-        cached_sequence_, std::forward<decltype(output)>(output)};
+        cached_sequence_,
+        std::views::all(std::forward<decltype(output)>(output))};
 
     auto result = auxiliary_decoder_.Decode(
         std::forward<decltype(input)>(input), decoder_view);

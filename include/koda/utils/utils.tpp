@@ -58,4 +58,10 @@ constexpr void MemoryMove(TargetIter target, SourceRange&& source) {
                       std::ranges::size(source));
 }
 
+template <std::ranges::range RangeTp>
+constexpr auto AsSubrange(RangeTp&& range) {
+    return std::ranges::subrange{std::ranges::begin(range),
+                                 std::ranges::end(range)};
+}
+
 }  // namespace koda

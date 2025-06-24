@@ -6,6 +6,7 @@
 static_assert(koda::Encoder<koda::LzssEncoder<uint8_t>, uint8_t>);
 
 namespace {
+
 template <typename Tp>
 struct LzssDummyAuxEncoder
     : public koda::EncoderInterface<Tp, LzssDummyAuxEncoder<Tp>> {

@@ -3,6 +3,8 @@
 #include <koda/utils/back_inserter_iterator.hpp>
 #include <koda/utils/bit_iterator.hpp>
 
+static_assert(koda::Decoder<koda::LzssDecoder<uint8_t>, uint8_t>);
+
 namespace {
 
 template <typename Tp>
@@ -46,7 +48,7 @@ class LzssDummyAuxDecoder
 
 using DummyDecoder = LzssDummyAuxDecoder<koda::LzssIntermediateToken<char>>;
 
-BeginConstexprTest(LzssEncoder, DecodeTokens) {
+BeginConstexprTest(LzssDecoder, DecodeTokens) {
     std::vector input_sequence = {
         koda::LzssIntermediateToken<char>{'a'},
         koda::LzssIntermediateToken<char>{'l'},
