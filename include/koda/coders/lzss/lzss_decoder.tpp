@@ -42,7 +42,7 @@ class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::InitializationView {
                 const auto [pos, len] = *token.get_marker();
                 const auto old_end = tokens.size();
                 tokens.resize(old_end + len);
-                MemoryCopy(std::next(tokens.begin(), old_end),
+                MemoryMove(std::next(tokens.begin(), old_end),
                            std::next(tokens.begin(), pos), len);
             }
             return *this;
