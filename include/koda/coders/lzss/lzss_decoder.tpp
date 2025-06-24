@@ -170,6 +170,60 @@ constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::Decode(
     [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(
         dictionary_and_buffer_))]];
 
+    if (cached_sequence_) {
+        auto [has_been_processed, new_output] =
+            ProcessCachedSequence(std::forward<decltype(output)>(output));
+        if (!has_been_processed) {
+            return CoderResult{std::forward<decltype(input)>(input),
+                               std::move(new_output)};
+        }
+        return ProcessData(std::forward<decltype(input)>(input),
+                           std::move(new_output));
+    }
+
+    return ProcessData(std::forward<decltype(input)>(input),
+                       std::forward<decltype(output)>(output));
+}
+
+template <std::integral Token,
+          SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
+constexpr auto
+LzssDecoder<Token, AuxiliaryDecoder, Allocator>::ProcessCachedSequence(
+    std::ranges::output_range<Token> auto&& output) {
+    auto& cache = *cached_sequence_;
+
+    auto out_iter = std::ranges::begin(output);
+    auto out_sent = std::ranges::end(output);
+
+    auto& dictionary =
+        std::get<FusedDictionaryAndBuffer<Token>>(dictionary_and_buffer_);
+    auto sequence =
+        dictionary.get_sequence_at_relative_pos(cache.position, cache.length);
+
+    for (size_t i = 0; out_iter != out_sent && cache.length;
+         ++out_iter, --cache.length, ++i) {
+        *out_iter = sequence[i];
+        dictionary.AddSymbolToBuffer(sequence[i]);
+    }
+
+    if (!cache.length) {
+        cached_sequence_ = std::nullopt;
+    }
+
+    return std::pair{
+        static_cast<bool>(cached_sequence_),
+        std::ranges::subrange{std::move(out_iter), std::move(out_sent)}};
+}
+
+template <std::integral Token,
+          SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
+constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::ProcessData(
+    BitInputRange auto&& input,
+    std::ranges::output_range<Token> auto&& output) {
     SlidingDecoderView decoder_view{
         std::get<FusedDictionaryAndBuffer<Token>>(dictionary_and_buffer_),
         cached_sequence_, std::forward<decltype(output)>(output)};

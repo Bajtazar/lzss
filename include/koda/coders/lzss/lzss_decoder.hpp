@@ -62,6 +62,12 @@ class LzssDecoder
     [[no_unique_address]] AuxiliaryDecoder auxiliary_decoder_;
 
     constexpr void LoadFusedDict();
+
+    constexpr auto ProcessCachedSequence(
+        std::ranges::output_range<Token> auto&& output);
+
+    constexpr auto ProcessData(BitInputRange auto&& input,
+                               std::ranges::output_range<Token> auto&& output);
 };
 
 }  // namespace koda
