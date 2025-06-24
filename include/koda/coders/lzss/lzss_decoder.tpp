@@ -8,10 +8,14 @@ template <std::integral Token,
           SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
     requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
-class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::InitializationView {
+template <std::ranges::output_range<Token> RangeTp>
+class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
    public:
-    constexpr explicit InitializationView(size_t look_ahead_size) noexcept
-        : look_ahead_size_{look_ahead_size} {}
+    constexpr explicit SlidingDecoderView(
+        FusedDictionaryAndBuffer<Token>& dictionary, RangeTp&& range) noexcept
+        : dictionary_{dictionary},
+          iterator_{std::ranges::begin(range)},
+          sentinel_{std::ranges::end(range)} {}
 
     class Iterator {
        public:
@@ -19,7 +23,7 @@ class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::InitializationView {
         using difference_type = std::ptrdiff_t;
 
         constexpr explicit Iterator(
-            InitializationView* parent = nullptr) noexcept
+            SlidingDecoderView* parent = nullptr) noexcept
             : parent_{parent} {}
 
         [[nodiscard]] friend constexpr bool operator==(
@@ -35,14 +39,20 @@ class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::InitializationView {
         }
 
         constexpr Iterator& operator=(value_type token) noexcept {
-            auto& tokens = parent_->tokens_;
             if (auto symbol = token.get_symbol()) {
-                tokens.emplace_back(*symbol);
-            } else {
-                const auto [pos, len] = *token.get_marker();
-                const auto old_end = tokens.size();
-                tokens.resize(old_end + len);
-                MemoryMove(tokens.begin() + old_end, tokens.begin() + pos, len);
+                *(parent_->iterator_)++ = *symbol;
+                parent_->dictionary_.AddSymbolToBuffer(*symbol);
+                return *this;
+            }
+            const auto [pos, len] = *token.get_marker();
+
+            auto sequence =
+                parent_->dictionary_.get_sequence_at_relative_pos(pos, len);
+
+            // @TODO fix when iterator hits sentinel
+            for (const auto& element : sequence) {
+                *(parent_->iterator_)++ = *element;
+                parent_->dictionary_.AddSymbolToBuffer(element);
             }
             return *this;
         }
@@ -58,7 +68,7 @@ class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::InitializationView {
         }
 
        private:
-        InitializationView* parent_;
+        SlidingDecoderView* parent_;
     };
 
     [[nodiscard]] constexpr Iterator begin() noexcept { return Iterator{this}; }
@@ -67,22 +77,18 @@ class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::InitializationView {
         return std::default_sentinel;
     }
 
-    SequenceView initial_buffer() {
-        return {tokens_.begin(), tokens_.begin() + look_ahead_size_};
+    auto remaining_range() {
+        return std::ranges::subrange{std::move(iterator_),
+                                     std::move(sentinel_)};
     }
-
-    SequenceView tail() {
-        return {tokens_.begin() + look_ahead_size_, tokens_.end()};
-    }
-
-    const std::vector<Token>& tokens() { return tokens_; }
 
    private:
-    std::vector<Token> tokens_{};
-    size_t look_ahead_size_;
+    FusedDictionaryAndBuffer<Token>& dictionary_;
+    std::ranges::iterator_t<RangeTp> iterator_;
+    std::ranges::sentinel_t<RangeTp> sentinel_;
 
     constexpr bool HasFinished() const noexcept {
-        return tokens_.size() >= look_ahead_size_;
+        return iterator_ == sentinel_;
     }
 };
 

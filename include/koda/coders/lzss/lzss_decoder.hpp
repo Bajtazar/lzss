@@ -41,7 +41,8 @@ class LzssDecoder
     using SequenceView = typename FusedDictionaryAndBuffer<Token>::SequenceView;
     using IMToken = LzssIntermediateToken<Token>;
 
-    class InitializationView;
+    template <std::ranges::output_range<Token> RangeTp>
+    class SlidingDecoderView;
 
     struct FusedDictAndBufferInfo {
         size_t dictionary_size;
