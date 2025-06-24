@@ -19,6 +19,27 @@ struct CoderResult {
         : input_range{AsSubrange(std::forward<decltype(input)>(input))},
           output_range{AsSubrange(std::forward<decltype(output)>(output))} {}
 
+    template <std::ranges::output_range<Tp> OutputRangeTp>
+    constexpr explicit CoderResult(InputIterTp input_iter,
+                                   InputSentinelTp input_sentinel,
+                                   OutputRangeTp&& output)
+        : input_range{std::move(input_iter), std::move(input_sentinel)},
+          output_range{AsSubrange(std::forward<decltype(output)>(output))} {}
+
+    template <std::ranges::input_range InputRangeTp>
+    constexpr explicit CoderResult(InputRangeTp&& input,
+                                   OutputIterTp output_iter,
+                                   OutputSentinelTp output_sentinel)
+        : input_range{AsSubrange(std::forward<decltype(input)>(input))},
+          output_range{std::move(output_iter), std::move(output_sentinel)} {}
+
+    constexpr explicit CoderResult(InputIterTp input_iter,
+                                   InputSentinelTp input_sentinel,
+                                   OutputIterTp output_iter,
+                                   OutputSentinelTp output_sentinel)
+        : input_range{std::move(input_iter), std::move(input_sentinel)},
+          output_range{std::move(output_iter), std::move(output_sentinel)} {}
+
     std::ranges::subrange<InputIterTp, InputSentinelTp> input_range;
     std::ranges::subrange<OutputIterTp, OutputSentinelTp> output_range;
 };
@@ -29,7 +50,26 @@ CoderResult(InputRangeTp&&, OutputRangeTp&&)
                    std::ranges::iterator_t<InputRangeTp>,
                    std::ranges::sentinel_t<InputRangeTp>,
                    std::ranges::iterator_t<OutputRangeTp>,
-                   std::ranges::sentinel_t<OutputRangeTp> >;
+                   std::ranges::sentinel_t<OutputRangeTp>>;
+
+template <typename InputIterTp, typename InputSentTp,
+          std::ranges::range OutputRangeTp>
+CoderResult(InputIterTp, InputSentTp, OutputRangeTp&&)
+    -> CoderResult<std::ranges::range_value_t<OutputRangeTp>, InputIterTp,
+                   InputSentTp, std::ranges::iterator_t<OutputRangeTp>,
+                   std::ranges::sentinel_t<OutputRangeTp>>;
+
+template <std::ranges::range InputRangeTp, typename OutputIter,
+          typename OutputSentTp>
+CoderResult(InputRangeTp&&, OutputIter, OutputSentTp) -> CoderResult<
+    std::iter_value_t<OutputIter>, std::ranges::iterator_t<InputRangeTp>,
+    std::ranges::sentinel_t<InputRangeTp>, OutputIter, OutputSentTp>;
+
+template <typename InputIterTp, typename InputSentTp, typename OutputIter,
+          typename OutputSentTp>
+CoderResult(InputIterTp, InputSentTp, OutputIter, OutputSentTp)
+    -> CoderResult<std::iter_value_t<OutputIter>, InputIterTp, InputSentTp,
+                   OutputIter, OutputSentTp>;
 
 template <typename InputToken, typename Derived>
 class EncoderInterface {
