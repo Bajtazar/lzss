@@ -34,9 +34,8 @@ class LzssDummyAuxDecoder
 
         tokens_.erase(tokens_.begin(), token_iter);
 
-        return koda::CoderResult{
-            std::move(input),
-            std::ranges::subrange{std::move(out_iter), std::move(out_sent)}};
+        return koda::CoderResult{std::move(input), std::move(out_iter),
+                                 std::move(out_sent)};
     }
 
    private:

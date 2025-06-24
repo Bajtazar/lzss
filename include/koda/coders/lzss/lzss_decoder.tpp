@@ -178,7 +178,7 @@ constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::Decode(
         auto new_output =
             ProcessCachedSequence(std::forward<decltype(output)>(output));
         if (cached_sequence_) {
-            return CoderResult{AsSubrange(std::forward<decltype(input)>(input)),
+            return CoderResult{std::forward<decltype(input)>(input),
                                std::move(new_output)};
         }
         return ProcessData(std::forward<decltype(input)>(input),

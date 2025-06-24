@@ -84,10 +84,8 @@ class EncoderInterface {
         auto updated_output = self().Flush(std::move(orange));
         auto iter = std::ranges::begin(updated_output);
         iter.Flush();
-        return CoderResult{
-            std::move(irange),
-            std::ranges::subrange{std::move(iter),
-                                  std::ranges::end(updated_output)}};
+        return CoderResult{std::move(irange), std::move(iter),
+                           std::ranges::end(updated_output)};
     }
 
     constexpr auto operator()(size_t stream_length,
@@ -111,10 +109,9 @@ class EncoderInterface {
 
     constexpr auto RemoveCountedIters(
         SpecializationOf<CoderResult> auto&& result) {
-        return CoderResult{
-            std::ranges::subrange{std::ranges::begin(result.input_range).base(),
-                                  std::ranges::end(result.input_range).base()},
-            std::move(result.output_range)};
+        return CoderResult{std::ranges::begin(result.input_range).base(),
+                           std::ranges::end(result.input_range).base(),
+                           std::move(result.output_range)};
     }
 };
 
@@ -153,9 +150,9 @@ class DecoderInterface {
     constexpr auto RemoveCountedIters(
         SpecializationOf<CoderResult> auto&& result) {
         return CoderResult{std::move(result.input_range),
-                           std::ranges::subrange{
-                               std::ranges::begin(result.output_range).base(),
-                               std::ranges::end(result.output_range).base()}};
+
+                           std::ranges::begin(result.output_range).base(),
+                           std::ranges::end(result.output_range).base()};
     }
 };
 

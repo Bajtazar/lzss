@@ -103,9 +103,8 @@ constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
         search_tree_.AddString(look_ahead);
         dict.AddSymbolToBuffer(*input_iter);
     }
-    return CoderResult{
-        std::ranges::subrange{std::move(input_iter), std::move(input_sent)},
-        std::move(out_range)};
+    return CoderResult{std::move(input_iter), std::move(input_sent),
+                       std::move(out_range)};
 }
 
 template <std::integral Token,

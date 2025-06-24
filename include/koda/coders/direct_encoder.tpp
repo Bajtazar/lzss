@@ -22,9 +22,8 @@ constexpr auto DirectEncoder<Token>::Encode(InputRange<Token> auto&& input,
     for (; (input_iter != input_sent) && !out_range.empty(); ++input_iter) {
         out_range = Traits::EncodeToken(*input_iter, out_range);
     }
-    return CoderResult{
-        std::ranges::subrange{std::move(input_iter), std::move(input_sent)},
-        std::move(out_range)};
+    return CoderResult{std::move(input_iter), std::move(input_sent),
+                       std::move(out_range)};
 }
 
 template <typename Token>
