@@ -2,16 +2,34 @@
 
 #include <koda/utils/concepts.hpp>
 #include <koda/utils/type_dummies.hpp>
+#include <koda/utils/utils.hpp>
 
 #include <cinttypes>
 
 namespace koda {
 
-template <typename InputRange, typename OutputRange>
+template <typename Tp, std::input_iterator InputIterTp,
+          std::sentinel_for<InputIterTp> InputSentinelTp,
+          std::output_iterator<Tp> OutputIterTp,
+          std::sentinel_for<OutputIterTp> OutputSentinelTp>
 struct CoderResult {
-    InputRange input_range;
-    OutputRange output_range;
+    template <std::ranges::input_range InputRangeTp,
+              std::ranges::output_range<Tp> OutputRangeTp>
+    constexpr explicit CoderResult(InputRangeTp&& input, OutputRangeTp&& output)
+        : input_range{AsSubrange(std::forward<decltype(input)>(input))},
+          output_range{AsSubrange(std::forward<decltype(output)>(output))} {}
+
+    std::ranges::subrange<InputIterTp, InputSentinelTp> input_range;
+    std::ranges::subrange<OutputIterTp, OutputSentinelTp> output_range;
 };
+
+template <typename InputRangeTp, typename OutputRangeTp>
+CoderResult(InputRangeTp&&, OutputRangeTp&&)
+    -> CoderResult<std::ranges::range_value_t<OutputRangeTp>,
+                   std::ranges::iterator_t<InputRangeTp>,
+                   std::ranges::sentinel_t<InputRangeTp>,
+                   std::ranges::iterator_t<OutputRangeTp>,
+                   std::ranges::sentinel_t<OutputRangeTp> >;
 
 template <typename InputToken, typename Derived>
 class EncoderInterface {
@@ -51,9 +69,8 @@ class EncoderInterface {
    private:
     constexpr Derived& self() noexcept { return *static_cast<Derived*>(this); }
 
-    template <InputRange<InputToken> InputRange, BitOutputRange OutputRange>
     constexpr auto RemoveCountedIters(
-        CoderResult<InputRange, OutputRange>&& result) {
+        SpecializationOf<CoderResult> auto&& result) {
         return CoderResult{
             std::ranges::subrange{std::ranges::begin(result.input_range).base(),
                                   std::ranges::end(result.input_range).base()},
@@ -93,10 +110,8 @@ class DecoderInterface {
    private:
     constexpr Derived& self() noexcept { return *static_cast<Derived*>(this); }
 
-    template <BitInputRange InputRange,
-              std::ranges::output_range<InputToken> OutputRange>
     constexpr auto RemoveCountedIters(
-        CoderResult<InputRange, OutputRange>&& result) {
+        SpecializationOf<CoderResult> auto&& result) {
         return CoderResult{std::move(result.input_range),
                            std::ranges::subrange{
                                std::ranges::begin(result.output_range).base(),
