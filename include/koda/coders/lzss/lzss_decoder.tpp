@@ -12,8 +12,11 @@ template <std::ranges::output_range<Token> RangeTp>
 class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
    public:
     constexpr explicit SlidingDecoderView(
-        FusedDictionaryAndBuffer<Token>& dictionary, RangeTp&& range) noexcept
+        FusedDictionaryAndBuffer<Token>& dictionary,
+        std::optional<CachedSequence>& cached_sequence,
+        RangeTp&& range) noexcept
         : dictionary_{dictionary},
+          cached_sequence_{cached_sequence},
           iterator_{std::ranges::begin(range)},
           sentinel_{std::ranges::end(range)} {}
 
@@ -39,20 +42,27 @@ class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
         }
 
         constexpr Iterator& operator=(value_type token) noexcept {
+            auto& iter = parent_->iterator_;
+
             if (auto symbol = token.get_symbol()) {
-                *(parent_->iterator_)++ = *symbol;
+                *iter++ = *symbol;
                 parent_->dictionary_.AddSymbolToBuffer(*symbol);
                 return *this;
             }
-            const auto [pos, len] = *token.get_marker();
+            auto [pos, len] = *token.get_marker();
 
             auto sequence =
                 parent_->dictionary_.get_sequence_at_relative_pos(pos, len);
 
-            // @TODO fix when iterator hits sentinel
-            for (const auto& element : sequence) {
-                *(parent_->iterator_)++ = element;
-                parent_->dictionary_.AddSymbolToBuffer(element);
+            const auto sentinel = parent_->sentinel_;
+            for (size_t i = 0; i < sequence.size() && iter != sentinel;
+                 ++iter, --len, ++i) {
+                *iter = sequence[i];
+                parent_->dictionary_.AddSymbolToBuffer(sequence[i]);
+            }
+            if (iter == sentinel) {
+                [[assume(!(parent_->cached_sequence_))]];
+                parent_->cached_sequence_ = CachedSequence{pos, len};
             }
             return *this;
         }
@@ -84,6 +94,7 @@ class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
 
    private:
     FusedDictionaryAndBuffer<Token>& dictionary_;
+    std::optional<CachedSequence>& cached_sequence_;
     std::ranges::iterator_t<RangeTp> iterator_;
     std::ranges::sentinel_t<RangeTp> sentinel_;
 
@@ -161,7 +172,7 @@ constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::Decode(
 
     SlidingDecoderView decoder_view{
         std::get<FusedDictionaryAndBuffer<Token>>(dictionary_and_buffer_),
-        std::forward<decltype(output)>(output)};
+        cached_sequence_, std::forward<decltype(output)>(output)};
 
     auto result = auxiliary_decoder_.Decode(
         std::forward<decltype(input)>(input), decoder_view);

@@ -51,8 +51,14 @@ class LzssDecoder
         [[no_unique_address]] Allocator allocator;
     };
 
+    struct CachedSequence {
+        size_t position;
+        size_t length;
+    };
+
     std::variant<FusedDictionaryAndBuffer<Token>, FusedDictAndBufferInfo>
         dictionary_and_buffer_;
+    std::optional<CachedSequence> cached_sequence_ = std::nullopt;
     [[no_unique_address]] AuxiliaryDecoder auxiliary_decoder_;
 
     constexpr void LoadFusedDict();
