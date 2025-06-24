@@ -174,9 +174,9 @@ constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::Decode(
         dictionary_and_buffer_))]];
 
     if (cached_sequence_) {
-        auto [has_been_processed, new_output] =
+        auto new_output =
             ProcessCachedSequence(std::forward<decltype(output)>(output));
-        if (!has_been_processed) {
+        if (cached_sequence_) {
             return CoderResult{std::forward<decltype(input)>(input),
                                std::move(new_output)};
         }
@@ -215,9 +215,7 @@ LzssDecoder<Token, AuxiliaryDecoder, Allocator>::ProcessCachedSequence(
         cached_sequence_ = std::nullopt;
     }
 
-    return std::pair{
-        static_cast<bool>(cached_sequence_),
-        std::ranges::subrange{std::move(out_iter), std::move(out_sent)}};
+    return std::ranges::subrange{std::move(out_iter), std::move(out_sent)};
 }
 
 template <std::integral Token,
