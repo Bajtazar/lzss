@@ -84,6 +84,11 @@ class FusedDictionaryAndBuffer {
         std::optional<size_t> cyclic_buffer_size = std::nullopt,
         const AllocatorTp& allocator = AllocatorTp{});
 
+    constexpr explicit FusedDictionaryAndBuffer(
+        size_t dictionary_size, size_t buffer_size,
+        std::optional<size_t> cyclic_buffer_size = std::nullopt,
+        const AllocatorTp& allocator = AllocatorTp{});
+
     constexpr FusedDictionaryAndBuffer(const FusedDictionaryAndBuffer&) =
         delete;
     constexpr FusedDictionaryAndBuffer(FusedDictionaryAndBuffer&&) noexcept =

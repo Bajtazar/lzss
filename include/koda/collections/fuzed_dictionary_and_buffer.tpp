@@ -13,15 +13,29 @@ template <typename Tp, typename AllocatorTp>
 constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::FusedDictionaryAndBuffer(
     size_t dictionary_size, SequenceView buffer,
     std::optional<size_t> cyclic_buffer_size, const AllocatorTp& allocator)
-    : cyclic_buffer_(CalculateCyclicBufferSize(dictionary_size, buffer.size(),
+    : FusedDictionaryAndBuffer{dictionary_size, buffer.size(),
+                               std::move(cyclic_buffer_size), allocator} {
+    std::advance(buffer_sentinel_, buffer_size_);
+    // Distance used to return iterator to the beginning of the cyclic buffer if
+    // it overflows right telomere
+    cyclic_buffer_wrap_ =
+        -std::distance(cyclic_buffer_.begin(), right_telomere_tag_);
+    MemoryCopy(buffer_iter_, buffer);
+}
+
+template <typename Tp, typename AllocatorTp>
+constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::FusedDictionaryAndBuffer(
+    size_t dictionary_size, size_t buffer_size,
+    std::optional<size_t> cyclic_buffer_size, const AllocatorTp& allocator)
+    : cyclic_buffer_(CalculateCyclicBufferSize(dictionary_size, buffer_size,
                                                cyclic_buffer_size),
                      0, allocator),
       dictionary_size_{dictionary_size},
-      buffer_size_{buffer.size()},
+      buffer_size_{buffer_size},
       dictionary_iter_{cyclic_buffer_.begin()},
       dictionary_sentinel_{dictionary_iter_},
       buffer_iter_{cyclic_buffer_.begin()},
-      buffer_sentinel_{std::next(buffer_iter_, buffer_size_)},
+      buffer_sentinel_{cyclic_buffer_.begin()},
       // buffer can be in fact empty, then only dictionary is being used. Useful
       // for decoders
       left_telomere_tag_{std::next(cyclic_buffer_.begin(), buffer_size_ - 1)},
@@ -42,16 +56,16 @@ constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::FusedDictionaryAndBuffer(
             throw std::logic_error{"Buffer size has to be greater than 0"};
         }
     }
-    // Distance used to return iterator to the beginning of the cyclic buffer if
-    // it overflows right telomere
-    cyclic_buffer_wrap_ =
-        -std::distance(cyclic_buffer_.begin(), right_telomere_tag_);
-    MemoryCopy(buffer_iter_, buffer);
 }
 
 template <typename Tp, typename AllocatorTp>
 constexpr bool FusedDictionaryAndBuffer<Tp, AllocatorTp>::AddSymbolToBuffer(
     ValueType symbol) {
+    if (std::distance(buffer_iter_, buffer_sentinel_) != buffer_size_) {
+        *buffer_sentinel_++ = symbol;
+        return true;
+    }
+
     if (buffer_sentinel_ == cyclic_buffer_.end()) [[unlikely]] {
         RelocateBuffer();
     } else {
