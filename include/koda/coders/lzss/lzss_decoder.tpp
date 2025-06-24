@@ -51,7 +51,7 @@ class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
 
             // @TODO fix when iterator hits sentinel
             for (const auto& element : sequence) {
-                *(parent_->iterator_)++ = *element;
+                *(parent_->iterator_)++ = element;
                 parent_->dictionary_.AddSymbolToBuffer(element);
             }
             return *this;
@@ -156,7 +156,18 @@ template <std::integral Token,
 constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::Decode(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
-    return CoderResult{std::move(input), std::move(output)};
+    [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(
+        dictionary_and_buffer_))]];
+
+    SlidingDecoderView decoder_view{
+        std::get<FusedDictionaryAndBuffer<Token>>(dictionary_and_buffer_),
+        std::forward<decltype(output)>(output)};
+
+    auto result = auxiliary_decoder_.Decode(
+        std::forward<decltype(input)>(input), decoder_view);
+
+    return CoderResult{std::move(result.input_range),
+                       decoder_view.remaining_range()};
 }
 
 }  // namespace koda
