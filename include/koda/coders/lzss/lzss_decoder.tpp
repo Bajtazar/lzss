@@ -4,11 +4,11 @@
 
 namespace koda {
 
-template <std::integral Token = uint8_t,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
+template <std::integral Token,
+          SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
     requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
-constexpr LzssDecoder<token, AuxiliaryDecoder, Allocator>::LzssDecoder(
+constexpr LzssDecoder<Token, AuxiliaryDecoder, Allocator>::LzssDecoder(
     size_t dictionary_size, size_t look_ahead_size,
     AuxiliaryDecoder auxiliary_decoder,
     std::optional<size_t> cyclic_buffer_size, const Allocator& allocator)
@@ -17,43 +17,42 @@ constexpr LzssDecoder<token, AuxiliaryDecoder, Allocator>::LzssDecoder(
           std::move(allocator)}},
       auxiliary_decoder_{std::move(auxiliary_decoder)} {}
 
-template <std::integral Token = uint8_t,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
+template <std::integral Token,
+          SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
     requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
-constexpr LzssDecoder<token, AuxiliaryDecoder, Allocator>::LzssDecoder(
+constexpr LzssDecoder<Token, AuxiliaryDecoder, Allocator>::LzssDecoder(
     size_t dictionary_size, size_t look_ahead_size,
-    std::optional<size_t> cyclic_buffer_size = std::nullopt,
-    const Allocator& allocator = Allocator{})
+    std::optional<size_t> cyclic_buffer_size, const Allocator& allocator)
     requires std::is_default_constructible_v<AuxiliaryDecoder>
     : LzssDecoder{dictionary_size, look_ahead_size, AuxiliaryDecoder{},
                   std::move(cyclic_buffer_size), std::move(allocator)} {}
 
-template <std::integral Token = uint8_t,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
+template <std::integral Token,
+          SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
     requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
-constexpr auto LzssDecoder<token, AuxiliaryDecoder, Allocator>::Initialize(
+constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::Initialize(
     BitInputRange auto&& input) {
     return LoadFusedDict(
-        decoder_.Initialize(std::forward<decltype(input)>(input)));
+        auxiliary_decoder_.Initialize(std::forward<decltype(input)>(input)));
 }
 
-template <std::integral Token = uint8_t,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
+template <std::integral Token,
+          SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
     requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 [[nodiscard]] constexpr auto&&
-LzssDecoder<token, AuxiliaryDecoder, Allocator>::auxiliary_decoder(
+LzssDecoder<Token, AuxiliaryDecoder, Allocator>::auxiliary_decoder(
     this auto&& self) {
     return std::forward_like<decltype(self)>(self.auxiliary_decoder_);
 }
 
-template <std::integral Token = uint8_t,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
+template <std::integral Token,
+          SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
     requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
-constexpr auto LzssDecoder<token, AuxiliaryDecoder, Allocator>::LoadFusedDict(
+constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::LoadFusedDict(
     BitInputRange auto&& input) {
     auto& info = std::get<FusedDictAndBufferInfo>(dictionary_and_buffer_);
 

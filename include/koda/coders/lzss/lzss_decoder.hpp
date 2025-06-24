@@ -10,7 +10,7 @@
 namespace koda {
 
 template <std::integral Token = uint8_t,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryDecoder =
+          SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder =
               DirectDecoder<LzssIntermediateToken<Token>>,
           typename Allocator = std::allocator<Token>>
     requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
@@ -57,4 +57,4 @@ class LzssDecoder
 
 }  // namespace koda
 
-#include <koda/coders/lzss/lzss_decoder.hpp>
+#include <koda/coders/lzss/lzss_decoder.tpp>
