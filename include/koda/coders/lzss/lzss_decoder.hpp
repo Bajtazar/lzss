@@ -41,6 +41,8 @@ class LzssDecoder
     using SequenceView = typename FusedDictionaryAndBuffer<Token>::SequenceView;
     using IMToken = LzssIntermediateToken<Token>;
 
+    class InitializationView;
+
     struct FusedDictAndBufferInfo {
         size_t dictionary_size;
         size_t look_ahead_size;
