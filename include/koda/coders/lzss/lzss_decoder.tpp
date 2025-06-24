@@ -83,4 +83,14 @@ constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::LoadFusedDict(
     return istream;
 }
 
+template <std::integral Token,
+          SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
+constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::Decode(
+    BitInputRange auto&& input,
+    std::ranges::output_range<Token> auto&& output) {
+    return CoderResult{std::move(input), std::move(output)};
+}
+
 }  // namespace koda

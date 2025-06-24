@@ -26,7 +26,8 @@ class [[nodiscard]] LzssIntermediateToken {
             const RepeatitionMarker& right) const noexcept = default;
     };
 
-    constexpr explicit LzssIntermediateToken(InputToken symbol) noexcept;
+    constexpr explicit LzssIntermediateToken(
+        InputToken symbol = InputToken{}) noexcept;
 
     constexpr explicit LzssIntermediateToken(PositionTp match_position,
                                              LengthTp match_length) noexcept;

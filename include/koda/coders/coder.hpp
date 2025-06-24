@@ -69,9 +69,9 @@ class DecoderInterface {
     constexpr auto operator()(
         BitInputRange auto&& input,
         std::ranges::output_range<InputToken> auto&& output) {
-        auto istream = self().Initialize(std::forward<decltype(input)>(input));
-        return self().Decode(std::move(istream),
-                             std::forward<decltype(output)>(output));
+        return self().Decode(
+            self().Initialize(std::forward<decltype(input)>(input)),
+            std::forward<decltype(output)>(output));
     }
 
     constexpr auto operator()(

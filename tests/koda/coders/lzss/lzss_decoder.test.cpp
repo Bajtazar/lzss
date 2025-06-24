@@ -6,31 +6,39 @@
 namespace {
 
 template <typename Tp>
-struct LzssDummyAuxDecoder
+class LzssDummyAuxDecoder
     : public koda::DecoderInterface<Tp, LzssDummyAuxDecoder<Tp>> {
-    std::vector<Tp> tokens = {};
+   public:
+    constexpr explicit LzssDummyAuxDecoder(std::vector<Tp> tokens = {})
+        : tokens_{std::move(tokens)} {}
 
     constexpr float TokenBitSize(Tp token) const {
         return koda::TokenTraits<Tp>::TokenBitSize(token);
     }
 
     constexpr auto Initialize(koda::BitInputRange auto&& input) {
-        return std::forward<decltype(input)>(input);
+        return std::ranges::subrange{std::ranges::begin(input),
+                                     std::ranges::end(input)};
     }
 
     constexpr auto Decode(koda::BitInputRange auto&& input,
                           std::ranges::output_range<Tp> auto&& output) {
         auto output_iter = std::ranges::begin(output);
-        *output_iter++ = tokens.front();
-        tokens.erase(tokens.begin());
+        *output_iter++ = tokens_.front();
+        tokens_.erase(tokens_.begin());
 
         return koda::CoderResult{
             std::move(input), std::ranges::subrange{std::move(output_iter),
                                                     std::ranges::end(output)}};
     }
+
+   private:
+    std::vector<Tp> tokens_;
 };
 
 }  // namespace
+
+using DummyDecoder = LzssDummyAuxDecoder<koda::LzssIntermediateToken<char>>;
 
 BeginConstexprTest(LzssEncoder, DecodeTokens) {
     std::vector input_sequence = {
@@ -51,10 +59,13 @@ BeginConstexprTest(LzssEncoder, DecodeTokens) {
         koda::LzssIntermediateToken<char>{0, 2},  // 'al'
         koda::LzssIntermediateToken<char>{'e'}};
     std::string expected_result = "ala ma kota a kot ma ale";
+    std::vector<uint8_t> binary_range = {1};
     std::string target;
 
-    koda::LzssDecoder<char,
-                      LzssDummyAuxDecoder<koda::LzssIntermediateToken<char>>>
-        decoder{1024, 4};
+    koda::LzssDecoder<char, DummyDecoder> decoder{
+        1024, 4, DummyDecoder{std::move(input_sequence)}};
+
+    decoder(binary_range | koda::views::LittleEndianInput,
+            target | koda::views::InsertFromBack);
 }
 EndConstexprTest;
