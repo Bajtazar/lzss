@@ -116,8 +116,8 @@ template <std::integral Token,
     requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::Initialize(
     BitInputRange auto&& input) {
-    return LoadFusedDict(
-        auxiliary_decoder_.Initialize(std::forward<decltype(input)>(input)));
+    LoadFusedDict();
+    return auxiliary_decoder_.Initialize(std::forward<decltype(input)>(input));
 }
 
 template <std::integral Token,
@@ -134,30 +134,13 @@ template <std::integral Token,
           SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
     requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
-constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::LoadFusedDict(
-    BitInputRange auto&& input) {
+constexpr void
+LzssDecoder<Token, AuxiliaryDecoder, Allocator>::LoadFusedDict() {
     auto& info = std::get<FusedDictAndBufferInfo>(dictionary_and_buffer_);
 
-    InitializationView init_view{info.look_ahead_size};
-
-    auto [istream, _] = auxiliary_decoder_.Decode(
-        std::forward<decltype(input)>(input), init_view);
-
     dictionary_and_buffer_ = FusedDictionaryAndBuffer<Token>{
-        info.dictionary_size, init_view.initial_buffer(),
+        info.dictionary_size, info.look_ahead_size,
         std::move(info.cyclic_buffer_size), std::move(info.allocator)};
-
-    // If sequence has been found at the end of the direct buffer loading
-    if (auto tail = init_view.tail(); !tail.empty()) {
-        auto& dict =
-            std::get<FusedDictionaryAndBuffer<Token>>(dictionary_and_buffer_);
-
-        for (const auto& symbol : tail) {
-            dict.AddSymbolToBuffer(symbol);
-        }
-    }
-
-    return istream;
 }
 
 template <std::integral Token,

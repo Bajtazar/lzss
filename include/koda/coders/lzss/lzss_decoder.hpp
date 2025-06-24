@@ -54,7 +54,7 @@ class LzssDecoder
         dictionary_and_buffer_;
     [[no_unique_address]] AuxiliaryDecoder auxiliary_decoder_;
 
-    constexpr auto LoadFusedDict(BitInputRange auto&& input);
+    constexpr void LoadFusedDict();
 };
 
 }  // namespace koda
