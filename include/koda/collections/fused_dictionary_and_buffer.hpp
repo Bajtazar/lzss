@@ -151,4 +151,4 @@ class FusedDictionaryAndBuffer {
 
 }  // namespace koda
 
-#include <koda/collections/fuzed_dictionary_and_buffer.tpp>
+#include <koda/collections/fused_dictionary_and_buffer.tpp>

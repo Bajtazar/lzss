@@ -3,7 +3,7 @@
 #include <koda/coders/coder.hpp>
 #include <koda/coders/direct_encoder.hpp>
 #include <koda/coders/lzss/lzss_intermediate_token.hpp>
-#include <koda/collections/fuzed_dictionary_and_buffer.hpp>
+#include <koda/collections/fused_dictionary_and_buffer.hpp>
 #include <koda/collections/search_binary_tree.hpp>
 #include <koda/utils/concepts.hpp>
 

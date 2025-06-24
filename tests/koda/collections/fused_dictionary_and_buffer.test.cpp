@@ -1,4 +1,4 @@
-#include <koda/collections/fuzed_dictionary_and_buffer.hpp>
+#include <koda/collections/fused_dictionary_and_buffer.hpp>
 #include <koda/tests/tests.hpp>
 #include <koda/tests/viewable_vector.hpp>
 
@@ -22,7 +22,7 @@ static constexpr ViewableVector<uint8_t> AsString(Ints... chars) {
         static_cast<uint8_t>(std::forward<Ints>(chars))...};
 }
 
-BeginConstexprTest(FuzedDictionaryAndBufferTest, Creation) {
+BeginConstexprTest(FusedDictionaryAndBufferTest, Creation) {
     koda::FusedDictionaryAndBuffer<uint8_t> dict{kDictSize, kBufferView};
 
     ConstexprAssertEqual(dict.buffer_size(), kBuffer.size());
@@ -35,7 +35,7 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, Creation) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(FuzedDictionaryAndBufferTest, SimpleBufferAccomodation) {
+BeginConstexprTest(FusedDictionaryAndBufferTest, SimpleBufferAccomodation) {
     koda::FusedDictionaryAndBuffer dict{kDictSize, kBufferView};
 
     ConstexprAssertEqual(dict.dictionary_size(), 0);
@@ -89,7 +89,7 @@ static constexpr std::vector<uint8_t> GeneratePseudoNumberSequence(
     return result;
 }
 
-BeginConstexprTest(FuzedDictionaryAndBufferTest, LongRunBufferAndDict) {
+BeginConstexprTest(FusedDictionaryAndBufferTest, LongRunBufferAndDict) {
     koda::FusedDictionaryAndBuffer<uint8_t> dict{kDictSize, kBufferView};
     // stress test
     auto sequence = GeneratePseudoNumberSequence(kRepeatitons);
@@ -126,7 +126,7 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, LongRunBufferAndDict) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(FuzedDictionaryAndBufferTest, AddEndSymbolTests) {
+BeginConstexprTest(FusedDictionaryAndBufferTest, AddEndSymbolTests) {
     koda::FusedDictionaryAndBuffer<uint8_t> dict{kDictSize, kBufferView};
     // stress test
     auto sequence =
@@ -178,7 +178,7 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, AddEndSymbolTests) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(FuzedDictionaryAndBufferTest, PositionGetterStraight) {
+BeginConstexprTest(FusedDictionaryAndBufferTest, PositionGetterStraight) {
     static constexpr uint16_t kBufferLen = 4;
 
     koda::FusedDictionaryAndBuffer<uint16_t> dict{
@@ -202,7 +202,7 @@ BeginConstexprTest(FuzedDictionaryAndBufferTest, PositionGetterStraight) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(FuzedDictionaryAndBufferTest, PositionGetterWrapped) {
+BeginConstexprTest(FusedDictionaryAndBufferTest, PositionGetterWrapped) {
     static constexpr uint16_t kBufferLen = 4;
 
     koda::FusedDictionaryAndBuffer<uint16_t> dict{
