@@ -77,7 +77,7 @@ class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
         return std::default_sentinel;
     }
 
-    auto remaining_range() {
+    constexpr auto remaining_range() {
         return std::ranges::subrange{std::move(iterator_),
                                      std::move(sentinel_)};
     }
