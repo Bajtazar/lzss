@@ -42,28 +42,12 @@ class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
         }
 
         constexpr Iterator& operator=(value_type token) noexcept {
-            auto& iter = parent_->iterator_;
-
             if (auto symbol = token.get_symbol()) {
-                *iter++ = *symbol;
+                *(parent_->iterator_)++ = *symbol;
                 parent_->dictionary_.AddSymbolToBuffer(*symbol);
                 return *this;
             }
-            auto [pos, len] = *token.get_marker();
-
-            auto sequence =
-                parent_->dictionary_.get_sequence_at_relative_pos(pos, len);
-
-            const auto sentinel = parent_->sentinel_;
-            for (size_t i = 0; i < sequence.size() && iter != sentinel;
-                 ++iter, --len, ++i) {
-                *iter = sequence[i];
-                parent_->dictionary_.AddSymbolToBuffer(sequence[i]);
-            }
-            if (iter == sentinel) {
-                [[assume(!(parent_->cached_sequence_))]];
-                parent_->cached_sequence_ = CachedSequence{pos, len};
-            }
+            CopySequenceToDictionary(std::move(token));
             return *this;
         }
 
@@ -79,6 +63,25 @@ class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
 
        private:
         SlidingDecoderView* parent_;
+
+        constexpr void CopySequenceToDictionary(value_type token) {
+            auto [position, length] = *token.get_marker();
+
+            auto sequence = parent_->dictionary_.get_sequence_at_relative_pos(
+                position, length);
+
+            auto& iter = parent_->iterator_;
+            const auto& sent = parent_->sentinel_;
+            for (size_t i = 0; i < sequence.size() && iter != sent;
+                 ++iter, --length, ++i) {
+                *iter = sequence[i];
+                parent_->dictionary_.AddSymbolToBuffer(sequence[i]);
+            }
+            if (length) {
+                [[assume(!(parent_->cached_sequence_))]];
+                parent_->cached_sequence_ = CachedSequence{position, length};
+            }
+        }
     };
 
     [[nodiscard]] constexpr Iterator begin() noexcept { return Iterator{this}; }
