@@ -19,8 +19,7 @@ class LzssDummyAuxDecoder
     }
 
     constexpr auto Initialize(koda::BitInputRange auto&& input) {
-        return std::ranges::subrange{std::ranges::begin(input),
-                                     std::ranges::end(input)};
+        return koda::AsSubrange(std::forward<decltype(input)>(input));
     }
 
     constexpr auto Decode(koda::BitInputRange auto&& input,

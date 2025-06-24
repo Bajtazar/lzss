@@ -1,5 +1,7 @@
 #pragma once
 
+#include <koda/utils/utils.hpp>
+
 #include <algorithm>
 #include <functional>
 #include <ranges>
@@ -14,8 +16,7 @@ constexpr float DirectEncoder<Token>::TokenBitSize(Token token) const {
 template <typename Token>
 constexpr auto DirectEncoder<Token>::Encode(InputRange<Token> auto&& input,
                                             BitOutputRange auto&& output) {
-    std::ranges::subrange out_range{std::ranges::begin(output),
-                                    std::ranges::end(output)};
+    auto out_range = AsSubrange(std::forward<decltype(output)>(output));
     auto input_iter = std::ranges::begin(input);
     auto input_sent = std::ranges::end(input);
     for (; (input_iter != input_sent) && !out_range.empty(); ++input_iter) {

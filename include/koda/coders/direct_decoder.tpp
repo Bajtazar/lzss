@@ -1,5 +1,7 @@
 #pragma once
 
+#include <koda/utils/utils.hpp>
+
 #include <algorithm>
 #include <functional>
 #include <ranges>
@@ -15,10 +17,9 @@ template <typename Token>
 constexpr auto DirectDecoder<Token>::Decode(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
-    auto output_iter = std::ranges::begin(output);
+    auto input_range = AsSubrange(std::forward<decltype(input)>(input));
 
-    std::ranges::subrange input_range{std::ranges::begin(input),
-                                      std::ranges::end(input)};
+    auto output_iter = std::ranges::begin(output);
     auto output_sentinel = std::ranges::end(output);
     for (; !input_range.empty() && (output_iter != output_sentinel);
          ++output_iter) {

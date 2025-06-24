@@ -1,5 +1,7 @@
 #pragma once
 
+#include <koda/utils/utils.hpp>
+
 namespace koda {
 
 template <std::integral Token,
@@ -92,8 +94,7 @@ constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
     auto& dict =
         std::get<FusedDictionaryAndBuffer<Token>>(dictionary_and_buffer_);
 
-    std::ranges::subrange out_range{std::ranges::begin(output),
-                                    std::ranges::end(output)};
+    auto out_range = AsSubrange(std::forward<decltype(output)>(output));
     auto input_iter = std::ranges::begin(input);
     auto input_sent = std::ranges::end(input);
     for (; (input_iter != input_sent) && !out_range.empty(); ++input_iter) {
@@ -181,9 +182,7 @@ constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
 
     auto& dict =
         std::get<FusedDictionaryAndBuffer<Token>>(dictionary_and_buffer_);
-
-    std::ranges::subrange out_range{std::ranges::begin(output),
-                                    std::ranges::end(output)};
+    auto out_range = AsSubrange(std::forward<decltype(output)>(output));
 
     for (size_t i = 0; i < search_tree_.string_size(); ++i) {
         out_range =

@@ -27,10 +27,8 @@ struct LzssDummyAuxEncoder
                           koda::BitOutputRange auto&& output) {
         tokens.insert_range(tokens.end(), std::forward<decltype(input)>(input));
         return koda::CoderResult{
-            std::ranges::subrange{std::ranges::begin(input),
-                                  std::ranges::end(input)},
-            std::ranges::subrange{std::ranges::begin(output),
-                                  std::ranges::end(output)}};
+            koda::AsSubrange(std::forward<decltype(input)>(input)),
+            koda::AsSubrange(std::forward<decltype(output)>(output))};
     }
 
     constexpr auto Flush(koda::BitOutputRange auto&& output) {
