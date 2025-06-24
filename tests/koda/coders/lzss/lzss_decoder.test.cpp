@@ -23,13 +23,19 @@ class LzssDummyAuxDecoder
 
     constexpr auto Decode(koda::BitInputRange auto&& input,
                           std::ranges::output_range<Tp> auto&& output) {
-        auto output_iter = std::ranges::begin(output);
-        *output_iter++ = tokens_.front();
-        tokens_.erase(tokens_.begin());
+        auto token_iter = tokens_.begin();
+        auto out_iter = std::ranges::begin(output);
+        auto out_sent = std::ranges::end(output);
+        for (; token_iter != tokens_.end() && out_iter != out_sent;
+             ++token_iter, ++out_iter) {
+            *out_iter = *token_iter;
+        }
+
+        tokens_.erase(tokens_.begin(), token_iter);
 
         return koda::CoderResult{
-            std::move(input), std::ranges::subrange{std::move(output_iter),
-                                                    std::ranges::end(output)}};
+            std::move(input),
+            std::ranges::subrange{std::move(out_iter), std::move(out_sent)}};
     }
 
    private:
@@ -67,5 +73,7 @@ BeginConstexprTest(LzssEncoder, DecodeTokens) {
 
     decoder(binary_range | koda::views::LittleEndianInput,
             target | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(target, expected_result);
 }
 EndConstexprTest;
