@@ -18,8 +18,6 @@ constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::FusedDictionaryAndBuffer(
     std::advance(buffer_sentinel_, buffer_size_);
     // Distance used to return iterator to the beginning of the cyclic buffer if
     // it overflows right telomere
-    cyclic_buffer_wrap_ =
-        -std::distance(cyclic_buffer_.begin(), right_telomere_tag_);
     MemoryCopy(buffer_iter_, buffer);
 }
 
@@ -56,6 +54,8 @@ constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::FusedDictionaryAndBuffer(
             throw std::logic_error{"Buffer size has to be greater than 0"};
         }
     }
+    cyclic_buffer_wrap_ =
+        -std::distance(cyclic_buffer_.begin(), right_telomere_tag_);
 }
 
 template <typename Tp, typename AllocatorTp>
