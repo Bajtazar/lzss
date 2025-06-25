@@ -20,13 +20,22 @@ template <std::integral Token>
 template <std::integral Token>
 [[nodiscard]] /*static*/ constexpr auto TokenTraits<Token>::DecodeToken(
     BitInputRange auto&& input) {
-    TokenType result;
-    auto copy_res =
-        std::ranges::copy(input | std::views::take(sizeof(Token) * 8),
-                          LittleEndianOutputBitIter{&result});
+    TokenType result[1]{};
+    auto view = result | views::LittleEndianOutput;
+
+    auto in_iter = std::ranges::begin(input);
+    auto in_sent = std::ranges::end(input);
+
+    auto v_iter = std::ranges::begin(view);
+    const auto v_sent = std::ranges::end(view);
+
+    for (; in_iter != in_sent && v_iter != v_sent; ++in_iter, ++v_iter) {
+        *v_iter = *in_iter;
+    }
+
     return TokenTraitsDecodingResult{
-        std::move(result), std::ranges::subrange{std::move(copy_res.in.base()),
-                                                 std::ranges::end(input)}};
+        std::move(result[0]),
+        std::ranges::subrange{std::move(in_iter), std::move(in_sent)}};
 }
 
 template <std::integral Token>
