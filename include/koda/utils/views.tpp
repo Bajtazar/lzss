@@ -36,4 +36,49 @@ template <typename IterTp, std::sentinel_for<IterTp> SentinelTp>
     return counter_;
 }
 
+template <typename Tp, std::output_iterator<Tp> IterTp>
+constexpr OutputTakeIterator<Tp, IterTp>::OutputTakeIterator(
+    IterTp iterator,
+    size_t counter) noexcept(std::is_nothrow_move_constructible_v<IterTp>)
+    : iterator_{std::move(iterator)}, counter_{counter} {}
+
+template <typename Tp, std::output_iterator<Tp> IterTp>
+constexpr OutputTakeIterator<Tp, IterTp>&
+OutputTakeIterator<Tp, IterTp>::operator=(value_type value) {
+    *iterator_ = std::move(value);
+    return *this;
+}
+
+template <typename Tp, std::output_iterator<Tp> IterTp>
+[[nodiscard]] constexpr OutputTakeIterator<Tp, IterTp>&
+OutputTakeIterator<Tp, IterTp>::operator*() noexcept {
+    return *this;
+}
+
+template <typename Tp, std::output_iterator<Tp> IterTp>
+constexpr OutputTakeIterator<Tp, IterTp>&
+OutputTakeIterator<Tp, IterTp>::operator++() noexcept {
+    ++iterator_;
+    ++counter_;
+    return *this;
+}
+
+template <typename Tp, std::output_iterator<Tp> IterTp>
+[[nodiscard]] constexpr OutputTakeIterator<Tp, IterTp>
+OutputTakeIterator<Tp, IterTp>::operator++(int) noexcept {
+    return OutputTakeIterator{iterator_++, counter_++};
+}
+
+template <typename Tp, std::output_iterator<Tp> IterTp>
+[[nodiscard]] constexpr auto&& OutputTakeIterator<Tp, IterTp>::base(
+    this auto&& self) {
+    return std::forward_like<decltype(self)>(self.iterator_);
+}
+
+template <typename Tp, std::output_iterator<Tp> IterTp>
+[[nodiscard]] constexpr size_t OutputTakeIterator<Tp, IterTp>::counter()
+    const noexcept {
+    return counter_;
+}
+
 }  // namespace koda::ranges

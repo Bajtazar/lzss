@@ -28,16 +28,18 @@ class OutputTakeIterator {
     using value_type = Tp;
     using difference_type = std::ptrdiff_t;
 
-    constexpr explicit OutputTakeIterator(IterTp iterator) noexcept(
-        std::is_nothrow_move_constructible_v<IterTp>);
+    constexpr explicit OutputTakeIterator(
+        IterTp iterator,
+        size_t counter =
+            0) noexcept(std::is_nothrow_move_constructible_v<IterTp>);
 
     constexpr OutputTakeIterator& operator=(value_type value);
 
-    [[nodiscard]] constexpr OutputTakeIterator& operator*(void) noexcept;
+    [[nodiscard]] constexpr OutputTakeIterator& operator*() noexcept;
 
     constexpr OutputTakeIterator& operator++() noexcept;
 
-    [[nodiscard]] constexpr OutputTakeIterator& operator++(int) noexcept;
+    [[nodiscard]] constexpr OutputTakeIterator operator++(int) noexcept;
 
     [[nodiscard]] constexpr auto&& base(this auto&& self);
 
@@ -45,7 +47,7 @@ class OutputTakeIterator {
 
    private:
     IterTp iterator_;
-    size_t counter_ = 0;
+    size_t counter_;
 };
 
 template <typename Tp, std::output_iterator<Tp> IterTp,
