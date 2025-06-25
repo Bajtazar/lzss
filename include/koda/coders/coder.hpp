@@ -3,6 +3,7 @@
 #include <koda/utils/concepts.hpp>
 #include <koda/utils/type_dummies.hpp>
 #include <koda/utils/utils.hpp>
+#include <koda/utils/views.hpp>
 
 #include <cinttypes>
 
@@ -92,7 +93,7 @@ class EncoderInterface {
                               InputRange<InputToken> auto&& input,
                               BitOutputRange auto&& output) {
         return RemoveCountedIters(
-            (*this)(input | std::views::take(stream_length),
+            (*this)(input | views::Take(stream_length),
                     std::forward<decltype(output)>(output)));
     }
 
@@ -100,7 +101,7 @@ class EncoderInterface {
                            InputRange<InputToken> auto&& input,
                            BitOutputRange auto&& output) {
         return RemoveCountedIters(
-            self().Encode(input | std::views::take(stream_length),
+            self().Encode(input | views::Take(stream_length),
                           std::forward<decltype(output)>(output)));
     }
 
@@ -131,9 +132,8 @@ class DecoderInterface {
     constexpr auto operator()(
         size_t stream_length, BitInputRange auto&& input,
         std::ranges::output_range<InputToken> auto&& output) {
-        return RemoveCountedIters(
-            (*this)(std::forward<decltype(input)>(input),
-                    output | std::views::take(stream_length)));
+        return RemoveCountedIters((*this)(std::forward<decltype(input)>(input),
+                                          output | views::Take(stream_length)));
     }
 
     constexpr auto DecodeN(
@@ -141,7 +141,7 @@ class DecoderInterface {
         std::ranges::output_range<InputToken> auto&& output) {
         return RemoveCountedIters(
             self().Decode(std::forward<decltype(input)>(input),
-                          output | std::views::take(stream_length)));
+                          output | views::Take(stream_length)));
     }
 
    private:
@@ -150,7 +150,6 @@ class DecoderInterface {
     constexpr auto RemoveCountedIters(
         SpecializationOf<CoderResult> auto&& result) {
         return CoderResult{std::move(result.input_range),
-
                            std::ranges::begin(result.output_range).base(),
                            std::ranges::end(result.output_range).base()};
     }
