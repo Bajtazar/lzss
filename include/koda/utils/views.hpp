@@ -13,7 +13,7 @@ class OutputTakeSentinel {
         SentinelTp sentinel,
         size_t limit) noexcept(std::is_nothrow_move_constructible_v<IterTp>);
 
-    [[nodiscard]] constexpr auto base(this auto&& self);
+    [[nodiscard]] constexpr auto&& base(this auto&& self);
 
     [[nodiscard]] constexpr size_t counter() const noexcept;
 
@@ -39,7 +39,7 @@ class OutputTakeIterator {
 
     [[nodiscard]] constexpr OutputTakeIterator& operator++(int) noexcept;
 
-    [[nodiscard]] constexpr auto base(this auto&& self);
+    [[nodiscard]] constexpr auto&& base(this auto&& self);
 
     [[nodiscard]] constexpr size_t counter() const noexcept;
 
@@ -52,16 +52,14 @@ template <typename Tp, std::output_iterator<Tp> IterTp,
           std::sentinel_for<IterTp> SentTp>
 [[nodiscard]] constexpr bool operator==(
     const OutputTakeIterator<Tp, IterTp>& left,
-    const OutputTakeSentinel<IterTp, SentTp>& right) {
-    return (left.base() == right.base()) || (left.counter() == right.counter());
-}
+    const OutputTakeSentinel<IterTp, SentTp>& right) noexcept;
 
 template <typename Tp, std::output_iterator<Tp> IterTp,
           std::sentinel_for<IterTp> SentTp>
 [[nodiscard]] constexpr bool operator==(
     const OutputTakeSentinel<IterTp, SentTp>& left,
-    const OutputTakeIterator<Tp, IterTp>& right) {
-    return (left.base() == right.base()) || (left.counter() == right.counter());
-}
+    const OutputTakeIterator<Tp, IterTp>& right) noexcept;
 
 }  // namespace koda::ranges
+
+#include <koda/utils/views.tpp>
