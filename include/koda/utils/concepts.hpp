@@ -31,4 +31,9 @@ concept SpecializationOf = IsSpecializationV<Template, Tp>;
 template <typename Tp>
 concept UnsignedIntegral = std::integral<Tp> && std::is_unsigned_v<Tp>;
 
+template <typename Tp, template <typename...> class BaseTp>
+concept ViewableDistinctRange =
+    !SpecializationOf<std::remove_cvref_t<Tp>, BaseTp> &&
+    std::ranges::viewable_range<Tp>;
+
 }  // namespace koda

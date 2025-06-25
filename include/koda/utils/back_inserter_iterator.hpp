@@ -1,5 +1,7 @@
 #pragma once
 
+#include <koda/utils/concepts.hpp>
+
 #include <iterator>
 #include <ranges>
 
@@ -36,7 +38,7 @@ template <typename Range>
 class InsertFromBackView
     : public std::ranges::view_interface<InsertFromBackView<Range>> {
    public:
-    template <std::ranges::viewable_range RangeFwdTp>
+    template <ViewableDistinctRange<InsertFromBackView> RangeFwdTp>
     constexpr InsertFromBackView(RangeFwdTp&& range)
         : range_{std::forward<RangeFwdTp>(range)} {}
 
@@ -56,7 +58,7 @@ class InsertFromBackView
     std::reference_wrapper<Range> range_;
 };
 
-template <std::ranges::viewable_range Range>
+template <ViewableDistinctRange<InsertFromBackView> Range>
 InsertFromBackView(Range&& range)
     -> InsertFromBackView<std::remove_cvref_t<Range>>;
 
