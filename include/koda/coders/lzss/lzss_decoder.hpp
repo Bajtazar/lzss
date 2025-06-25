@@ -44,24 +44,14 @@ class LzssDecoder
     template <std::ranges::output_range<Token> RangeTp>
     class SlidingDecoderView;
 
-    struct FusedDictAndBufferInfo {
-        size_t dictionary_size;
-        size_t look_ahead_size;
-        std::optional<size_t> cyclic_buffer_size;
-        [[no_unique_address]] Allocator allocator;
-    };
-
     struct CachedSequence {
         size_t position;
         size_t length;
     };
 
-    std::variant<FusedDictionaryAndBuffer<Token>, FusedDictAndBufferInfo>
-        dictionary_and_buffer_;
+    FusedDictionaryAndBuffer<Token> dictionary_;
     std::optional<CachedSequence> cached_sequence_ = std::nullopt;
     [[no_unique_address]] AuxiliaryDecoder auxiliary_decoder_;
-
-    constexpr void LoadFusedDict();
 
     constexpr auto ProcessCachedSequence(
         std::ranges::output_range<Token> auto&& output);

@@ -119,9 +119,8 @@ constexpr LzssDecoder<Token, AuxiliaryDecoder, Allocator>::LzssDecoder(
     size_t dictionary_size, size_t look_ahead_size,
     AuxiliaryDecoder auxiliary_decoder,
     std::optional<size_t> cyclic_buffer_size, const Allocator& allocator)
-    : dictionary_and_buffer_{FusedDictAndBufferInfo{
-          dictionary_size, look_ahead_size, std::move(cyclic_buffer_size),
-          std::move(allocator)}},
+    : dictionary_{dictionary_size, look_ahead_size,
+                  std::move(cyclic_buffer_size), std::move(allocator)},
       auxiliary_decoder_{std::move(auxiliary_decoder)} {}
 
 template <std::integral Token,
@@ -141,7 +140,6 @@ template <std::integral Token,
     requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::Initialize(
     BitInputRange auto&& input) {
-    LoadFusedDict();
     return auxiliary_decoder_.Initialize(std::forward<decltype(input)>(input));
 }
 
@@ -159,25 +157,9 @@ template <std::integral Token,
           SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
     requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
-constexpr void
-LzssDecoder<Token, AuxiliaryDecoder, Allocator>::LoadFusedDict() {
-    auto& info = std::get<FusedDictAndBufferInfo>(dictionary_and_buffer_);
-
-    dictionary_and_buffer_ = FusedDictionaryAndBuffer<Token>{
-        info.dictionary_size, info.look_ahead_size,
-        std::move(info.cyclic_buffer_size), std::move(info.allocator)};
-}
-
-template <std::integral Token,
-          SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
-          typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::Decode(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
-    [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(
-        dictionary_and_buffer_))]];
-
     if (cached_sequence_) {
         auto new_output =
             ProcessCachedSequence(std::forward<decltype(output)>(output));
@@ -205,15 +187,13 @@ LzssDecoder<Token, AuxiliaryDecoder, Allocator>::ProcessCachedSequence(
     auto out_iter = std::ranges::begin(output);
     auto out_sent = std::ranges::end(output);
 
-    auto& dictionary =
-        std::get<FusedDictionaryAndBuffer<Token>>(dictionary_and_buffer_);
     auto sequence =
-        dictionary.get_sequence_at_relative_pos(cache.position, cache.length);
+        dictionary_.get_sequence_at_relative_pos(cache.position, cache.length);
 
     for (size_t i = 0; out_iter != out_sent && cache.length;
          ++out_iter, --cache.length, ++i) {
         *out_iter = sequence[i];
-        if (!dictionary.AddSymbolToBuffer(sequence[i])) {
+        if (!dictionary_.AddSymbolToBuffer(sequence[i])) {
             // Dictionary is not yet full so position pointer has to be advanced
             // manually
             ++cache.position;
@@ -235,8 +215,7 @@ constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::ProcessData(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
     SlidingDecoderView decoder_view{
-        std::get<FusedDictionaryAndBuffer<Token>>(dictionary_and_buffer_),
-        cached_sequence_,
+        dictionary_, cached_sequence_,
         std::views::all(std::forward<decltype(output)>(output))};
 
     auto result = auxiliary_decoder_.Decode(
