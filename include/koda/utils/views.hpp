@@ -68,16 +68,17 @@ class TakeView : public std::ranges::take_view<RangeTp> {
     using std::ranges::take_view<RangeTp>::take_view;
 };
 
-template <typename Tp, std::ranges::output_range<Tp> RangeTp>
-    requires(!std::ranges::forward_range<RangeTp>)
-class TakeView<std::ranges::views::all_t<RangeTp>> {
+template <std::ranges::range RangeTp>
+    requires(std::ranges::output_range<RangeTp,
+                                       std::ranges::range_value_t<RangeTp>> &&
+             !std::ranges::forward_range<RangeTp>)
+class TakeView<RangeTp> {
    public:
     using difference_type = std::ranges::range_difference_t<RangeTp>;
-    using iterator = OutputTakeIterator<
-        Tp, std::ranges::iterator_t<std::ranges::views::all_t<RangeTp>>>;
-    using sentinel = OutputTakeSentinel<
-        std::ranges::iterator_t<std::ranges::views::all_t<RangeTp>>,
-        std::ranges::sentinel_t<std::ranges::views::all_t<RangeTp>>>;
+    using iterator = OutputTakeIterator<std::ranges::range_value_t<RangeTp>,
+                                        std::ranges::iterator_t<RangeTp>>;
+    using sentinel = OutputTakeSentinel<std::ranges::iterator_t<RangeTp>,
+                                        std::ranges::sentinel_t<RangeTp>>;
 
     constexpr TakeView() noexcept
         requires std::default_initializable<RangeTp>
@@ -106,6 +107,8 @@ namespace koda::views {
 
 struct TakeViewAdaptorClosure
     : public std::ranges::range_adaptor_closure<TakeViewAdaptorClosure> {
+    constexpr explicit TakeViewAdaptorClosure(std::ptrdiff_t limit) noexcept;
+
     std::ptrdiff_t limit;
 
     template <std::ranges::viewable_range RangeTp>
