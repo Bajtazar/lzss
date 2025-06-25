@@ -17,7 +17,7 @@ struct DummyInputIterator {
 
     DummyInputIterator& operator++();
 
-    void operator++(int);
+    DummyInputIterator operator++(int);
 
     bool operator==(const DummyInputIterator& right) const;
 };
@@ -34,7 +34,7 @@ struct DummyBitInputIterator {
 
     size_t Position();
 
-    void operator++(int);
+    DummyBitInputIterator operator++(int);
 
     bool operator==(const DummyBitInputIterator& right) const;
 };
