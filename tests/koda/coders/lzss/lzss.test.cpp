@@ -28,7 +28,7 @@ BeginConstexprTest(LzssTest, ComplementaryTest1) {
 
     koda::LzssDecoder<char> decoder{1024, 16};
 
-    decoder(encoded | koda::views::LittleEndianInput,
+    decoder(sequence.size(), encoded | koda::views::LittleEndianInput,
             decoded | koda::views::InsertFromBack);
 
     ConstexprAssertEqual(sequence, decoded);
