@@ -14,7 +14,7 @@ static constexpr const char* kTestString =
     "visits all of the ``DFT frequency points'' on the unit circle in the "
     "$ z$ plane, as $ k$ goes from 0 to $ N-1$";
 
-BeginConstexprTest(LzssTest, ComplementaryTest1) {
+BeginConstexprTest(LzssTest, NormalTest) {
     std::string sequence = kTestString;
 
     koda::LzssEncoder<char> encoder{1024, 16};
@@ -34,3 +34,48 @@ BeginConstexprTest(LzssTest, ComplementaryTest1) {
     ConstexprAssertEqual(sequence, decoded);
 };
 EndConstexprTest;
+
+
+BeginConstexprTest(LzssTest, SmallBufferTest) {
+    std::string sequence = kTestString;
+
+    koda::LzssEncoder<char> encoder{1024, 1};
+
+    std::vector<uint8_t> encoded;
+
+    encoder(sequence, encoded | koda::views::InsertFromBack |
+                          koda::views::LittleEndianOutput);
+
+    std::string decoded;
+
+    koda::LzssDecoder<char> decoder{1024, 1};
+
+    decoder(sequence.size(), encoded | koda::views::LittleEndianInput,
+            decoded | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(sequence, decoded);
+};
+EndConstexprTest;
+
+// BeginConstexprTest(LzssTest, SmallDictionaryTest) {
+//     std::string sequence = kTestString;
+
+//     koda::LzssEncoder<char> encoder{16, 16};
+
+//     std::vector<uint8_t> encoded;
+
+//     encoder(sequence, encoded | koda::views::InsertFromBack |
+//                           koda::views::LittleEndianOutput);
+
+//     std::string decoded;
+
+//     koda::LzssDecoder<char> decoder{16, 16};
+
+//     decoder(sequence.size(), encoded | koda::views::LittleEndianInput,
+//             decoded | koda::views::InsertFromBack);
+
+//     ConstexprAssertEqual(sequence, decoded);
+// };
+// EndConstexprTest;
+
+
