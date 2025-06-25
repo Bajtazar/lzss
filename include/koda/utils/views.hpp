@@ -4,7 +4,9 @@
 #include <iterator>
 #include <ranges>
 
-namespace koda::ranges {
+namespace koda {
+
+namespace ranges {
 
 template <typename IterTp, std::sentinel_for<IterTp> SentinelTp>
 class OutputTakeSentinel {
@@ -101,9 +103,9 @@ template <typename RangeTp>
 TakeView(RangeTp&&, std::ranges::range_difference_t<RangeTp>)
     -> TakeView<std::views::all_t<RangeTp>>;
 
-}  // namespace koda::ranges
+}  // namespace ranges
 
-namespace koda::views {
+namespace views {
 
 struct TakeViewAdaptorClosure
     : public std::ranges::range_adaptor_closure<TakeViewAdaptorClosure> {
@@ -122,6 +124,8 @@ struct TakeViewAdaptor {
 
 inline constexpr TakeViewAdaptor Take{};
 
-}  // namespace koda::views
+}  // namespace views
+
+}  // namespace koda
 
 #include <koda/utils/views.tpp>

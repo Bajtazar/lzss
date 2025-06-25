@@ -1,6 +1,8 @@
 #pragma once
 
-namespace koda::ranges {
+namespace koda {
+
+namespace ranges {
 
 template <typename Tp, std::output_iterator<Tp> IterTp,
           std::sentinel_for<IterTp> SentTp>
@@ -112,9 +114,9 @@ template <std::ranges::range RangeTp>
     return sentinel{std::ranges::end(range_), limit_};
 }
 
-}  // namespace koda::ranges
+}  // namespace ranges
 
-namespace koda::views {
+namespace views {
 
 constexpr TakeViewAdaptorClosure::TakeViewAdaptorClosure(
     std::ptrdiff_t limit) noexcept
@@ -131,4 +133,6 @@ template <std::ranges::viewable_range RangeTp>
     return TakeViewAdaptorClosure{limit};
 }
 
-}  // namespace koda::views
+}  // namespace views
+
+}  // namespace koda
