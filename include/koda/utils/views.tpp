@@ -4,94 +4,98 @@ namespace koda {
 
 namespace ranges {
 
-template <typename Tp, std::output_iterator<Tp> IterTp,
+template <typename CountTp, typename Tp, std::output_iterator<Tp> IterTp,
           std::sentinel_for<IterTp> SentTp>
 [[nodiscard]] constexpr bool operator==(
-    const OutputTakeIterator<Tp, IterTp>& left,
-    const OutputTakeSentinel<IterTp, SentTp>& right) noexcept {
+    const OutputTakeIterator<CountTp, Tp, IterTp>& left,
+    const OutputTakeSentinel<CountTp, IterTp, SentTp>& right) noexcept {
     return (left.base() == right.base()) || (left.counter() == right.counter());
 }
 
-template <typename Tp, std::output_iterator<Tp> IterTp,
+template <typename CountTp, typename Tp, std::output_iterator<Tp> IterTp,
           std::sentinel_for<IterTp> SentTp>
 [[nodiscard]] constexpr bool operator==(
-    const OutputTakeSentinel<IterTp, SentTp>& left,
-    const OutputTakeIterator<Tp, IterTp>& right) noexcept {
+    const OutputTakeSentinel<CountTp, IterTp, SentTp>& left,
+    const OutputTakeIterator<CountTp, Tp, IterTp>& right) noexcept {
     return (left.base() == right.base()) || (left.counter() == right.counter());
 }
 
-template <typename IterTp, std::sentinel_for<IterTp> SentinelTp>
-constexpr OutputTakeSentinel<IterTp, SentinelTp>::OutputTakeSentinel(
+template <typename CountTp, typename IterTp,
+          std::sentinel_for<IterTp> SentinelTp>
+constexpr OutputTakeSentinel<CountTp, IterTp, SentinelTp>::OutputTakeSentinel(
     SentinelTp sentinel,
-    size_t limit) noexcept(std::is_nothrow_move_constructible_v<IterTp>)
+    CountTp limit) noexcept(std::is_nothrow_move_constructible_v<IterTp>)
     : sentinel_{std::move(sentinel)}, counter_{limit} {}
 
-template <typename IterTp, std::sentinel_for<IterTp> SentinelTp>
-constexpr OutputTakeSentinel<IterTp, SentinelTp>::OutputTakeSentinel() noexcept(
-    std::is_nothrow_move_constructible_v<IterTp>)
+template <typename CountTp, typename IterTp,
+          std::sentinel_for<IterTp> SentinelTp>
+constexpr OutputTakeSentinel<CountTp, IterTp, SentinelTp>::
+    OutputTakeSentinel() noexcept(std::is_nothrow_move_constructible_v<IterTp>)
     requires std::is_default_constructible_v<SentinelTp>
 {}
 
-template <typename IterTp, std::sentinel_for<IterTp> SentinelTp>
-[[nodiscard]] constexpr auto&& OutputTakeSentinel<IterTp, SentinelTp>::base(
-    this auto&& self) {
+template <typename CountTp, typename IterTp,
+          std::sentinel_for<IterTp> SentinelTp>
+[[nodiscard]] constexpr auto&&
+OutputTakeSentinel<CountTp, IterTp, SentinelTp>::base(this auto&& self) {
     return std::forward_like<decltype(self)>(self.sentinel_);
 }
 
-template <typename IterTp, std::sentinel_for<IterTp> SentinelTp>
-[[nodiscard]] constexpr size_t OutputTakeSentinel<IterTp, SentinelTp>::counter()
-    const noexcept {
+template <typename CountTp, typename IterTp,
+          std::sentinel_for<IterTp> SentinelTp>
+[[nodiscard]] constexpr CountTp
+OutputTakeSentinel<CountTp, IterTp, SentinelTp>::counter() const noexcept {
     return counter_;
 }
 
-template <typename Tp, std::output_iterator<Tp> IterTp>
-constexpr OutputTakeIterator<Tp, IterTp>::OutputTakeIterator(
+template <typename CountTp, typename Tp, std::output_iterator<Tp> IterTp>
+constexpr OutputTakeIterator<CountTp, Tp, IterTp>::OutputTakeIterator(
     IterTp iterator,
-    size_t counter) noexcept(std::is_nothrow_move_constructible_v<IterTp>)
+    CountTp counter) noexcept(std::is_nothrow_move_constructible_v<IterTp>)
     : iterator_{std::move(iterator)}, counter_{counter} {}
 
-template <typename Tp, std::output_iterator<Tp> IterTp>
-constexpr OutputTakeIterator<Tp, IterTp>::OutputTakeIterator() noexcept(
-    std::is_nothrow_move_constructible_v<IterTp>)
+template <typename CountTp, typename Tp, std::output_iterator<Tp> IterTp>
+constexpr OutputTakeIterator<CountTp, Tp, IterTp>::
+    OutputTakeIterator() noexcept(std::is_nothrow_move_constructible_v<IterTp>)
     requires std::is_default_constructible_v<IterTp>
 {}
 
-template <typename Tp, std::output_iterator<Tp> IterTp>
-constexpr OutputTakeIterator<Tp, IterTp>&
-OutputTakeIterator<Tp, IterTp>::operator=(value_type value) {
+template <typename CountTp, typename Tp, std::output_iterator<Tp> IterTp>
+constexpr OutputTakeIterator<CountTp, Tp, IterTp>&
+OutputTakeIterator<CountTp, Tp, IterTp>::operator=(value_type value) {
     *iterator_ = std::move(value);
     return *this;
 }
 
-template <typename Tp, std::output_iterator<Tp> IterTp>
-[[nodiscard]] constexpr OutputTakeIterator<Tp, IterTp>&
-OutputTakeIterator<Tp, IterTp>::operator*() noexcept {
+template <typename CountTp, typename Tp, std::output_iterator<Tp> IterTp>
+[[nodiscard]] constexpr OutputTakeIterator<CountTp, Tp, IterTp>&
+OutputTakeIterator<CountTp, Tp, IterTp>::operator*() noexcept {
     return *this;
 }
 
-template <typename Tp, std::output_iterator<Tp> IterTp>
-constexpr OutputTakeIterator<Tp, IterTp>&
-OutputTakeIterator<Tp, IterTp>::operator++() noexcept {
+template <typename CountTp, typename Tp, std::output_iterator<Tp> IterTp>
+constexpr OutputTakeIterator<CountTp, Tp, IterTp>&
+OutputTakeIterator<CountTp, Tp, IterTp>::operator++() noexcept {
     ++iterator_;
     ++counter_;
     return *this;
 }
 
-template <typename Tp, std::output_iterator<Tp> IterTp>
-[[nodiscard]] constexpr OutputTakeIterator<Tp, IterTp>
-OutputTakeIterator<Tp, IterTp>::operator++(int) noexcept {
+template <typename CountTp, typename Tp, std::output_iterator<Tp> IterTp>
+[[nodiscard]] constexpr OutputTakeIterator<CountTp, Tp, IterTp>
+OutputTakeIterator<CountTp, Tp, IterTp>::operator++(int) noexcept {
     return OutputTakeIterator{iterator_++, counter_++};
 }
 
-template <typename Tp, std::output_iterator<Tp> IterTp>
-[[nodiscard]] constexpr auto&& OutputTakeIterator<Tp, IterTp>::base(
+template <typename CountTp, typename Tp, std::output_iterator<Tp> IterTp>
+[[nodiscard]] constexpr auto&& OutputTakeIterator<CountTp, Tp, IterTp>::base(
     this auto&& self) {
     return std::forward_like<decltype(self)>(self.iterator_);
 }
 
-template <typename Tp, std::output_iterator<Tp> IterTp>
-[[nodiscard]] constexpr size_t OutputTakeIterator<Tp, IterTp>::counter()
-    const noexcept {
+template <typename CountTp, typename Tp, std::output_iterator<Tp> IterTp>
+[[nodiscard]] constexpr CountTp
+OutputTakeIterator<CountTp, Tp, IterTp>::counter() const noexcept {
     return counter_;
 }
 

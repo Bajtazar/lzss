@@ -8,13 +8,14 @@ namespace koda {
 
 namespace ranges {
 
-template <typename IterTp, std::sentinel_for<IterTp> SentinelTp>
+template <typename CountTp, typename IterTp,
+          std::sentinel_for<IterTp> SentinelTp>
 class OutputTakeSentinel {
    public:
     constexpr explicit OutputTakeSentinel(
         SentinelTp sentinel,
-        size_t limit =
-            0) noexcept(std::is_nothrow_move_constructible_v<IterTp>);
+        CountTp limit =
+            {}) noexcept(std::is_nothrow_move_constructible_v<IterTp>);
 
     constexpr explicit OutputTakeSentinel() noexcept(
         std::is_nothrow_move_constructible_v<IterTp>)
@@ -22,14 +23,14 @@ class OutputTakeSentinel {
 
     [[nodiscard]] constexpr auto&& base(this auto&& self);
 
-    [[nodiscard]] constexpr size_t counter() const noexcept;
+    [[nodiscard]] constexpr CountTp counter() const noexcept;
 
    private:
     SentinelTp sentinel_ = {};
-    size_t counter_ = 0;
+    CountTp counter_ = 0;
 };
 
-template <typename Tp, std::output_iterator<Tp> IterTp>
+template <typename CountTp, typename Tp, std::output_iterator<Tp> IterTp>
 class OutputTakeIterator {
    public:
     using value_type = Tp;
@@ -37,8 +38,8 @@ class OutputTakeIterator {
 
     constexpr explicit OutputTakeIterator(
         IterTp iterator,
-        size_t counter =
-            0) noexcept(std::is_nothrow_move_constructible_v<IterTp>);
+        CountTp counter =
+            {}) noexcept(std::is_nothrow_move_constructible_v<IterTp>);
 
     constexpr explicit OutputTakeIterator() noexcept(
         std::is_nothrow_move_constructible_v<IterTp>)
@@ -54,24 +55,24 @@ class OutputTakeIterator {
 
     [[nodiscard]] constexpr auto&& base(this auto&& self);
 
-    [[nodiscard]] constexpr size_t counter() const noexcept;
+    [[nodiscard]] constexpr CountTp counter() const noexcept;
 
    private:
     IterTp iterator_;
-    size_t counter_;
+    CountTp counter_;
 };
 
-template <typename Tp, std::output_iterator<Tp> IterTp,
+template <typename CountTp, typename Tp, std::output_iterator<Tp> IterTp,
           std::sentinel_for<IterTp> SentTp>
 [[nodiscard]] constexpr bool operator==(
-    const OutputTakeIterator<Tp, IterTp>& left,
-    const OutputTakeSentinel<IterTp, SentTp>& right) noexcept;
+    const OutputTakeIterator<CountTp, Tp, IterTp>& left,
+    const OutputTakeSentinel<CountTp, IterTp, SentTp>& right) noexcept;
 
-template <typename Tp, std::output_iterator<Tp> IterTp,
+template <typename CountTp, typename Tp, std::output_iterator<Tp> IterTp,
           std::sentinel_for<IterTp> SentTp>
 [[nodiscard]] constexpr bool operator==(
-    const OutputTakeSentinel<IterTp, SentTp>& left,
-    const OutputTakeIterator<Tp, IterTp>& right) noexcept;
+    const OutputTakeSentinel<CountTp, IterTp, SentTp>& left,
+    const OutputTakeIterator<CountTp, Tp, IterTp>& right) noexcept;
 
 template <std::ranges::range RangeTp>
 class TakeView : public std::ranges::take_view<RangeTp> {
@@ -86,10 +87,12 @@ template <std::ranges::range RangeTp>
 class TakeView<RangeTp> {
    public:
     using difference_type = std::ranges::range_difference_t<RangeTp>;
-    using iterator = OutputTakeIterator<std::ranges::range_value_t<RangeTp>,
-                                        std::ranges::iterator_t<RangeTp>>;
-    using sentinel = OutputTakeSentinel<std::ranges::iterator_t<RangeTp>,
-                                        std::ranges::sentinel_t<RangeTp>>;
+    using iterator =
+        OutputTakeIterator<difference_type, std::ranges::range_value_t<RangeTp>,
+                           std::ranges::iterator_t<RangeTp>>;
+    using sentinel =
+        OutputTakeSentinel<difference_type, std::ranges::iterator_t<RangeTp>,
+                           std::ranges::sentinel_t<RangeTp>>;
 
     constexpr TakeView() noexcept
         requires std::default_initializable<RangeTp>
