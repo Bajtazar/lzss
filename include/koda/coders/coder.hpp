@@ -110,9 +110,14 @@ class EncoderInterface {
 
     constexpr auto RemoveCountedIters(
         SpecializationOf<CoderResult> auto&& result) {
-        return CoderResult{std::ranges::begin(result.input_range).base(),
-                           std::ranges::end(result.input_range).base(),
-                           std::move(result.output_range)};
+        if constexpr (std::ranges::contiguous_range<
+                          decltype(result.input_range)>) {
+            return std::forward<decltype(result)>(result);
+        } else {
+            return CoderResult{std::ranges::begin(result.input_range).base(),
+                               std::ranges::end(result.input_range).base(),
+                               std::move(result.output_range)};
+        }
     }
 };
 
@@ -149,9 +154,14 @@ class DecoderInterface {
 
     constexpr auto RemoveCountedIters(
         SpecializationOf<CoderResult> auto&& result) {
-        return CoderResult{std::move(result.input_range),
-                           std::ranges::begin(result.output_range).base(),
-                           std::ranges::end(result.output_range).base()};
+        if constexpr (std::ranges::contiguous_range<
+                          decltype(result.output_range)>) {
+            return std::forward<decltype(result)>(result);
+        } else {
+            return CoderResult{std::move(result.input_range),
+                               std::ranges::begin(result.output_range).base(),
+                               std::ranges::end(result.output_range).base()};
+        }
     }
 };
 
