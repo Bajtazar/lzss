@@ -62,10 +62,6 @@ template <typename Tp, std::output_iterator<Tp> IterTp,
     const OutputTakeSentinel<IterTp, SentTp>& left,
     const OutputTakeIterator<Tp, IterTp>& right) noexcept;
 
-}  // namespace koda::ranges
-
-namespace koda::views {
-
 template <std::ranges::range RangeTp>
 class TakeView : public std::ranges::take_view<RangeTp> {
    public:
@@ -77,9 +73,9 @@ template <typename Tp, std::ranges::output_range<Tp> RangeTp>
 class TakeView<std::ranges::views::all_t<RangeTp>> {
    public:
     using difference_type = std::ranges::range_difference_t<RangeTp>;
-    using iterator = ranges::OutputTakeIterator<
+    using iterator = OutputTakeIterator<
         Tp, std::ranges::iterator_t<std::ranges::views::all_t<RangeTp>>>;
-    using sentinel = ranges::OutputTakeSentinel<
+    using sentinel = OutputTakeSentinel<
         std::ranges::iterator_t<std::ranges::views::all_t<RangeTp>>,
         std::ranges::sentinel_t<std::ranges::views::all_t<RangeTp>>>;
 
@@ -99,6 +95,29 @@ class TakeView<std::ranges::views::all_t<RangeTp>> {
     RangeTp range_ = {};
     difference_type limit_ = 0;
 };
+
+template <typename RangeTp>
+TakeView(RangeTp&&, std::ranges::range_difference_t<RangeTp>)
+    -> TakeView<std::views::all_t<RangeTp>>;
+
+}  // namespace koda::ranges
+
+namespace koda::views {
+
+struct TakeViewAdaptorClosure
+    : public std::ranges::range_adaptor_closure<TakeViewAdaptorClosure> {
+    std::ptrdiff_t limit;
+
+    template <std::ranges::viewable_range RangeTp>
+    [[nodiscard]] constexpr auto operator()(RangeTp&& range) const;
+};
+
+struct TakeViewAdaptor {
+    [[nodiscard]] constexpr TakeViewAdaptorClosure operator()(
+        std::ptrdiff_t limit) const;
+};
+
+inline constexpr TakeViewAdaptor Take{};
 
 }  // namespace koda::views
 

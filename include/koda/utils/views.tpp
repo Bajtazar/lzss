@@ -109,3 +109,18 @@ TakeView<std::ranges::views::all_t<RangeTp>>::end() {
 }
 
 }  // namespace koda::ranges
+
+namespace koda::views {
+
+template <std::ranges::viewable_range RangeTp>
+[[nodiscard]] constexpr auto TakeViewAdaptorClosure::operator()(
+    RangeTp&& range) const {
+    return ranges::TakeView{std::forward<RangeTp>(range), limit};
+}
+
+[[nodiscard]] constexpr TakeViewAdaptorClosure TakeViewAdaptor::operator()(
+    std::ptrdiff_t limit) const {
+    return TakeViewAdaptorClosure{limit};
+}
+
+}  // namespace koda::views
