@@ -76,7 +76,11 @@ class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
             for (size_t i = 0; i < sequence.size() && iter != sent;
                  ++iter, --length, ++i) {
                 *iter = sequence[i];
-                parent_->dictionary_.AddSymbolToBuffer(sequence[i]);
+                if (!parent_->dictionary_.AddSymbolToBuffer(sequence[i])) {
+                    // Dictionary is not yet full so position pointer has to be
+                    // advanced manually
+                    ++position;
+                }
             }
             if (length) {
                 [[assume(!(parent_->cached_sequence_))]];
@@ -209,7 +213,11 @@ LzssDecoder<Token, AuxiliaryDecoder, Allocator>::ProcessCachedSequence(
     for (size_t i = 0; out_iter != out_sent && cache.length;
          ++out_iter, --cache.length, ++i) {
         *out_iter = sequence[i];
-        dictionary.AddSymbolToBuffer(sequence[i]);
+        if (!dictionary.AddSymbolToBuffer(sequence[i])) {
+            // Dictionary is not yet full so position pointer has to be advanced
+            // manually
+            ++cache.position;
+        }
     }
 
     if (!cache.length) {

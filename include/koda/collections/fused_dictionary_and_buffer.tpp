@@ -58,7 +58,7 @@ constexpr bool FusedDictionaryAndBuffer<Tp, AllocatorTp>::AddSymbolToBuffer(
     // the memory reajustment
     if (std::distance(buffer_iter_, buffer_sentinel_) != buffer_size_) {
         *buffer_sentinel_++ = symbol;
-        return true;
+        return false;
     }
 
     if (buffer_sentinel_ == cyclic_buffer_.end()) [[unlikely]] {
