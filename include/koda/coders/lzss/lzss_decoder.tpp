@@ -42,7 +42,7 @@ class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
             return right.parent_->HasFinished();
         }
 
-        constexpr Iterator& operator=(value_type token) noexcept {
+        constexpr Iterator& operator=(value_type token) {
             if (auto symbol = token.get_symbol()) {
                 *(parent_->iterator_)++ = *symbol;
                 parent_->dictionary_.AddSymbolToBuffer(*symbol);
