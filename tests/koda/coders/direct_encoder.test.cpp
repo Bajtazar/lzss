@@ -84,3 +84,29 @@ BeginConstexprTest(DirectEncoderTest, EncodeIntegers) {
     ConstexprAssertEqual(expected_range, target);
 }
 EndConstexprTest;
+
+BeginConstexprTest(DirectEncoderTest, PartialEncoding) {
+    const std::vector<uint8_t> expected{{0x43, 0x74, 0x35, 0x33}};
+    std::vector<uint8_t> target;
+
+    koda::DirectEncoder<uint8_t> encoder;
+
+    encoder.EncodeN(
+        2, expected,
+        target | koda::views::InsertFromBack | koda::views::LittleEndianOutput);
+
+    ConstexprAssertEqual(expected | koda::views::Take(2), target);
+
+    encoder.EncodeN(
+        1, expected | std::views::drop(2),
+        target | koda::views::InsertFromBack | koda::views::LittleEndianOutput);
+
+    ConstexprAssertEqual(expected | koda::views::Take(3), target);
+
+    encoder(
+        expected | std::views::drop(3),
+        target | koda::views::InsertFromBack | koda::views::LittleEndianOutput);
+
+    ConstexprAssertEqual(expected, target);
+}
+EndConstexprTest;
