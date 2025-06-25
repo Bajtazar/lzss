@@ -128,3 +128,37 @@ BeginConstexprTest(LzssDecoder, PartialDecoding) {
     ConstexprAssertEqual(target, expected_result);
 }
 EndConstexprTest;
+
+BeginConstexprTest(LzssDecoder, SplittedPartialDecoding) {
+    std::vector input_sequence = {
+        koda::LzssIntermediateToken<char>{'a'},
+        koda::LzssIntermediateToken<char>{'l'},
+        koda::LzssIntermediateToken<char>{0, 1},  // ala
+        koda::LzssIntermediateToken<char>{0, 8},  // alaalaalaal
+    };
+
+    std::string expected_result = "alaalaalaal";
+    std::vector<uint8_t> binary_range = {1};
+    std::string target;
+
+    koda::LzssDecoder<char, DummyDecoder> decoder{
+        1024, 8, DummyDecoder{std::move(input_sequence)}};
+
+    decoder.Initialize(binary_range | koda::views::LittleEndianInput);
+
+    decoder.DecodeN(5, binary_range | koda::views::LittleEndianInput,
+                    target | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(target, expected_result | koda::views::Take(5));
+
+    decoder.DecodeN(2, binary_range | koda::views::LittleEndianInput,
+                    target | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(target, expected_result | koda::views::Take(7));
+
+    decoder.Decode(binary_range | koda::views::LittleEndianInput,
+                   target | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(target, expected_result);
+}
+EndConstexprTest;
