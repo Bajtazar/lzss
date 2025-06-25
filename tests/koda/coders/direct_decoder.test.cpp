@@ -56,3 +56,29 @@ BeginConstexprTest(DirectDecoderTest, DecodeIntegers) {
     ConstexprAssertEqual(expected, reconstruction);
 }
 EndConstexprTest;
+
+BeginConstexprTest(DirectDecoderTest, PartialDecoding) {
+    const std::vector<uint8_t> expected{{0x43, 0x74, 0x35, 0x33}};
+    auto encoded = Encode(expected);
+
+    koda::DirectDecoder<uint8_t> decoder;
+
+    std::vector<uint8_t> reconstruction;
+
+    auto [istream_1, _] =
+        decoder.DecodeN(2, encoded | koda::views::LittleEndianInput,
+                        reconstruction | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(expected | koda::views::Take(2), reconstruction);
+
+    auto [istream_2, _] = decoder.DecodeN(
+        1, std::move(istream_1), reconstruction | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(expected | koda::views::Take(3), reconstruction);
+
+    decoder.Decode(std::move(istream_2),
+                   reconstruction | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(expected, reconstruction);
+}
+EndConstexprTest;
