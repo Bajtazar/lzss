@@ -13,15 +13,20 @@ class OutputTakeSentinel {
    public:
     constexpr explicit OutputTakeSentinel(
         SentinelTp sentinel,
-        size_t limit) noexcept(std::is_nothrow_move_constructible_v<IterTp>);
+        size_t limit =
+            0) noexcept(std::is_nothrow_move_constructible_v<IterTp>);
+
+    constexpr explicit OutputTakeSentinel() noexcept(
+        std::is_nothrow_move_constructible_v<IterTp>)
+        requires std::is_default_constructible_v<SentinelTp>;
 
     [[nodiscard]] constexpr auto&& base(this auto&& self);
 
     [[nodiscard]] constexpr size_t counter() const noexcept;
 
    private:
-    SentinelTp sentinel_;
-    size_t counter_;
+    SentinelTp sentinel_ = {};
+    size_t counter_ = 0;
 };
 
 template <typename Tp, std::output_iterator<Tp> IterTp>
@@ -34,6 +39,10 @@ class OutputTakeIterator {
         IterTp iterator,
         size_t counter =
             0) noexcept(std::is_nothrow_move_constructible_v<IterTp>);
+
+    constexpr explicit OutputTakeIterator() noexcept(
+        std::is_nothrow_move_constructible_v<IterTp>)
+        requires std::is_default_constructible_v<IterTp>;
 
     constexpr OutputTakeIterator& operator=(value_type value);
 

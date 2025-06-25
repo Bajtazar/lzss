@@ -27,6 +27,12 @@ constexpr OutputTakeSentinel<IterTp, SentinelTp>::OutputTakeSentinel(
     : sentinel_{std::move(sentinel)}, counter_{limit} {}
 
 template <typename IterTp, std::sentinel_for<IterTp> SentinelTp>
+constexpr OutputTakeSentinel<IterTp, SentinelTp>::OutputTakeSentinel() noexcept(
+    std::is_nothrow_move_constructible_v<IterTp>)
+    requires std::is_default_constructible_v<SentinelTp>
+{}
+
+template <typename IterTp, std::sentinel_for<IterTp> SentinelTp>
 [[nodiscard]] constexpr auto&& OutputTakeSentinel<IterTp, SentinelTp>::base(
     this auto&& self) {
     return std::forward_like<decltype(self)>(self.sentinel_);
@@ -43,6 +49,12 @@ constexpr OutputTakeIterator<Tp, IterTp>::OutputTakeIterator(
     IterTp iterator,
     size_t counter) noexcept(std::is_nothrow_move_constructible_v<IterTp>)
     : iterator_{std::move(iterator)}, counter_{counter} {}
+
+template <typename Tp, std::output_iterator<Tp> IterTp>
+constexpr OutputTakeIterator<Tp, IterTp>::OutputTakeIterator() noexcept(
+    std::is_nothrow_move_constructible_v<IterTp>)
+    requires std::is_default_constructible_v<IterTp>
+{}
 
 template <typename Tp, std::output_iterator<Tp> IterTp>
 constexpr OutputTakeIterator<Tp, IterTp>&
