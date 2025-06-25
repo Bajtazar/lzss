@@ -81,4 +81,31 @@ template <typename Tp, std::output_iterator<Tp> IterTp>
     return counter_;
 }
 
+template <typename Tp, std::ranges::output_range<Tp> RangeTp>
+    requires(!std::ranges::forward_range<RangeTp>)
+constexpr TakeView<std::ranges::views::all_t<RangeTp>>::TakeView(
+    RangeTp base, difference_type count)
+    : range_{std::move(base)}, limit_{count} {}
+
+template <typename Tp, std::ranges::output_range<Tp> RangeTp>
+    requires(!std::ranges::forward_range<RangeTp>)
+[[nodiscard]] constexpr auto TakeView<std::ranges::views::all_t<RangeTp>>::base(
+    this auto&& self) {
+    return std::forward_like<decltype(self)>(self.range_);
+}
+
+template <typename Tp, std::ranges::output_range<Tp> RangeTp>
+    requires(!std::ranges::forward_range<RangeTp>)
+[[nodiscard]] constexpr TakeView<std::ranges::views::all_t<RangeTp>>::iterator
+TakeView<std::ranges::views::all_t<RangeTp>>::begin() {
+    return iterator{std::ranges::begin(range_)};
+}
+
+template <typename Tp, std::ranges::output_range<Tp> RangeTp>
+    requires(!std::ranges::forward_range<RangeTp>)
+[[nodiscard]] constexpr TakeView<std::ranges::views::all_t<RangeTp>>::sentinel
+TakeView<std::ranges::views::all_t<RangeTp>>::end() {
+    return sentinel{std::ranges::end(range_), limit_};
+}
+
 }  // namespace koda::ranges
