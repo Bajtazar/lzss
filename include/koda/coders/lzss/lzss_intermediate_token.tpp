@@ -93,17 +93,18 @@ TokenTraits<LzssIntermediateToken<InputToken, PositionTp, LengthTp>>::
     EncodeToken(TokenType token, BitOutputRange auto&& output) {
     auto iter = std::ranges::begin(output);
     if (auto symbol = token.get_symbol()) {
-        *iter = 0;
-        ++iter;
+        *iter++ = 0;
         return TokenTraits<typename LzssIntermediateToken<
             InputToken, PositionTp, LengthTp>::Symbol>::
-            EncodeToken(*symbol, std::forward<decltype(output)>(output));
+            EncodeToken(*symbol,
+                        std::ranges::subrange{std::move(iter),
+                                              std::ranges::end(output)});
     }
     auto [position, length] = *token.get_marker();
-    *iter = 1;
-    ++iter;
+    *iter++ = 1;
     auto pos_range = TokenTraits<PositionTp>::EncodeToken(
-        position, std::forward<decltype(output)>(output));
+        position,
+        std::ranges::subrange{std::move(iter), std::ranges::end(output)});
     return TokenTraits<LengthTp>::EncodeToken(length, std::move(pos_range));
 }
 
@@ -114,9 +115,9 @@ TokenTraits<LzssIntermediateToken<InputToken, PositionTp, LengthTp>>::
     DecodeToken(BitInputRange auto&& input) {
     auto iter = std::ranges::begin(input);
 
-    if (auto value = *iter; (++iter, value)) {
+    if (*iter++) {
         auto [position, pos_range] = TokenTraits<PositionTp>::DecodeToken(
-            std::forward<decltype(input)>(input));
+            std::ranges::subrange{std::move(iter), std::ranges::end(input)});
         auto [length, len_range] =
             TokenTraits<LengthTp>::DecodeToken(std::move(pos_range));
 
@@ -128,7 +129,8 @@ TokenTraits<LzssIntermediateToken<InputToken, PositionTp, LengthTp>>::
     auto [token, range] =
         TokenTraits<typename LzssIntermediateToken<InputToken, PositionTp,
                                                    LengthTp>::Symbol>::
-            DecodeToken(std::forward<decltype(input)>(input));
+            DecodeToken(std::ranges::subrange{std::move(iter),
+                                              std::ranges::end(input)});
 
     return TokenTraitsDecodingResult{
         LzssIntermediateToken<InputToken, PositionTp, LengthTp>{
