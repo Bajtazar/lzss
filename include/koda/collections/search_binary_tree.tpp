@@ -815,6 +815,10 @@ constexpr void SearchBinaryTree<Tp, AllocatorTp>::ValidateBlackNodeConstraint()
     for (const Node& node : nodes(root_)) {
         int64_t total_black_count = -1;
 
+        auto* parent = node.parent;
+        const_cast<Node&>(node).parent = nullptr;
+        // temporarly remove parent!
+
         for (const Node& child : nodes(&node)) {
             if (!child.left && !child.right) {
                 int64_t count = 0;
@@ -831,6 +835,7 @@ constexpr void SearchBinaryTree<Tp, AllocatorTp>::ValidateBlackNodeConstraint()
                 }
             }
         }
+        const_cast<Node&>(node).parent = parent;
     }
 }
 
