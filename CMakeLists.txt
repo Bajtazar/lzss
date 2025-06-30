@@ -44,5 +44,7 @@ if(LZSS_TESTS)
 
     include(GoogleTest)
     gtest_discover_tests(${PROJECT_NAME}_tests)
+
+    target_compile_definitions(${PROJECT_NAME}_tests PRIVATE KODA_CHECKED_BUILD=1)
 endif()
 

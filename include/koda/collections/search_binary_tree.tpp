@@ -789,14 +789,15 @@ constexpr void SearchBinaryTree<Tp, AllocatorTp>::CheckInvariants() const {
 #ifdef KODA_CHECKED_BUILD
 
 // Two red nodes cannot coexist
-constexpr void ValidateRedNodeConstraint() const {
-    for (const Node* node : nodes()) {
-        if (node->color == Node::Color::kRed) {
-            if (node->left && node->left->color == Node::Color::kRed) {
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::ValidateRedNodeConstraint() const {
+    for (const Node& node : nodes()) {
+        if (node.color == Node::Color::kRed) {
+            if (node.left && node.left->color == Node::Color::kRed) {
                 throw std::logic_error{"Red Node invariant broken!"};
             }
 
-            if (node->right && node->right->color == Node::Color::kRed) {
+            if (node.right && node.right->color == Node::Color::kRed) {
                 throw std::logic_error{"Red Node invariant broken!"};
             }
         }
