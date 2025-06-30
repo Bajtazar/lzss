@@ -114,13 +114,16 @@ class SearchBinaryTree {
         constexpr void Destroy();
     };
 
+    // Can be bidirectional but for internal use the forward one will work just
+    // fine
     class NodeIterator {
        public:
         using value_type = const Node&;
         using pointer_type = const Node*;
         using difference_type = std::ptrdiff_t;
 
-        constexpr NodeIterator(const Node* root) noexcept;
+        constexpr NodeIterator(pointer_type node = nullptr,
+                               pointer_type previous = nullptr) noexcept;
 
         [[nodiscard]] constexpr value_type operator*() const noexcept;
 
@@ -130,16 +133,12 @@ class SearchBinaryTree {
 
         [[nodiscard]] constexpr NodeIterator operator++(int) noexcept;
 
-        constexpr NodeIterator& operator--() noexcept;
-
-        [[nodiscard]] constexpr NodeIterator operator--(int) noexcept;
-
-        [[nodiscard]] constexpr operator==(
+        [[nodiscard]] constexpr bool operator==(
             const NodeIterator& other) const noexcept;
 
        private:
-        const Node* current_;
-        const Node* previous_;
+        pointer_type current_;
+        pointer_type previous_;
     };
 
     using NodeSpot = std::pair<Node*&, Node*>;

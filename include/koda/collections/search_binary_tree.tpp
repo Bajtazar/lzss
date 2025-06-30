@@ -182,6 +182,69 @@ constexpr void SearchBinaryTree<Tp, AllocatorTp>::NodePool::Destroy() {
     }
 }
 
+// Recursiveless tree iterator!
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>::NodeIterator::NodeIterator(
+    pointer_type node, pointer_type previous) noexcept
+    : current_{node}, previous_{previous} {}
+
+template <typename Tp, typename AllocatorTp>
+[[nodiscard]] constexpr SearchBinaryTree<Tp,
+                                         AllocatorTp>::NodeIterator::value_type
+SearchBinaryTree<Tp, AllocatorTp>::NodeIterator::operator*() const noexcept {
+    return *current_;
+}
+
+template <typename Tp, typename AllocatorTp>
+[[nodiscard]] constexpr SearchBinaryTree<
+    Tp, AllocatorTp>::NodeIterator::pointer_type
+SearchBinaryTree<Tp, AllocatorTp>::NodeIterator::operator->() const noexcept {
+    return current_;
+}
+
+template <typename Tp, typename AllocatorTp>
+constexpr SearchBinaryTree<Tp, AllocatorTp>::NodeIterator&
+SearchBinaryTree<Tp, AllocatorTp>::NodeIterator::operator++() noexcept {
+    // If iterator came from parent then visit left subtree (if present)
+    // If iterator came from left subtree then visit the right subtree (if
+    // present) Otherwise visit parent (repeat untill parent is a nullptr)
+    while (current_) {
+        auto previous = current_;
+        if (previous_ == current_->parent) {
+            if (current_->left) {
+                current_ = current_->left;
+                previous_ = previous;
+                return *this;
+            }
+        }
+        if (previous_ == current_->left) {
+            if (current_->right) {
+                current_ = current_->right;
+                previous_ = previous;
+                return *this;
+            }
+        }
+        current_ = current_->parent;
+        previous_ = previous;
+    }
+    return *this;
+}
+
+template <typename Tp, typename AllocatorTp>
+[[nodiscard]] constexpr SearchBinaryTree<Tp, AllocatorTp>::NodeIterator
+SearchBinaryTree<Tp, AllocatorTp>::NodeIterator::operator++(int) noexcept {
+    auto temp = *this;
+    ++(*this);
+    return temp;
+}
+
+template <typename Tp, typename AllocatorTp>
+[[nodiscard]] constexpr bool
+SearchBinaryTree<Tp, AllocatorTp>::NodeIterator::operator==(
+    const NodeIterator& other) const noexcept {
+    return (current_ == other.current_) && (previous_ == other.previous_);
+}
+
 template <typename Tp, typename AllocatorTp>
 constexpr void SearchBinaryTree<Tp, AllocatorTp>::RotateLeft(Node* node) {
     Node* right = node->right;
@@ -708,15 +771,13 @@ template <typename Tp, typename AllocatorTp>
 constexpr void SearchBinaryTree<Tp, AllocatorTp>::CheckInvariants() const {
 #ifdef KODA_CHECKED_BUILD
     ValidateRedNodeConstraint();
-#endif // KODA_CHECKED_BUILD
+#endif  // KODA_CHECKED_BUILD
 }
 
 #ifdef KODA_CHECKED_BUILD
 
-constexpr void ValidateRedNodeConstraint() const {
+constexpr void ValidateRedNodeConstraint() const {}
 
-}
-
-#endif // KODA_CHECKED_BUILD
+#endif  // KODA_CHECKED_BUILD
 
 }  // namespace koda
