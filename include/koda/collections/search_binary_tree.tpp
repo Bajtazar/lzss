@@ -812,7 +812,8 @@ constexpr void SearchBinaryTree<Tp, AllocatorTp>::ValidateRedNodeConstraint()
 template <typename Tp, typename AllocatorTp>
 constexpr void SearchBinaryTree<Tp, AllocatorTp>::ValidateBlackNodeConstraint()
     const {
-    struct SubtreeDetacher {
+    class SubtreeDetacher {
+       public:
         constexpr SubtreeDetacher(const Node& node) noexcept
             : node_{node}, parent_{node.parent} {
             const_cast<Node&>(node_).parent = nullptr;
