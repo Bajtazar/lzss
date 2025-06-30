@@ -40,6 +40,8 @@ constexpr void SearchBinaryTree<Tp, AllocatorTp>::AddString(StringView string) {
 
     InsertNewNode(string.data());
     ++buffer_start_index_;
+
+    CheckInvariants();
 }
 
 template <typename Tp, typename AllocatorTp>
@@ -53,6 +55,7 @@ constexpr bool SearchBinaryTree<Tp, AllocatorTp>::RemoveString(
 
     if (!--node->ref_counter) {
         RemoveNode(node);
+        CheckInvariants();
     }
 
     ++dictionary_start_index_;
