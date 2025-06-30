@@ -704,4 +704,19 @@ constexpr void SearchBinaryTree<Tp, AllocatorTp>::Destroy() {
     }
 }
 
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::CheckInvariants() const {
+#ifdef KODA_CHECKED_BUILD
+    ValidateRedNodeConstraint();
+#endif // KODA_CHECKED_BUILD
+}
+
+#ifdef KODA_CHECKED_BUILD
+
+constexpr void ValidateRedNodeConstraint() const {
+
+}
+
+#endif // KODA_CHECKED_BUILD
+
 }  // namespace koda

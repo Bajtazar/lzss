@@ -114,6 +114,34 @@ class SearchBinaryTree {
         constexpr void Destroy();
     };
 
+    class NodeIterator {
+       public:
+        using value_type = const Node&;
+        using pointer_type = const Node*;
+        using difference_type = std::ptrdiff_t;
+
+        constexpr NodeIterator(const Node* root) noexcept;
+
+        [[nodiscard]] constexpr value_type operator*() const noexcept;
+
+        [[nodiscard]] constexpr pointer_type operator->() const noexcept;
+
+        constexpr NodeIterator& operator++() noexcept;
+
+        [[nodiscard]] constexpr NodeIterator operator++(int) noexcept;
+
+        constexpr NodeIterator& operator--() noexcept;
+
+        [[nodiscard]] constexpr NodeIterator operator--(int) noexcept;
+
+        [[nodiscard]] constexpr operator==(
+            const NodeIterator& other) const noexcept;
+
+       private:
+        const Node* current_;
+        const Node* previous_;
+    };
+
     using NodeSpot = std::pair<Node*&, Node*>;
 
     size_t dictionary_start_index_ = 0;
@@ -203,6 +231,15 @@ class SearchBinaryTree {
     constexpr void RemoveBlackChildlessNode(Node* node);
 
     constexpr void Destroy();
+
+    // Only runs when checked build is explicitly requested
+    constexpr void CheckInvariants() const;
+
+#ifdef KODA_CHECKED_BUILD
+
+    constexpr void ValidateRedNodeConstraint() const;
+
+#endif  // KODA_CHECKED_BUILD
 };
 
 }  // namespace koda
