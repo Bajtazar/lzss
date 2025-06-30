@@ -149,6 +149,8 @@ class SearchBinaryTree {
     NodePool pool_;
     Node* root_ = nullptr;
 
+    constexpr std::ranges::subrange<NodeIterator, NodeIterator> nodes() const;
+
     constexpr void RotateLeft(Node* node);
 
     constexpr void RotateRight(Node* node);

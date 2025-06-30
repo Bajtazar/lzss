@@ -246,6 +246,15 @@ SearchBinaryTree<Tp, AllocatorTp>::NodeIterator::operator==(
 }
 
 template <typename Tp, typename AllocatorTp>
+constexpr std::ranges::subrange<
+    typename SearchBinaryTree<Tp, AllocatorTp>::NodeIterator,
+    typename SearchBinaryTree<Tp, AllocatorTp>::NodeIterator>
+SearchBinaryTree<Tp, AllocatorTp>::nodes() const {
+    return std::ranges::subrange{NodeIterator{root_, nullptr},
+                                 NodeIterator{nullptr, root_}};
+}
+
+template <typename Tp, typename AllocatorTp>
 constexpr void SearchBinaryTree<Tp, AllocatorTp>::RotateLeft(Node* node) {
     Node* right = node->right;
     Node* right_left = right->left;
