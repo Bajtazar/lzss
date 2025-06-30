@@ -831,6 +831,7 @@ constexpr void SearchBinaryTree<Tp, AllocatorTp>::ValidateBlackNodeConstraint()
         int64_t total_black_count = -1;
 
         // temporarly remove parent!
+        // Otherwise it will start seeking higher nodes and will miss sentinel!
         SubtreeDetacher detacher{node};
         for (const Node& child : nodes(&node)) {
             if (!child.left && !child.right) {
