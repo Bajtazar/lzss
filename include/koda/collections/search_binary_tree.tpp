@@ -249,12 +249,13 @@ SearchBinaryTree<Tp, AllocatorTp>::NodeIterator::operator==(
 }
 
 template <typename Tp, typename AllocatorTp>
-constexpr std::ranges::subrange<
+/*static*/ constexpr std::ranges::subrange<
     typename SearchBinaryTree<Tp, AllocatorTp>::NodeIterator,
     typename SearchBinaryTree<Tp, AllocatorTp>::NodeIterator>
-SearchBinaryTree<Tp, AllocatorTp>::nodes() const {
-    return std::ranges::subrange{NodeIterator{root_, nullptr},
-                                 NodeIterator{nullptr, root_}};
+SearchBinaryTree<Tp, AllocatorTp>::nodes(const Node* root) noexcept {
+    const Node* parent = root ? root->parent : nullptr;
+    return std::ranges::subrange{NodeIterator{root, parent},
+                                 NodeIterator{parent, root}};
 }
 
 template <typename Tp, typename AllocatorTp>
@@ -783,22 +784,51 @@ template <typename Tp, typename AllocatorTp>
 constexpr void SearchBinaryTree<Tp, AllocatorTp>::CheckInvariants() const {
 #ifdef KODA_CHECKED_BUILD
     ValidateRedNodeConstraint();
+    ValidateBlackNodeConstraint();
 #endif  // KODA_CHECKED_BUILD
 }
 
 #ifdef KODA_CHECKED_BUILD
 
-// Two red nodes cannot coexist
+// A red node does not have a red child
 template <typename Tp, typename AllocatorTp>
-constexpr void SearchBinaryTree<Tp, AllocatorTp>::ValidateRedNodeConstraint() const {
-    for (const Node& node : nodes()) {
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::ValidateRedNodeConstraint()
+    const {
+    for (const Node& node : nodes(root_)) {
         if (node.color == Node::Color::kRed) {
             if (node.left && node.left->color == Node::Color::kRed) {
-                throw std::logic_error{"Red Node invariant broken!"};
+                throw std::logic_error{"Red node invariant broken!"};
             }
 
             if (node.right && node.right->color == Node::Color::kRed) {
-                throw std::logic_error{"Red Node invariant broken!"};
+                throw std::logic_error{"Red node invariant broken!"};
+            }
+        }
+    }
+}
+
+// Every path from a given node to any of its leaf nodes goes through the same
+// number of black nodes
+template <typename Tp, typename AllocatorTp>
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::ValidateBlackNodeConstraint()
+    const {
+    for (const Node& node : nodes(root_)) {
+        int64_t total_black_count = -1;
+
+        for (const Node& child : nodes(&node)) {
+            if (!child.left && !child.right) {
+                int64_t count = 0;
+                for (auto* path_node = &child; path_node != &node;
+                     path_node = path_node->parent) {
+                    if (path_node->color == Node::Color::kBlack) {
+                        ++count;
+                    }
+                }
+                if (total_black_count == -1) {
+                    total_black_count = count;
+                } else if (total_black_count != count) {
+                    throw std::logic_error{"Black node invariant broken!"};
+                }
             }
         }
     }

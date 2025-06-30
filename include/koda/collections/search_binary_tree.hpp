@@ -149,7 +149,8 @@ class SearchBinaryTree {
     NodePool pool_;
     Node* root_ = nullptr;
 
-    constexpr std::ranges::subrange<NodeIterator, NodeIterator> nodes() const;
+    static constexpr std::ranges::subrange<NodeIterator, NodeIterator> nodes(
+        const Node* root) noexcept;
 
     constexpr void RotateLeft(Node* node);
 
@@ -239,6 +240,8 @@ class SearchBinaryTree {
 #ifdef KODA_CHECKED_BUILD
 
     constexpr void ValidateRedNodeConstraint() const;
+
+    constexpr void ValidateBlackNodeConstraint() const;
 
 #endif  // KODA_CHECKED_BUILD
 };
