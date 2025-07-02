@@ -612,11 +612,11 @@ SearchBinaryTree<Tp, AllocatorTp>::RemoveBlackChildlessNodeLeftPathSiblingIsRed(
 
     right_nephew = left_nephew->right;
     if (right_nephew && right_nephew->color == Node::Color::kRed) {
-        RemoveNodeRotateParentLeftPath(parent, sibling, right_nephew);
+        return RemoveNodeRotateParentLeftPath(parent, sibling, right_nephew);
     }
     left_nephew = left_nephew->left;
     if (left_nephew && left_nephew->color == Node::Color::kRed) {
-        RemoveNodeRotateSiblingLeftPath(parent, sibling, left_nephew);
+        return RemoveNodeRotateSiblingLeftPath(parent, sibling, left_nephew);
     }
 
     sibling->color = Node::Color::kRed;
