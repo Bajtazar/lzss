@@ -35,7 +35,6 @@ BeginConstexprTest(LzssTest, NormalTest) {
 };
 EndConstexprTest;
 
-
 BeginConstexprTest(LzssTest, SmallBufferTest) {
     std::string sequence = kTestString;
 
@@ -57,25 +56,23 @@ BeginConstexprTest(LzssTest, SmallBufferTest) {
 };
 EndConstexprTest;
 
-// BeginConstexprTest(LzssTest, SmallDictionaryTest) {
-//     std::string sequence = kTestString;
+BeginConstexprTest(LzssTest, SmallDictionaryTest) {
+    std::string sequence = kTestString;
 
-//     koda::LzssEncoder<char> encoder{16, 16};
+    koda::LzssEncoder<char> encoder{16, 16};
 
-//     std::vector<uint8_t> encoded;
+    std::vector<uint8_t> encoded;
 
-//     encoder(sequence, encoded | koda::views::InsertFromBack |
-//                           koda::views::LittleEndianOutput);
+    encoder(sequence, encoded | koda::views::InsertFromBack |
+                          koda::views::LittleEndianOutput);
 
-//     std::string decoded;
+    std::string decoded;
 
-//     koda::LzssDecoder<char> decoder{16, 16};
+    koda::LzssDecoder<char> decoder{16, 16};
 
-//     decoder(sequence.size(), encoded | koda::views::LittleEndianInput,
-//             decoded | koda::views::InsertFromBack);
+    decoder(sequence.size(), encoded | koda::views::LittleEndianInput,
+            decoded | koda::views::InsertFromBack);
 
-//     ConstexprAssertEqual(sequence, decoded);
-// };
-// EndConstexprTest;
-
-
+    ConstexprAssertEqual(sequence, decoded);
+};
+EndConstexprTest;
