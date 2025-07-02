@@ -210,7 +210,7 @@ class SearchBinaryTree {
 
     constexpr void RemoveNodeWithTwoChildren(Node* node);
 
-    constexpr void RemoveNodeWithOneChildren(Node* node, Node* children);
+    constexpr void RemoveNodeWithOneChild(Node* node, Node* children);
 
     constexpr void RemoveRootNode();
 

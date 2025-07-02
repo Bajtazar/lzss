@@ -504,13 +504,13 @@ constexpr void SearchBinaryTree<Tp, AllocatorTp>::RemoveNodeWithTwoChildren(
     node->insertion_index = succesor->insertion_index;
 
     if (succesor->right) {
-        return RemoveNodeWithOneChildren(succesor, succesor->right);
+        return RemoveNodeWithOneChild(succesor, succesor->right);
     }
     RemoveChildlessNode(succesor);
 }
 
 template <typename Tp, typename AllocatorTp>
-constexpr void SearchBinaryTree<Tp, AllocatorTp>::RemoveNodeWithOneChildren(
+constexpr void SearchBinaryTree<Tp, AllocatorTp>::RemoveNodeWithOneChild(
     Node* node, Node* children) {
     children->color = Node::Color::kBlack;
     children->parent = node->parent;
@@ -709,8 +709,8 @@ constexpr void SearchBinaryTree<Tp, AllocatorTp>::RemoveNode(Node* node) {
     }
 
     if (node->left || node->right) {
-        return RemoveNodeWithOneChildren(node,
-                                         node->left ? node->left : node->right);
+        return RemoveNodeWithOneChild(node,
+                                      node->left ? node->left : node->right);
     }
 
     RemoveChildlessNode(node);
