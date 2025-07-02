@@ -126,11 +126,11 @@ FusedDictionaryAndBuffer<Tp, AllocatorTp>::CheckRelativePosCorrectness(
             std::format("Sequence (len={}) is longer than bufer (len={})!",
                         length, buffer_size_)};
     }
-    if (position + length > dictionary_size_) [[unlikely]] {
+    if (position + length > (dictionary_size_ + buffer_size_)) [[unlikely]] {
         throw std::logic_error{
             std::format("Given position (pos={} + len={}) overflows the "
-                        "buffer (len={})!",
-                        position, length, dictionary_size_)};
+                        "fused buffer length (len={})!",
+                        position, length, dictionary_size_ + buffer_size_)};
     }
 }
 
@@ -170,13 +170,7 @@ constexpr bool FusedDictionaryAndBuffer<Tp, AllocatorTp>::SlideDictionary() {
 template <typename Tp, typename AllocatorTp>
 [[nodiscard]] constexpr size_t
 FusedDictionaryAndBuffer<Tp, AllocatorTp>::dictionary_size() const noexcept {
-    std::ptrdiff_t difference = dictionary_sentinel_ - dictionary_iter_;
-    if (difference < 0) {
-        return static_cast<size_t>(right_telomere_tag_ - dictionary_iter_ +
-                                   dictionary_sentinel_ -
-                                   cyclic_buffer_.begin());
-    }
-    return static_cast<size_t>(difference);
+    return current_dictionary_size_;
 }
 
 template <typename Tp, typename AllocatorTp>
