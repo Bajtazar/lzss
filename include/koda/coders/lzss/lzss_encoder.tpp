@@ -86,6 +86,21 @@ template <std::integral Token,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
     requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
+constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::FlushQueue(
+    BitOutputRange auto&& output) {
+    auto [input_range, output_range] = auxiliary_encoder_.Encode(
+        std::ranges::subrange{&(*queued_token_), std::next(&(*queued_token_))},
+        output);
+    if (std::ranges::begin(input_range) == std::ranges::end(input_range)) {
+        queued_token_ = std::nullopt;
+    }
+    return output_range;
+}
+
+template <std::integral Token,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
     InputRange<Token> auto&& input, BitOutputRange auto&& output) {
     [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(
@@ -95,6 +110,15 @@ constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
         std::get<FusedDictionaryAndBuffer<Token>>(dictionary_and_buffer_);
 
     auto out_range = AsSubrange(std::forward<decltype(output)>(output));
+
+    if (queued_token_) {
+        out_range = FlushQueue(out_range);
+        if (queued_token_) {
+            return CoderResult{std::forward<decltype(input)>(input),
+                               std::move(out_range)};
+        }
+    }
+
     auto input_iter = std::ranges::begin(input);
     auto input_sent = std::ranges::end(input);
     for (; (input_iter != input_sent) && !out_range.empty(); ++input_iter) {

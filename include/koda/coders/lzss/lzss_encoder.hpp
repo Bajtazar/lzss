@@ -61,6 +61,8 @@ class LzssEncoder
 
     constexpr auto InitializeBuffer(InputRange<Token> auto&& input);
 
+    constexpr auto FlushQueue(BitOutputRange auto&& output);
+
     constexpr auto EncodeData(InputRange<Token> auto&& input,
                               BitOutputRange auto&& output);
 
