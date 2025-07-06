@@ -222,6 +222,13 @@ constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
         std::get<FusedDictionaryAndBuffer<Token>>(dictionary_and_buffer_);
     auto out_range = AsSubrange(std::forward<decltype(output)>(output));
 
+    if (queued_token_) {
+        out_range = FlushQueue(out_range);
+        if (queued_token_) {
+            return out_range;
+        }
+    }
+
     for (size_t i = 0; i < search_tree_.string_size(); ++i) {
         out_range =
             PeformEncodigStep(dict, dict.get_buffer(), std::move(out_range));

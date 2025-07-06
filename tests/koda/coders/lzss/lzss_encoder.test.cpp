@@ -26,7 +26,11 @@ struct LzssDummyAuxEncoder
     constexpr auto Encode(koda::InputRange<Tp> auto&& input,
                           koda::BitOutputRange auto&& output) {
         tokens.insert_range(tokens.end(), std::forward<decltype(input)>(input));
-        return koda::CoderResult{std::forward<decltype(input)>(input),
+        // Circumvent static analysis
+        auto iter = std::ranges::begin(input);
+        const auto sent = std::ranges::end(input);
+        for (; iter != sent; ++iter);
+        return koda::CoderResult{iter, sent,
                                  std::forward<decltype(output)>(output)};
     }
 
