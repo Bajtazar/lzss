@@ -116,25 +116,6 @@ FusedDictionaryAndBuffer<Tp, AllocatorTp>::get_sequence_at_relative_pos(
 }
 
 template <typename Tp, typename AllocatorTp>
-constexpr void
-FusedDictionaryAndBuffer<Tp, AllocatorTp>::CheckRelativePosCorrectness(
-    size_t position, size_t length) const {
-    if (length > buffer_size_) [[unlikely]] {
-        // Currently does not work since https://wg21.link/P3068R6 is not
-        // implemented yet by any compiler!
-        throw std::logic_error{
-            std::format("Sequence (len={}) is longer than bufer (len={})!",
-                        length, buffer_size_)};
-    }
-    if (position + length > (dictionary_size_ + buffer_size_)) [[unlikely]] {
-        throw std::logic_error{
-            std::format("Given position (pos={} + len={}) overflows the "
-                        "fused buffer length (len={})!",
-                        position, length, dictionary_size_ + buffer_size_)};
-    }
-}
-
-template <typename Tp, typename AllocatorTp>
 constexpr void FusedDictionaryAndBuffer<Tp, AllocatorTp>::RelocateBuffer() {
     // When end symbols are added then this class contract permits usage of
     // AddSymbolToBuffer method and thus buffer size won't be changed and so
@@ -211,5 +192,28 @@ FusedDictionaryAndBuffer<Tp, AllocatorTp>::CalculateCyclicBufferSize(
     }
     return 4 * (dictionary_size + buffer_size);
 }
+
+#ifdef KODA_CHECKED_BUILD
+
+template <typename Tp, typename AllocatorTp>
+constexpr void
+FusedDictionaryAndBuffer<Tp, AllocatorTp>::CheckRelativePosCorrectness(
+    size_t position, size_t length) const {
+    if (length > buffer_size_) [[unlikely]] {
+        // Currently does not work since https://wg21.link/P3068R6 is not
+        // implemented yet by any compiler!
+        throw std::logic_error{
+            std::format("Sequence (len={}) is longer than bufer (len={})!",
+                        length, buffer_size_)};
+    }
+    if (position + length > (dictionary_size_ + buffer_size_)) [[unlikely]] {
+        throw std::logic_error{
+            std::format("Given position (pos={} + len={}) overflows the "
+                        "fused buffer length (len={})!",
+                        position, length, dictionary_size_ + buffer_size_)};
+    }
+}
+
+#endif  // KODA_CHECKED_BUILD
 
 }  // namespace koda

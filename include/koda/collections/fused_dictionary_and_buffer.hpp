@@ -137,9 +137,6 @@ class FusedDictionaryAndBuffer {
     BufferIter left_telomere_tag_;
     BufferIter right_telomere_tag_;
 
-    constexpr void CheckRelativePosCorrectness(size_t position,
-                                               size_t length) const;
-
     constexpr void RelocateBuffer();
 
     constexpr bool SlideDictionary();
@@ -147,6 +144,13 @@ class FusedDictionaryAndBuffer {
     static constexpr size_t CalculateCyclicBufferSize(
         size_t dictionary_size, size_t buffer_size,
         std::optional<size_t> cyclic_buffer_size);
+
+#ifdef KODA_CHECKED_BUILD
+
+    constexpr void CheckRelativePosCorrectness(size_t position,
+                                               size_t length) const;
+
+#endif  // KODA_CHECKED_BUILD
 };
 
 }  // namespace koda
