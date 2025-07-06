@@ -117,9 +117,8 @@ LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
     IMToken symbol_token{token};
 
     if (!match) {
-        return auxiliary_encoder_.Encode(
-            std::ranges::subrange{&symbol_token, std::next(&symbol_token)},
-            output);
+        return EncodeIntermediateToken(std::move(symbol_token),
+                                       std::forward<decltype(output)>(output));
     }
 
     IMToken match_token{static_cast<uint32_t>(match.match_position),
@@ -129,13 +128,12 @@ LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
     float est_symbol_bitsize = auxiliary_encoder_.TokenBitSize(symbol_token);
 
     if (est_symbol_bitsize <= est_match_bitsize) {
-        return auxiliary_encoder_.Encode(
-            std::ranges::subrange{&symbol_token, std::next(&symbol_token)},
-            output);
+        return EncodeIntermediateToken(std::move(symbol_token),
+                                       std::forward<decltype(output)>(output));
     }
     match_count_ = match.match_length - 1;
-    return auxiliary_encoder_.Encode(
-        std::ranges::subrange{&match_token, std::next(&match_token)}, output);
+    return EncodeIntermediateToken(std::move(match_token),
+                                   std::forward<decltype(output)>(output));
 }
 
 template <std::integral Token,
@@ -147,16 +145,33 @@ LzssEncoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
     FusedDictionaryAndBuffer<Token>& dict, SequenceView look_ahead,
     BitOutputRange auto&& output) {
     if (!match_count_) {
-        auto [_, new_output] = EncodeTokenOrMatch(
-            look_ahead[0], search_tree_.FindMatch(look_ahead),
-            std::move(output));
+        auto new_output = EncodeTokenOrMatch(look_ahead[0],
+                                             search_tree_.FindMatch(look_ahead),
+                                             std::move(output));
         TryToRemoveStringFromSearchTree(dict);
         return new_output;
     }
 
     --match_count_;
     TryToRemoveStringFromSearchTree(dict);
-    return output;
+    return AsSubrange(output);
+}
+
+template <std::integral Token,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
+constexpr auto
+LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeIntermediateToken(
+    IMToken&& token, BitOutputRange auto&& output) {
+    auto [input_range, output_range] = auxiliary_encoder_.Encode(
+        std::ranges::subrange{&token, std::next(&token)}, output);
+    // Token has not been encoded due to the jam in the encoder queue - enque
+    // token and try to flush it when new output range is provided by the user
+    if (std::ranges::begin(input_range) != std::ranges::end(input_range)) {
+        queued_token_ = token;
+    }
+    return output_range;
 }
 
 template <std::integral Token,

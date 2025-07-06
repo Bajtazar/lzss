@@ -55,6 +55,7 @@ class LzssEncoder
     std::variant<FusedDictionaryAndBuffer<Token>, FusedDictAndBufferInfo>
         dictionary_and_buffer_;
     SearchBinaryTree<Token> search_tree_;
+    std::optional<IMToken> queued_token_ = std::nullopt;
     uint16_t match_count_ = 0;
     [[no_unique_address]] AuxiliaryEncoder auxiliary_encoder_;
 
@@ -71,6 +72,9 @@ class LzssEncoder
     constexpr auto PeformEncodigStep(FusedDictionaryAndBuffer<Token>& dict,
                                      SequenceView look_ahead,
                                      BitOutputRange auto&& output);
+
+    constexpr auto EncodeIntermediateToken(IMToken&& token,
+                                           BitOutputRange auto&& output);
 
     constexpr void TryToRemoveStringFromSearchTree(
         FusedDictionaryAndBuffer<Token>& dict);
