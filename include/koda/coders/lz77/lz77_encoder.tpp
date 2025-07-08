@@ -134,8 +134,10 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
     SequenceView look_ahead, const Match& match, BitOutputRange auto&& output) {
     // buffer is one symbol longer than the actual look-ahead buffer
     auto suffix_token = look_ahead[match.match_length];
-    IMToken symbol_token{suffix_token, match.match_position,
-                         match.match_length};
+    IMToken symbol_token{
+        suffix_token,
+        static_cast<typename IMToken::Position>(match.match_position),
+        static_cast<typename IMToken::Length>(match.match_length)};
 
     match_count_ = match.match_length;
     return EncodeIntermediateToken(std::move(symbol_token),

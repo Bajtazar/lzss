@@ -14,6 +14,8 @@ template <std::integral InputToken, UnsignedIntegral PositionTp = uint32_t,
 class [[nodiscard]] Lz77IntermediateToken {
    public:
     using Symbol = InputToken;
+    using Position = PositionTp;
+    using Length = LengthTp;
 
     constexpr Lz77IntermediateToken(Symbol suffix_symbol = Symbol{},
                                     PositionTp match_position = 0,
