@@ -60,6 +60,9 @@ class Lz77Decoder
 
     constexpr auto ProcessData(BitInputRange auto&& input,
                                std::ranges::output_range<Token> auto&& output);
+
+    static constexpr size_t CalculateDictionarySize(size_t dictionary_size,
+                                                    size_t look_ahead_size);
 };
 
 }  // namespace koda

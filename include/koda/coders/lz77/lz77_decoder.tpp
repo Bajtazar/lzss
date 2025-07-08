@@ -119,8 +119,9 @@ constexpr Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::Lz77Decoder(
     size_t dictionary_size, size_t look_ahead_size,
     AuxiliaryDecoder auxiliary_decoder,
     std::optional<size_t> cyclic_buffer_size, const Allocator& allocator)
-    : dictionary_{dictionary_size - look_ahead_size, look_ahead_size,
-                  std::move(cyclic_buffer_size), std::move(allocator)},
+    : dictionary_{CalculateDictionarySize(dictionary_size, look_ahead_size),
+                  look_ahead_size, std::move(cyclic_buffer_size),
+                  std::move(allocator)},
       auxiliary_decoder_{std::move(auxiliary_decoder)} {}
 
 template <std::integral Token,
@@ -219,6 +220,20 @@ constexpr auto Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::ProcessData(
 
     return CoderResult{std::move(result.input_range),
                        decoder_view.remaining_range()};
+}
+
+template <std::integral Token,
+          SizeAwareDecoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
+          typename Allocator>
+/*static*/ constexpr size_t
+Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::CalculateDictionarySize(
+    size_t dictionary_size, size_t look_ahead_size) {
+    if (dictionary_size < look_ahead_size) [[unlikely]] {
+        throw std::logic_error{std::format(
+            "Dictionary ({}) cannot be smaller than the buffer size ({})",
+            dictionary_size, look_ahead_size)};
+    }
+    return dictionary_size - look_ahead_size;
 }
 
 }  // namespace koda
