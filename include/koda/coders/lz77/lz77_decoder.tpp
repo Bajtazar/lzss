@@ -119,7 +119,7 @@ constexpr Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::Lz77Decoder(
     size_t dictionary_size, size_t look_ahead_size,
     AuxiliaryDecoder auxiliary_decoder,
     std::optional<size_t> cyclic_buffer_size, const Allocator& allocator)
-    : dictionary_{dictionary_size, look_ahead_size,
+    : dictionary_{dictionary_size - look_ahead_size, look_ahead_size,
                   std::move(cyclic_buffer_size), std::move(allocator)},
       auxiliary_decoder_{std::move(auxiliary_decoder)} {}
 
