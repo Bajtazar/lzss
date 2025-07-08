@@ -38,11 +38,6 @@ constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::FusedDictionaryAndBuffer(
       // for decoders
       left_telomere_tag_{std::next(cyclic_buffer_.begin(), buffer_size_ - 1)},
       right_telomere_tag_{std::prev(cyclic_buffer_.end(), buffer_size_ - 1)} {
-    if (dictionary_size < buffer_size_) [[unlikely]] {
-        throw std::logic_error{std::format(
-            "Dictionary size ({}) cannot be smaller than buffer size ({})",
-            dictionary_size, buffer_size_)};
-    }
     if (buffer_size_ < 1) [[unlikely]] {
         throw std::logic_error{"Buffer size has to be greater than 0"};
     }
