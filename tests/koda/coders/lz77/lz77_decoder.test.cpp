@@ -42,4 +42,34 @@ class Lz77DummyAuxDecoder
     std::vector<Tp> tokens_;
 };
 
+}  // namespace
+
+using DummyDecoder = Lz77DummyAuxDecoder<koda::Lz77IntermediateToken<char>>;
+
+BeginConstexprTest(Lz77Decoder, DecodeTokens) {
+    std::vector input_sequence = {
+        koda::Lz77IntermediateToken<char>{'a', 0, 0},  // 'a'
+        koda::Lz77IntermediateToken<char>{'l', 0, 0},  // 'l'
+        koda::Lz77IntermediateToken<char>{' ', 0, 1},  // 'a '
+        koda::Lz77IntermediateToken<char>{'m', 0, 0},  // 'm'
+        koda::Lz77IntermediateToken<char>{'k', 2, 2},  // 'a k'
+        koda::Lz77IntermediateToken<char>{'o', 0, 0},  // 'o'
+        koda::Lz77IntermediateToken<char>{'t', 0, 0},  // 't'
+        koda::Lz77IntermediateToken<char>{'a', 5, 2},  // 'a a'
+        koda::Lz77IntermediateToken<char>{' ', 6, 4},  // ' kot '
+        koda::Lz77IntermediateToken<char>{'a', 4, 3},  // 'ma a'
+        koda::Lz77IntermediateToken<char>{'e', 1, 1},  // 'le'
+    };
+    std::string expected_result = "ala ma kota a kot ma ale";
+    std::vector<uint8_t> binary_range = {1};
+    std::string target;
+
+    koda::Lz77Decoder<char, DummyDecoder> decoder{
+        1024, 4, DummyDecoder{std::move(input_sequence)}};
+
+    decoder(binary_range | koda::views::LittleEndianInput,
+            target | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(target, expected_result);
 }
+EndConstexprTest;

@@ -42,9 +42,10 @@ class Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
         }
 
         constexpr Iterator& operator=(value_type token) {
-            CopySequenceToDictionary(std::move(token));
+            CopySequenceToDictionary(token);
             if (parent_->iterator_ != parent_->sentinel_) {
                 *parent_->iterator_++ = token.suffix_symbol();
+                parent_->dictionary_.AddSymbolToBuffer(token.suffix_symbol());
             }
             return *this;
         }
@@ -62,7 +63,7 @@ class Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
        private:
         SlidingDecoderView* parent_;
 
-        constexpr void CopySequenceToDictionary(value_type token) {
+        constexpr void CopySequenceToDictionary(const value_type& token) {
             auto position = token.match_position();
             auto length = token.match_length();
 
