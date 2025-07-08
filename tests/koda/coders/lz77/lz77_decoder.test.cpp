@@ -131,3 +131,47 @@ BeginConstexprTest(Lz77Decoder, DecodeTokensRepeatitions) {
     ConstexprAssertEqual(target, expected_result);
 }
 EndConstexprTest;
+
+BeginConstexprTest(Lz77Decoder, DecodeTokensShortDictionary) {
+    std::vector input_sequence = {
+        koda::Lz77IntermediateToken<char>{'k', 0, 0},  //         [|kot]
+        koda::Lz77IntermediateToken<char>{'o', 0, 0},  //        [k|ot ]
+        koda::Lz77IntermediateToken<char>{'t', 0, 0},  //       [ko|t a]
+        koda::Lz77IntermediateToken<char>{' ', 0, 0},  //      [kot| ab]
+        koda::Lz77IntermediateToken<char>{'a', 0, 0},  //     [kot |abc]
+        koda::Lz77IntermediateToken<char>{'b', 0, 0},  //    [kot a|bcd]
+        koda::Lz77IntermediateToken<char>{'c', 0, 0},  //   [kot ab|cde]
+        koda::Lz77IntermediateToken<char>{'d', 0, 0},  //  [kot abc|def]
+        koda::Lz77IntermediateToken<char>{'e', 0, 0},  // [kot abcd|efg]
+        koda::Lz77IntermediateToken<char>{'f', 0, 0},  // [ot abcde|fgh]
+        koda::Lz77IntermediateToken<char>{'g', 0, 0},  // [t abcdef|ghi]
+        koda::Lz77IntermediateToken<char>{'h', 0, 0},  // [ abcdefg|hij]
+        koda::Lz77IntermediateToken<char>{'i', 0, 0},  // [abcdefgh|ijk]
+        koda::Lz77IntermediateToken<char>{'j', 0, 0},  // [bcdefghi|jke]
+        koda::Lz77IntermediateToken<char>{'k', 0, 0},  // [cdefghij|kel]
+        koda::Lz77IntermediateToken<char>{'l', 1, 1},  // [defghijk|elm] e = 1,1
+        koda::Lz77IntermediateToken<char>{'m', 0, 0},  // [fghijkel|mou]
+        koda::Lz77IntermediateToken<char>{'o', 0, 0},  // [ghijkelm|oup]
+        koda::Lz77IntermediateToken<char>{'u', 0, 0},  // [hijkelmo|upr]
+        koda::Lz77IntermediateToken<char>{'p', 0, 0},  // [ijkelmou|prs]
+        koda::Lz77IntermediateToken<char>{'r'},        // [jkelmoup|rst]
+        koda::Lz77IntermediateToken<char>{'s', 0, 0},  // [kelmoupr|st ]
+        koda::Lz77IntermediateToken<char>{'t', 0, 0},  // [elmouprs|t k]
+        koda::Lz77IntermediateToken<char>{' ', 0, 0},  // [lmouprst| ko]
+        koda::Lz77IntermediateToken<char>{'k', 0, 0},  // [mouprst |kot]
+        koda::Lz77IntermediateToken<char>{'t', 0,
+                                          1},  // [ouprst k|ot]  o = 0, 1
+    };
+    std::string expected_result = "kot abcdefghijkelmouprst kot";
+    std::vector<uint8_t> binary_range = {1};
+    std::string target;
+
+    koda::Lz77Decoder<char, DummyDecoder> decoder{
+        8, 3, DummyDecoder{std::move(input_sequence)}};
+
+    decoder(binary_range | koda::views::LittleEndianInput,
+            target | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(target, expected_result);
+}
+EndConstexprTest;
