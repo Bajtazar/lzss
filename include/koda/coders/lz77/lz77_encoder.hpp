@@ -57,6 +57,25 @@ class Lz77Encoder
     std::optional<IMToken> queued_token_ = std::nullopt;
     uint16_t match_count_ = 0;
     [[no_unique_address]] AuxiliaryEncoder auxiliary_encoder_;
+
+    constexpr auto InitializeBuffer(InputRange<Token> auto&& input);
+
+    constexpr auto EncodeData(InputRange<Token> auto&& input,
+                              BitOutputRange auto&& output);
+
+    constexpr auto FlushQueue(BitOutputRange auto&& output);
+
+    constexpr auto FlushData(BitOutputRange auto&& output);
+
+    constexpr auto EncodeTokenOrMatch(SequenceView look_ahead,
+                                      const Match& match,
+                                      BitOutputRange auto&& output);
+
+    constexpr auto PeformEncodigStep(FusedDictionaryAndBuffer<Token>& dict,
+                                     SequenceView look_ahead,
+                                     BitOutputRange auto&& output);
 };
 
 }  // namespace koda
+
+#include <koda/coders/lz77/lz77_encoder.tpp>
