@@ -178,14 +178,14 @@ EndConstexprTest;
 
 BeginConstexprTest(Lz77Decoder, DecodeRepeatingSequence) {
     std::vector input_sequence = {koda::Lz77IntermediateToken<char>{'a', 0, 0},
-                                  koda::Lz77IntermediateToken<char>{'a', 0, 3},
-                                  koda::Lz77IntermediateToken<char>{'a', 2, 1}};
-    std::string expected_result = "aaaaaaa";
+                                  koda::Lz77IntermediateToken<char>{'l', 0, 0},
+                                  koda::Lz77IntermediateToken<char>{'r', 0, 4}};
+    std::string expected_result = "alalalr";
     std::vector<uint8_t> binary_range = {1};
     std::string target;
 
     koda::Lz77Decoder<char, DummyDecoder> decoder{
-        8, 3, DummyDecoder{std::move(input_sequence)}};
+        8, 4, DummyDecoder{std::move(input_sequence)}};
 
     decoder(binary_range | koda::views::LittleEndianInput,
             target | koda::views::InsertFromBack);
@@ -196,14 +196,14 @@ EndConstexprTest;
 
 BeginConstexprTest(Lz77Decoder, PartialDecoding) {
     std::vector input_sequence = {koda::Lz77IntermediateToken<char>{'a', 0, 0},
-                                  koda::Lz77IntermediateToken<char>{'a', 0, 3},
-                                  koda::Lz77IntermediateToken<char>{'a', 2, 1}};
-    std::string expected_result = "aaaaaaa";
+                                  koda::Lz77IntermediateToken<char>{'l', 0, 0},
+                                  koda::Lz77IntermediateToken<char>{'r', 0, 4}};
+    std::string expected_result = "alalalr";
     std::vector<uint8_t> binary_range = {1};
     std::string target;
 
     koda::Lz77Decoder<char, DummyDecoder> decoder{
-        8, 3, DummyDecoder{std::move(input_sequence)}};
+        8, 4, DummyDecoder{std::move(input_sequence)}};
 
     decoder.Initialize(binary_range | koda::views::LittleEndianInput);
 
@@ -221,14 +221,14 @@ EndConstexprTest;
 
 BeginConstexprTest(Lz77Decoder, SplittedPartialDecoding) {
     std::vector input_sequence = {koda::Lz77IntermediateToken<char>{'a', 0, 0},
-                                  koda::Lz77IntermediateToken<char>{'a', 0, 3},
-                                  koda::Lz77IntermediateToken<char>{'a', 2, 1}};
-    std::string expected_result = "aaaaaaa";
+                                  koda::Lz77IntermediateToken<char>{'l', 0, 0},
+                                  koda::Lz77IntermediateToken<char>{'r', 0, 4}};
+    std::string expected_result = "alalalr";
     std::vector<uint8_t> binary_range = {1};
     std::string target;
 
     koda::Lz77Decoder<char, DummyDecoder> decoder{
-        1024, 8, DummyDecoder{std::move(input_sequence)}};
+        8, 4, DummyDecoder{std::move(input_sequence)}};
 
     decoder.Initialize(binary_range | koda::views::LittleEndianInput);
 
