@@ -186,7 +186,9 @@ template <std::integral Token,
 constexpr void Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::
     TryToRemoveStringFromSearchTree(FusedDictionaryAndBuffer<Token>& dict) {
     if (dict.dictionary_size() == dict.max_dictionary_size()) {
-        search_tree_.RemoveString(dict.get_oldest_dictionary_full_match());
+        auto string = dict.get_oldest_dictionary_full_match();
+        string.remove_suffix(1);
+        search_tree_.RemoveString(string);
     }
 }
 
