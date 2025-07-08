@@ -7,6 +7,8 @@
 #include <koda/collections/search_binary_tree.hpp>
 #include <koda/utils/concepts.hpp>
 
+#include <optional>
+
 namespace koda {
 
 template <std::integral Token = uint8_t,
@@ -46,6 +48,7 @@ class Lz77Decoder
     struct CachedSequence {
         size_t position;
         size_t length;
+        Token suffix;
     };
 
     FusedDictionaryAndBuffer<Token> dictionary_;
