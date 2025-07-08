@@ -96,7 +96,7 @@ BeginConstexprTest(Lz77Decoder, DecodeMoreTokens) {
     std::string target;
 
     koda::Lz77Decoder<char, DummyDecoder> decoder{
-        1024, 4, DummyDecoder{std::move(input_sequence)}};
+        1024, 7, DummyDecoder{std::move(input_sequence)}};
 
     decoder(binary_range | koda::views::LittleEndianInput,
             target | koda::views::InsertFromBack);
