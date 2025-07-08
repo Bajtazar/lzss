@@ -73,3 +73,34 @@ BeginConstexprTest(Lz77Decoder, DecodeTokens) {
     ConstexprAssertEqual(target, expected_result);
 }
 EndConstexprTest;
+
+BeginConstexprTest(Lz77Decoder, DecodeMoreTokens) {
+    std::vector input_sequence = {
+        koda::Lz77IntermediateToken<char>{'s', 0, 0},   // 's'
+        koda::Lz77IntermediateToken<char>{'t', 0, 0},   // 't'
+        koda::Lz77IntermediateToken<char>{'d', 0, 0},   // 'd'
+        koda::Lz77IntermediateToken<char>{':', 0, 0},   // ':'
+        koda::Lz77IntermediateToken<char>{'n', 3, 1},   // ':n'
+        koda::Lz77IntermediateToken<char>{'u', 0, 0},   // 'u'
+        koda::Lz77IntermediateToken<char>{'l', 0, 0},   // 'l'
+        koda::Lz77IntermediateToken<char>{'p', 7, 1},   // 'lp'
+        koda::Lz77IntermediateToken<char>{'r', 1, 1},   // 'tr'
+        koda::Lz77IntermediateToken<char>{'_', 0, 0},   // '_'
+        koda::Lz77IntermediateToken<char>{' ', 10, 1},  // 't '
+        koda::Lz77IntermediateToken<char>{'&', 0, 0},   // '&'
+        koda::Lz77IntermediateToken<char>{'n', 14, 1},  // ' n'
+        koda::Lz77IntermediateToken<char>{'r', 6, 5}    // 'ullptr'
+    };
+    std::string expected_result = "std::nullptr_t & nullptr";
+    std::vector<uint8_t> binary_range = {1};
+    std::string target;
+
+    koda::Lz77Decoder<char, DummyDecoder> decoder{
+        1024, 4, DummyDecoder{std::move(input_sequence)}};
+
+    decoder(binary_range | koda::views::LittleEndianInput,
+            target | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(target, expected_result);
+}
+EndConstexprTest;
