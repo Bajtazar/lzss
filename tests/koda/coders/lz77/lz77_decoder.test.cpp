@@ -175,3 +175,21 @@ BeginConstexprTest(Lz77Decoder, DecodeTokensShortDictionary) {
     ConstexprAssertEqual(target, expected_result);
 }
 EndConstexprTest;
+
+BeginConstexprTest(Lz77Decoder, DecodeRepeatingSequence) {
+    std::vector input_sequence = {koda::Lz77IntermediateToken<char>{'a', 0, 0},
+                                  koda::Lz77IntermediateToken<char>{'a', 0, 3},
+                                  koda::Lz77IntermediateToken<char>{'a', 2, 1}};
+    std::string expected_result = "aaaaaaa";
+    std::vector<uint8_t> binary_range = {1};
+    std::string target;
+
+    koda::Lz77Decoder<char, DummyDecoder> decoder{
+        8, 3, DummyDecoder{std::move(input_sequence)}};
+
+    decoder(binary_range | koda::views::LittleEndianInput,
+            target | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(target, expected_result);
+}
+EndConstexprTest;
