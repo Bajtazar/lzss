@@ -153,6 +153,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
     if (!match_count_) {
         auto new_output = EncodeTokenOrMatch(
             look_ahead,
+            // Prune the maximum match length suffix symbol from the look ahead
             search_tree_.FindMatch(
                 StringView{look_ahead.begin(), std::prev(look_ahead.end())}),
             std::move(output));
