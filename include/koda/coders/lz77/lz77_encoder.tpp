@@ -6,7 +6,7 @@
 namespace koda {
 
 template <std::integral Token,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
 constexpr Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Lz77Encoder(
     size_t dictionary_size, size_t look_ahead_size,
@@ -18,7 +18,7 @@ constexpr Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Lz77Encoder(
       auxiliary_encoder_{std::move(auxiliary_encoder)} {}
 
 template <std::integral Token,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
 constexpr Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Lz77Encoder(
     size_t dictionary_size, size_t look_ahead_size,
@@ -28,7 +28,7 @@ constexpr Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Lz77Encoder(
                   std::move(cyclic_buffer_size), allocator} {}
 
 template <std::integral Token,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
 [[nodiscard]] constexpr auto&&
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::auxiliary_encoder(
@@ -37,7 +37,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::auxiliary_encoder(
 }
 
 template <std::integral Token,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
 constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Flush(
     BitOutputRange auto&& output) {
@@ -46,7 +46,7 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Flush(
 }
 
 template <std::integral Token,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
 constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Encode(
     InputRange<Token> auto&& input, BitOutputRange auto&& output) {
@@ -58,13 +58,13 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Encode(
 }
 
 template <std::integral Token,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
 constexpr auto
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::InitializeBuffer(
     InputRange<Token> auto&& input) {
     // buffer also stores one suffix symbol that is not used during match lookup
-    // but is used to construct an intermediate token!
+    // but is used to construct an intermediate token for the longest match!
     const size_t buffer_size = 1 + search_tree_.string_size();
 
     std::vector<Token> init_view{std::from_range,
@@ -80,7 +80,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::InitializeBuffer(
 }
 
 template <std::integral Token,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
 constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::FlushQueue(
     BitOutputRange auto&& output) {
@@ -94,7 +94,7 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::FlushQueue(
 }
 
 template <std::integral Token,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
 constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
     InputRange<Token> auto&& input, BitOutputRange auto&& output) {
@@ -127,7 +127,7 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
 }
 
 template <std::integral Token,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
 constexpr auto
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
@@ -143,7 +143,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
 }
 
 template <std::integral Token,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
 constexpr auto
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
@@ -154,7 +154,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
             look_ahead,
             // Prune the maximum match length suffix symbol from the look ahead
             search_tree_.FindMatch(
-                StringView{look_ahead.begin(), std::prev(look_ahead.end())}),
+                SequenceView{look_ahead.begin(), std::prev(look_ahead.end())}),
             std::move(output));
         TryToRemoveStringFromSearchTree(dict);
         return new_output;
@@ -166,7 +166,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
 }
 
 template <std::integral Token,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
 constexpr auto
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeIntermediateToken(
@@ -182,7 +182,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeIntermediateToken(
 }
 
 template <std::integral Token,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
 constexpr void Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::
     TryToRemoveStringFromSearchTree(FusedDictionaryAndBuffer<Token>& dict) {
@@ -192,7 +192,7 @@ constexpr void Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::
 }
 
 template <std::integral Token,
-          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
 constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
     BitOutputRange auto&& output) {
