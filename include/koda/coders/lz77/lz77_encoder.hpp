@@ -74,6 +74,12 @@ class Lz77Encoder
     constexpr auto PeformEncodigStep(FusedDictionaryAndBuffer<Token>& dict,
                                      SequenceView look_ahead,
                                      BitOutputRange auto&& output);
+
+    constexpr auto EncodeIntermediateToken(IMToken&& token,
+                                           BitOutputRange auto&& output);
+
+    constexpr void TryToRemoveStringFromSearchTree(
+        FusedDictionaryAndBuffer<Token>& dict);
 };
 
 }  // namespace koda

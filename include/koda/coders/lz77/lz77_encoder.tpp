@@ -145,7 +145,6 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
 template <std::integral Token,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
     FusedDictionaryAndBuffer<Token>& dict, SequenceView look_ahead,
@@ -164,6 +163,59 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
     --match_count_;
     TryToRemoveStringFromSearchTree(dict);
     return AsSubrange(output);
+}
+
+template <std::integral Token,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+constexpr auto
+Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeIntermediateToken(
+    IMToken&& token, BitOutputRange auto&& output) {
+    auto [input_range, output_range] = auxiliary_encoder_.Encode(
+        std::ranges::subrange{&token, std::next(&token)}, output);
+    // Token has not been encoded due to the jam in the encoder queue - enque
+    // token and try to flush it when new output range is provided by the user
+    if (std::ranges::begin(input_range) != std::ranges::end(input_range)) {
+        queued_token_ = token;
+    }
+    return output_range;
+}
+
+template <std::integral Token,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+constexpr void Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::
+    TryToRemoveStringFromSearchTree(FusedDictionaryAndBuffer<Token>& dict) {
+    if (dict.dictionary_size() == dict.max_dictionary_size()) {
+        search_tree_.RemoveString(dict.get_oldest_dictionary_full_match());
+    }
+}
+
+template <std::integral Token,
+          SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
+    BitOutputRange auto&& output) {
+    [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(
+        dictionary_and_buffer_))]];
+
+    auto& dict =
+        std::get<FusedDictionaryAndBuffer<Token>>(dictionary_and_buffer_);
+    auto out_range = AsSubrange(std::forward<decltype(output)>(output));
+
+    if (queued_token_) {
+        out_range = FlushQueue(out_range);
+        if (queued_token_) {
+            return out_range;
+        }
+    }
+
+    for (size_t i = 0; i < search_tree_.string_size(); ++i) {
+        out_range =
+            PeformEncodigStep(dict, dict.get_buffer(), std::move(out_range));
+        dict.AddEndSymbolToBuffer();
+    }
+    return out_range;
 }
 
 }  // namespace koda
