@@ -63,8 +63,8 @@ class Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
         SlidingDecoderView* parent_;
 
         constexpr void CopySequenceToDictionary(value_type token) {
-            const auto position = token.match_position();
-            const auto length = token.match_length();
+            auto position = token.match_position();
+            auto length = token.match_length();
 
             const auto sequence =
                 parent_->dictionary_.get_sequence_at_relative_pos(position,

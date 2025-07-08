@@ -3,10 +3,6 @@
 #include <koda/utils/back_inserter_iterator.hpp>
 #include <koda/utils/bit_iterator.hpp>
 
-#include <gtest/gtest.h>
-
-#include <print>
-
 static_assert(koda::Encoder<koda::Lz77Encoder<uint8_t>, uint8_t>);
 
 namespace {
