@@ -3,6 +3,10 @@
 #include <koda/utils/back_inserter_iterator.hpp>
 #include <koda/utils/bit_iterator.hpp>
 
+#include <gtest/gtest.h>
+
+#include <print>
+
 static_assert(koda::Encoder<koda::Lz77Encoder<uint8_t>, uint8_t>);
 
 namespace {
@@ -78,10 +82,10 @@ BeginConstexprTest(Lz77Encoder, EncodeMoreTokens) {
         koda::Lz77IntermediateToken<char>{'p', 7, 1},   // 'lp'
         koda::Lz77IntermediateToken<char>{'r', 1, 1},   // 'tr'
         koda::Lz77IntermediateToken<char>{'_', 0, 0},   // '_'
-        koda::Lz77IntermediateToken<char>{' ', 1, 1},   // 't '
+        koda::Lz77IntermediateToken<char>{' ', 10, 1},  // 't '
         koda::Lz77IntermediateToken<char>{'&', 0, 0},   // '&'
         koda::Lz77IntermediateToken<char>{'n', 14, 1},  // ' n'
-        koda::Lz77IntermediateToken<char>{'r', 5, 5}    // 'ullptr'
+        koda::Lz77IntermediateToken<char>{'r', 6, 5}    // 'ullptr'
     };
 
     std::vector<uint8_t> target;
