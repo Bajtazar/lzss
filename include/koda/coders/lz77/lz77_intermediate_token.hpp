@@ -37,4 +37,17 @@ class [[nodiscard]] Lz77IntermediateToken {
     LengthTp match_length_;
 };
 
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
+struct TokenTraits<Lz77IntermediateToken<InputToken, PositionTp, LengthTp>> {
+    using TokenType = Lz77IntermediateToken<InputToken, PositionTp, LengthTp>;
+
+    static constexpr auto EncodeToken(TokenType token,
+                                      BitOutputRange auto&& output);
+
+    [[nodiscard]] static constexpr auto DecodeToken(BitInputRange auto&& input);
+
+    [[nodiscard]] static constexpr float TokenBitSize(TokenType token);
+};
+
 }  // namespace koda
