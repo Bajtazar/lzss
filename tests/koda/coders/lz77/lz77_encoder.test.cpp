@@ -35,3 +35,32 @@ struct Lz77DummyAuxEncoder
 };
 
 }  // namespace
+
+BeginConstexprTest(Lz77Encoder, EncodeTokens) {
+    std::string input_sequence = "ala ma kota a kot ma ale";
+    std::vector expected_result = {
+        koda::Lz77IntermediateToken<char>{'a', 0, 0},  // 'a'
+        koda::Lz77IntermediateToken<char>{'l', 0, 0},  // 'l'
+        koda::Lz77IntermediateToken<char>{' ', 0, 1},  // 'a '
+        koda::Lz77IntermediateToken<char>{'m', 0, 0},  // 'm'
+        koda::Lz77IntermediateToken<char>{'k', 2, 2},  // 'a k'
+        koda::Lz77IntermediateToken<char>{'o', 0, 0},  // 'o'
+        koda::Lz77IntermediateToken<char>{'t', 0, 0},  // 't'
+        koda::Lz77IntermediateToken<char>{'a', 5, 2},  // 'a a'
+        koda::Lz77IntermediateToken<char>{' ', 6, 4},  // ' kot '
+        koda::Lz77IntermediateToken<char>{'a', 4, 3},  // 'ma a'
+        koda::Lz77IntermediateToken<char>{'e', 1, 1},  // 'le'
+    };
+
+    std::vector<uint8_t> target;
+
+    koda::Lz77Encoder<char,
+                      Lz77DummyAuxEncoder<koda::Lz77IntermediateToken<char>>>
+        encoder{1024, 4};
+    encoder(input_sequence, target | koda::views::InsertFromBack |
+                                koda::views::LittleEndianOutput);
+
+    ConstexprAssertEqual(encoder.auxiliary_encoder().tokens, expected_result);
+    ConstexprAssertTrue(target.empty());
+};
+EndConstexprTest;
