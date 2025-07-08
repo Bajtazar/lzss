@@ -26,10 +26,10 @@ class [[nodiscard]] Lz77IntermediateToken {
     [[nodiscard]] constexpr LengthTp match_length() const noexcept;
 
     [[nodiscard]] constexpr std::partial_ordering operator<=>(
-        const Lz77IntermediateToken& right) const noexcept;
+        const Lz77IntermediateToken& right) const noexcept = default;
 
     [[nodiscard]] constexpr bool operator==(
-        const Lz77IntermediateToken& right) const noexcept;
+        const Lz77IntermediateToken& right) const noexcept = default;
 
    private:
     Symbol suffix_symbol_;
@@ -51,3 +51,5 @@ struct TokenTraits<Lz77IntermediateToken<InputToken, PositionTp, LengthTp>> {
 };
 
 }  // namespace koda
+
+#include <koda/coders/lz77/lz77_intermediate_token.tpp>
