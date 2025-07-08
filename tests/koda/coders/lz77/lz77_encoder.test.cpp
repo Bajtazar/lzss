@@ -62,5 +62,38 @@ BeginConstexprTest(Lz77Encoder, EncodeTokens) {
 
     ConstexprAssertEqual(encoder.auxiliary_encoder().tokens, expected_result);
     ConstexprAssertTrue(target.empty());
-};
+}
+EndConstexprTest;
+
+BeginConstexprTest(Lz77Encoder, EncodeMoreTokens) {
+    std::string input_sequence = "std::nullptr_t & nullptr";
+    std::vector expected_result = {
+        koda::Lz77IntermediateToken<char>{'s', 0, 0},   // 's'
+        koda::Lz77IntermediateToken<char>{'t', 0, 0},   // 't'
+        koda::Lz77IntermediateToken<char>{'d', 0, 0},   // 'd'
+        koda::Lz77IntermediateToken<char>{':', 0, 0},   // ':'
+        koda::Lz77IntermediateToken<char>{'n', 3, 1},   // ':n'
+        koda::Lz77IntermediateToken<char>{'u', 0, 0},   // 'u'
+        koda::Lz77IntermediateToken<char>{'l', 0, 0},   // 'l'
+        koda::Lz77IntermediateToken<char>{'p', 7, 1},   // 'lp'
+        koda::Lz77IntermediateToken<char>{'r', 1, 1},   // 'tr'
+        koda::Lz77IntermediateToken<char>{'_', 0, 0},   // '_'
+        koda::Lz77IntermediateToken<char>{' ', 1, 1},   // 't '
+        koda::Lz77IntermediateToken<char>{'&', 0, 0},   // '&'
+        koda::Lz77IntermediateToken<char>{'n', 14, 1},  // ' n'
+        koda::Lz77IntermediateToken<char>{'r', 5, 5}    // 'ullptr'
+    };
+
+    std::vector<uint8_t> target;
+
+    koda::Lz77Encoder<char,
+                      Lz77DummyAuxEncoder<koda::Lz77IntermediateToken<char>>>
+        encoder{1024, 7};
+
+    encoder(input_sequence, target | koda::views::InsertFromBack |
+                                koda::views::LittleEndianOutput);
+
+    ConstexprAssertEqual(encoder.auxiliary_encoder().tokens, expected_result);
+    ConstexprAssertTrue(target.empty());
+}
 EndConstexprTest;
