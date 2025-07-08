@@ -117,8 +117,9 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
     auto input_iter = std::ranges::begin(input);
     auto input_sent = std::ranges::end(input);
     for (; (input_iter != input_sent) && !out_range.empty(); ++input_iter) {
-        auto look_ahead = dict.get_buffer();
-        out_range = PeformEncodigStep(dict, look_ahead, std::move(out_range));
+        auto [buffer, look_ahead] = GetBufferAndLookAhead();
+        out_range =
+            PeformEncodigStep(dict, buffer, look_ahead, std::move(out_range));
         search_tree_.AddString(look_ahead);
         dict.AddSymbolToBuffer(*input_iter);
     }
@@ -131,9 +132,9 @@ template <std::integral Token,
           typename Allocator>
 constexpr auto
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
-    SequenceView look_ahead, const Match& match, BitOutputRange auto&& output) {
+    SequenceView buffer, const Match& match, BitOutputRange auto&& output) {
     // buffer is one symbol longer than the actual look-ahead buffer
-    auto suffix_token = look_ahead[match.match_length];
+    auto suffix_token = buffer[match.match_length];
     IMToken symbol_token{
         suffix_token,
         static_cast<typename IMToken::Position>(match.match_position),
@@ -149,15 +150,11 @@ template <std::integral Token,
           typename Allocator>
 constexpr auto
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
-    FusedDictionaryAndBuffer<Token>& dict, SequenceView look_ahead,
-    BitOutputRange auto&& output) {
+    FusedDictionaryAndBuffer<Token>& dict, SequenceView buffer,
+    SequenceView look_ahead, BitOutputRange auto&& output) {
     if (!match_count_) {
         auto new_output = EncodeTokenOrMatch(
-            look_ahead,
-            // Prune the maximum match length suffix symbol from the look ahead
-            search_tree_.FindMatch(
-                SequenceView{look_ahead.begin(), std::prev(look_ahead.end())}),
-            std::move(output));
+            buffer, search_tree_.FindMatch(look_ahead), std::move(output));
         TryToRemoveStringFromSearchTree(dict);
         return new_output;
     }
@@ -213,11 +210,25 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
     }
 
     for (size_t i = 0; i < search_tree_.string_size(); ++i) {
+        auto [buffer, look_ahead] = GetBufferAndLookAhead();
         out_range =
-            PeformEncodigStep(dict, dict.get_buffer(), std::move(out_range));
+            PeformEncodigStep(dict, buffer, look_ahead, std::move(out_range));
         dict.AddEndSymbolToBuffer();
     }
     return out_range;
+}
+
+template <std::integral Token,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+constexpr std::pair<
+    typename Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::SequenceView,
+    typename Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::SequenceView>
+Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::GetBufferAndLookAhead() const {
+    auto buffer = dict.get_buffer();
+    auto look_ahead = buffer;
+    look_ahead.remove_suffix(1);
+    return {buffer, look_ahead};
 }
 
 }  // namespace koda

@@ -67,11 +67,11 @@ class Lz77Encoder
 
     constexpr auto FlushData(BitOutputRange auto&& output);
 
-    constexpr auto EncodeTokenOrMatch(SequenceView look_ahead,
-                                      const Match& match,
+    constexpr auto EncodeTokenOrMatch(SequenceView buffer, const Match& match,
                                       BitOutputRange auto&& output);
 
     constexpr auto PeformEncodigStep(FusedDictionaryAndBuffer<Token>& dict,
+                                     SequenceView buffer,
                                      SequenceView look_ahead,
                                      BitOutputRange auto&& output);
 
@@ -80,6 +80,9 @@ class Lz77Encoder
 
     constexpr void TryToRemoveStringFromSearchTree(
         FusedDictionaryAndBuffer<Token>& dict);
+
+    constexpr std::pair<SequenceView, SequenceView> GetBufferAndLookAhead()
+        const;
 };
 
 }  // namespace koda
