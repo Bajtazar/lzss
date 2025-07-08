@@ -34,4 +34,44 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
     return match_length_;
 }
 
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
+/*static*/ constexpr auto
+TokenTraits<Lz77IntermediateToken<InputToken, PositionTp, LengthTp>>::
+    EncodeToken(TokenType token, BitOutputRange auto&& output) {
+    auto iter = std::ranges::begin(output);
+
+    auto pos_range = EncodeToken(token.match_position(),
+                                 std::forward<decltype(output)>(output));
+    auto len_range = EncodeToken(token.match_length(), std::move(pos_range));
+    return EncodeToken(token.suffix_symbol(), std::move(len_range));
+}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
+[[nodiscard]] /*static*/ constexpr auto
+TokenTraits<Lz77IntermediateToken<InputToken, PositionTp, LengthTp>>::
+    DecodeToken(BitInputRange auto&& input) {
+    auto [position, pos_range] = TokenTraits<InputToken>::DecodeToken(
+        std::forward<decltype(input)>(input));
+    auto [length, len_range] =
+        TokenTraits<InputToken>::DecodeToken(std::move(pos_range));
+    auto [symbol, sym_range] =
+        TokenTraits<InputToken>::DecodeToken(std::move(len_range));
+
+    return TokenTraitsDecodingResult{
+        Lz77IntermediateToken<InputToken, PositionTp, LengthTp>{
+            symbol, position, length},
+        std::move(sym_range)};
+}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
+[[nodiscard]] /*static*/ constexpr float TokenTraits<Lz77IntermediateToken<
+    InputToken, PositionTp, LengthTp>>::TokenBitSize(TokenType token) {
+    return TokenTraits<PositionTp>::TokenBitSize(token.match_position()) +
+           TokenTraits<LengthTp>::TokenBitSize(token.match_length()) +
+           TokenTraits<LengthTp>::TokenBitSize(token.suffix_symbol());
+}
+
 }  // namespace koda
