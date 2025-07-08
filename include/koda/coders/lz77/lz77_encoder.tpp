@@ -117,7 +117,7 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
     auto input_iter = std::ranges::begin(input);
     auto input_sent = std::ranges::end(input);
     for (; (input_iter != input_sent) && !out_range.empty(); ++input_iter) {
-        auto [buffer, look_ahead] = GetBufferAndLookAhead();
+        auto [buffer, look_ahead] = GetBufferAndLookAhead(dict);
         out_range =
             PeformEncodigStep(dict, buffer, look_ahead, std::move(out_range));
         search_tree_.AddString(look_ahead);
@@ -210,7 +210,7 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
     }
 
     for (size_t i = 0; i < search_tree_.string_size(); ++i) {
-        auto [buffer, look_ahead] = GetBufferAndLookAhead();
+        auto [buffer, look_ahead] = GetBufferAndLookAhead(dict);
         out_range =
             PeformEncodigStep(dict, buffer, look_ahead, std::move(out_range));
         dict.AddEndSymbolToBuffer();
@@ -224,7 +224,8 @@ template <std::integral Token,
 constexpr std::pair<
     typename Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::SequenceView,
     typename Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::SequenceView>
-Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::GetBufferAndLookAhead() const {
+Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::GetBufferAndLookAhead(
+    FusedDictionaryAndBuffer<Token>& dict) const {
     auto buffer = dict.get_buffer();
     auto look_ahead = buffer;
     look_ahead.remove_suffix(1);

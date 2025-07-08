@@ -81,8 +81,8 @@ class Lz77Encoder
     constexpr void TryToRemoveStringFromSearchTree(
         FusedDictionaryAndBuffer<Token>& dict);
 
-    constexpr std::pair<SequenceView, SequenceView> GetBufferAndLookAhead()
-        const;
+    constexpr std::pair<SequenceView, SequenceView> GetBufferAndLookAhead(
+        FusedDictionaryAndBuffer<Token>& dict) const;
 };
 
 }  // namespace koda
