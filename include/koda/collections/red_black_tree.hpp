@@ -14,16 +14,16 @@ namespace koda {
 template <typename ValueTp, typename AllocatorTp = std::allocator<ValueTp>>
 class RedBlackTree {
    public:
-    constexpr RedBlackTree() noexcept = default;
+    constexpr RedBlackTree(
+        const AllocatorTp& allocator = AllocatorTp{}) noexcept;
 
-    constexpr explicit SearchBinaryTree(SearchBinaryTree&& other) noexcept;
-    constexpr explicit SearchBinaryTree(const SearchBinaryTree& other) = delete;
+    constexpr explicit RedBlackTree(RedBlackTree&& other) noexcept;
+    constexpr explicit RedBlackTree(const RedBlackTree& other) = delete;
 
-    constexpr SearchBinaryTree& operator=(SearchBinaryTree&& other) noexcept;
-    constexpr SearchBinaryTree& operator=(const SearchBinaryTree& other) =
-        delete;
+    constexpr RedBlackTree& operator=(RedBlackTree&& other) noexcept;
+    constexpr RedBlackTree& operator=(const RedBlackTree& other) = delete;
 
-    constexpr virtual ~SearchBinaryTree();
+    constexpr virtual ~RedBlackTree();
 
    protected:
     struct Node {
