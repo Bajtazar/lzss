@@ -7,9 +7,7 @@ namespace koda {
 template <typename Tp, typename AllocatorTp>
 constexpr SearchBinaryTree<Tp, AllocatorTp>::SearchBinaryTree(
     size_t string_size, const AllocatorTp& allocator) noexcept
-    : RedBlackTree<details::SearchBinaryTreeEntry<Tp>,
-                   SearchBinaryTree<Tp, AllocatorTp>, AllocatorTp>{allocator},
-      string_size_{string_size} {}
+    : RedBlackImpl{allocator}, string_size_{string_size} {}
 
 template <typename Tp, typename AllocatorTp>
 constexpr void SearchBinaryTree<Tp, AllocatorTp>::AddString(StringView string) {

@@ -70,14 +70,11 @@ class SearchBinaryTree
                               SearchBinaryTree<Tp, AllocatorTp>, AllocatorTp>;
 
    private:
-    using Entry = details::SearchBinaryTreeEntry<ValueType>;
-    using Node =
-        RedBlackTree<details::SearchBinaryTreeEntry<Tp>,
-                     SearchBinaryTree<Tp, AllocatorTp>, AllocatorTp>::Node;
-    using NodeInsertionLocation =
-        RedBlackTree<details::SearchBinaryTreeEntry<Tp>,
-                     SearchBinaryTree<Tp, AllocatorTp>,
-                     AllocatorTp>::NodeInsertionLocation;
+    using Entry = details::SearchBinaryTreeEntry<Tp>;
+    using RedBlackImpl =
+        RedBlackTree<Entry, SearchBinaryTree<Tp, AllocatorTp>, AllocatorTp>;
+    using Node = RedBlackImpl::Node;
+    using NodeInsertionLocation = RedBlackImpl::NodeInsertionLocation;
 
     size_t dictionary_start_index_ = 0;
     size_t buffer_start_index_ = 0;
