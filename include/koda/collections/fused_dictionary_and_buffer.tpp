@@ -102,12 +102,14 @@ FusedDictionaryAndBuffer<Tp, AllocatorTp>::get_sequence_at_relative_pos(
     CheckRelativePosCorrectness(position, length);
 
     auto sequence_iter = std::next(dictionary_iter_, position);
-    // If iterator overflows right telomere then count the overflowing ammount
-    // from the beginning of the cyclic buffer
-    if (sequence_iter >= right_telomere_tag_) {
+    auto sequence_sent = std::next(sequence_iter, length);
+    // If sequence overflows the cyclic buffer then just wrap it back to the
+    // left telomere
+    if (sequence_sent > cyclic_buffer_.end()) {
         std::advance(sequence_iter, cyclic_buffer_wrap_);
+        std::advance(sequence_sent, cyclic_buffer_wrap_);
     }
-    return SequenceView{sequence_iter, std::next(sequence_iter, length)};
+    return SequenceView{sequence_iter, sequence_sent};
 }
 
 template <typename Tp, typename AllocatorTp>
