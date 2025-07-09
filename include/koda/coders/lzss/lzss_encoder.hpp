@@ -18,7 +18,6 @@ template <std::integral Token = uint8_t,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder =
               DirectEncoder<LzssIntermediateToken<Token>>,
           typename Allocator = std::allocator<Token>>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 class LzssEncoder
     : public EncoderInterface<Token,
                               LzssEncoder<Token, AuxiliaryEncoder, Allocator>> {

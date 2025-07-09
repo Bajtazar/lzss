@@ -7,7 +7,6 @@ namespace koda {
 template <std::integral Token,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr LzssEncoder<Token, AuxiliaryEncoder, Allocator>::LzssEncoder(
     size_t dictionary_size, size_t look_ahead_size,
     AuxiliaryEncoder auxiliary_encoder,
@@ -20,7 +19,6 @@ constexpr LzssEncoder<Token, AuxiliaryEncoder, Allocator>::LzssEncoder(
 template <std::integral Token,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr LzssEncoder<Token, AuxiliaryEncoder, Allocator>::LzssEncoder(
     size_t dictionary_size, size_t look_ahead_size,
     std::optional<size_t> cyclic_buffer_size, const Allocator& allocator)
@@ -31,7 +29,6 @@ constexpr LzssEncoder<Token, AuxiliaryEncoder, Allocator>::LzssEncoder(
 template <std::integral Token,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 [[nodiscard]] constexpr auto&&
 LzssEncoder<Token, AuxiliaryEncoder, Allocator>::auxiliary_encoder(
     this auto&& self) {
@@ -41,7 +38,6 @@ LzssEncoder<Token, AuxiliaryEncoder, Allocator>::auxiliary_encoder(
 template <std::integral Token,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::Flush(
     BitOutputRange auto&& output) {
     return auxiliary_encoder_.Flush(
@@ -51,7 +47,6 @@ constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::Flush(
 template <std::integral Token,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::Encode(
     InputRange<Token> auto&& input, BitOutputRange auto&& output) {
     if (std::holds_alternative<FusedDictAndBufferInfo>(
@@ -64,7 +59,6 @@ constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::Encode(
 template <std::integral Token,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto
 LzssEncoder<Token, AuxiliaryEncoder, Allocator>::InitializeBuffer(
     InputRange<Token> auto&& input) {
@@ -85,7 +79,6 @@ LzssEncoder<Token, AuxiliaryEncoder, Allocator>::InitializeBuffer(
 template <std::integral Token,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::FlushQueue(
     BitOutputRange auto&& output) {
     auto [input_range, output_range] = auxiliary_encoder_.Encode(
@@ -100,7 +93,6 @@ constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::FlushQueue(
 template <std::integral Token,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
     InputRange<Token> auto&& input, BitOutputRange auto&& output) {
     [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(
@@ -134,7 +126,6 @@ constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
 template <std::integral Token,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto
 LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
     Token token, const Match& match, BitOutputRange auto&& output) {
@@ -163,7 +154,6 @@ LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
 template <std::integral Token,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto
 LzssEncoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
     FusedDictionaryAndBuffer<Token>& dict, SequenceView look_ahead,
@@ -184,7 +174,6 @@ LzssEncoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
 template <std::integral Token,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto
 LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeIntermediateToken(
     IMToken&& token, BitOutputRange auto&& output) {
@@ -201,7 +190,6 @@ LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeIntermediateToken(
 template <std::integral Token,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr void LzssEncoder<Token, AuxiliaryEncoder, Allocator>::
     TryToRemoveStringFromSearchTree(FusedDictionaryAndBuffer<Token>& dict) {
     if (dict.dictionary_size() == dict.max_dictionary_size()) {
@@ -212,7 +200,6 @@ constexpr void LzssEncoder<Token, AuxiliaryEncoder, Allocator>::
 template <std::integral Token,
           SizeAwareEncoder<LzssIntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
     BitOutputRange auto&& output) {
     [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(
