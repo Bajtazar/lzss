@@ -1,13 +1,16 @@
 #pragma once
 
 #include <koda/collections/red_black_tree.hpp>
+#include <koda/utils/comparation.hpp>
+#include <koda/utils/concepts.hpp>
 
 #include <concepts>
 
 namespace koda {
 
 template <typename KeyTp, typename ValueTp,
-          std::predicate<KeyTp, KeyTp> ComparatorTp = std::less<KeyTp>,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp =
+              ThreeWayComparator,
           typename AllocatorTp =
               std::allocator<std::pair<const KeyTp, ValueTp>>>
 class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
@@ -53,7 +56,8 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
     using iterator = Iterator<false>;
     using const_iterator = Iterator<true>;
 
-    constexpr explicit Map(const AllocatorTp& allocator = AllocatorTp{});
+    constexpr explicit Map(const ComparatorTp& comparator = ComparatorTp{},
+                           const AllocatorTp& allocator = AllocatorTp{});
 
     constexpr Map(const Map& map) = delete;
     constexpr Map(Map&& map) = default;
@@ -82,6 +86,9 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
                               AllocatorTp>;
 
    private:
+    [[no_unique_address]] ComparatorTp comparator_;
 };
 
 }  // namespace koda
+
+#include <koda/collections/map.tpp>
