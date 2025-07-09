@@ -79,8 +79,9 @@ class FusedDictionaryAndBuffer {
     using ValueType = Tp;
     using SequenceView = std::basic_string_view<ValueType>;
 
+    template <std::ranges::sized_range BufferInitRangeTp>
     constexpr explicit FusedDictionaryAndBuffer(
-        size_t dictionary_size, SequenceView buffer,
+        size_t dictionary_size, BufferInitRangeTp&& buffer,
         std::optional<size_t> cyclic_buffer_size = std::nullopt,
         const AllocatorTp& allocator = AllocatorTp{});
 
@@ -152,6 +153,20 @@ class FusedDictionaryAndBuffer {
 
 #endif  // KODA_CHECKED_BUILD
 };
+
+template <std::ranges::sized_range BufferInitRangeTp, typename AllocatorTp>
+FusedDictionaryAndBuffer(size_t, BufferInitRangeTp&&, std::optional<size_t>,
+                         const AllocatorTp&)
+    -> FusedDictionaryAndBuffer<std::ranges::range_value_t<BufferInitRangeTp>,
+                                AllocatorTp>;
+
+template <std::ranges::sized_range BufferInitRangeTp>
+FusedDictionaryAndBuffer(size_t, BufferInitRangeTp&&, std::optional<size_t>)
+    -> FusedDictionaryAndBuffer<std::ranges::range_value_t<BufferInitRangeTp>>;
+
+template <std::ranges::sized_range BufferInitRangeTp>
+FusedDictionaryAndBuffer(size_t, BufferInitRangeTp&&)
+    -> FusedDictionaryAndBuffer<std::ranges::range_value_t<BufferInitRangeTp>>;
 
 }  // namespace koda
 

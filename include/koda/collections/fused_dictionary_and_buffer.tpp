@@ -10,15 +10,16 @@
 namespace koda {
 
 template <typename Tp, typename AllocatorTp>
+template <std::ranges::sized_range BufferInitRangeTp>
 constexpr FusedDictionaryAndBuffer<Tp, AllocatorTp>::FusedDictionaryAndBuffer(
-    size_t dictionary_size, SequenceView buffer,
+    size_t dictionary_size, BufferInitRangeTp&& buffer,
     std::optional<size_t> cyclic_buffer_size, const AllocatorTp& allocator)
-    : FusedDictionaryAndBuffer{dictionary_size, buffer.size(),
+    : FusedDictionaryAndBuffer{dictionary_size, std::ranges::size(buffer),
                                std::move(cyclic_buffer_size), allocator} {
     std::advance(buffer_sentinel_, buffer_size_);
     // Distance used to return iterator to the beginning of the cyclic buffer if
     // it overflows right telomere
-    MemoryCopy(buffer_iter_, buffer);
+    std::ranges::copy(std::forward<BufferInitRangeTp>(buffer), buffer_iter_);
 }
 
 template <typename Tp, typename AllocatorTp>
