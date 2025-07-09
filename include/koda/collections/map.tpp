@@ -138,8 +138,7 @@ template <typename KeyTp, typename ValueTp,
           typename AllocatorTp>
 template <typename KeyLookupTp>
     requires std::predicate<ComparatorTp, KeyTp, KeyLookupTp>
-[[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp,
-                            AllocatorTp>::iterator
+[[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Find(KeyLookupTp&& key) {
     for (Node* node = this->root(); node;) {
         switch (OrderCast(comparator_(key, node->value.first))) {
@@ -165,8 +164,7 @@ template <typename KeyLookupTp>
     requires std::predicate<ComparatorTp, KeyTp, KeyLookupTp>
 constexpr bool Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Remove(
     KeyLookupTp&& key) {
-    if (iterator iter = Find(std::forward<KeyLookupTp>(key));
-        iter != end()) {
+    if (iterator iter = Find(std::forward<KeyLookupTp>(key)); iter != end()) {
         return Remove(iter);
     }
     return false;

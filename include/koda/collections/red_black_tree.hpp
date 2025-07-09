@@ -115,6 +115,8 @@ class RedBlackTree {
         pointer_type previous_;
     };
 
+    using ValueTraits = std::allocator_traits<AllocatorTp>;
+
     using NodeIterator = NodeIteratorBase<false>;
     using NodeConstIterator = NodeIteratorBase<true>;
 
