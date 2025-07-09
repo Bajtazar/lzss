@@ -229,7 +229,7 @@ constexpr auto LzssEncoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
         }
     }
 
-    for (size_t i = 0; i < search_tree_.string_size(); ++i) {
+    for (size_t i = 0; i < dict.max_buffer_size(); ++i) {
         out_range =
             PeformEncodigStep(dict, dict.get_buffer(), std::move(out_range));
         dict.AddEndSymbolToBuffer();

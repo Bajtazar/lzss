@@ -212,7 +212,7 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
     }
 
     // Buffer is one element longer than the search tree match
-    for (size_t i = 0; i < search_tree_.string_size() + 1; ++i) {
+    for (size_t i = 0; i < dict.max_buffer_size(); ++i) {
         auto [buffer, look_ahead] = GetBufferAndLookAhead(dict);
         out_range =
             PeformEncodigStep(dict, buffer, look_ahead, std::move(out_range));
