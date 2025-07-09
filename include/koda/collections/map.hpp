@@ -21,7 +21,7 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
 
     template <bool IsConst>
     class Iterator {
-        using UnderlyingIter = RedBlackImpl::NodeIteratorBase<IsConst>;
+        using UnderlyingIter = typename RedBlackImpl::NodeIteratorBase<IsConst>;
 
        public:
         using value_type =
@@ -110,6 +110,7 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
     using NodeInsertionLocation = RedBlackImpl::NodeInsertionLocation;
     using NodeIterator = RedBlackImpl::NodeIterator;
     using NodeConstIterator = RedBlackImpl::NodeConstIterator;
+    using Node = RedBlackImpl::Node;
 
     [[no_unique_address]] ComparatorTp comparator_;
 

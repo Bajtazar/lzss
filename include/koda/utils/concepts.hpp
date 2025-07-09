@@ -39,6 +39,6 @@ concept ViewableDistinctRange =
 template <typename FuncTp, typename ReturnTp, typename... ArgsTp>
 concept Invocable =
     std::invocable<FuncTp, ArgsTp...> &&
-    std::convertible_to<std::invoke_result_t<FuncTp, ArgsTp...>, FuncTp>;
+    std::convertible_to<std::invoke_result_t<FuncTp, ArgsTp...>, ReturnTp>;
 
 }  // namespace koda

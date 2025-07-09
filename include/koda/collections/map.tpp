@@ -13,8 +13,8 @@ template <typename KeyTp, typename ValueTp,
           Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
           typename AllocatorTp>
 template <bool IsConst>
-Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Iterator<IsConst>::Iterator(
-    UnderlyingIter iterator) noexcept
+constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Iterator<
+    IsConst>::Iterator(UnderlyingIter iterator) noexcept
     : iterator_{std::move(iterator)} {}
 
 template <typename KeyTp, typename ValueTp,
@@ -152,10 +152,10 @@ template <typename KeyTp, typename ValueTp,
           typename AllocatorTp>
 constexpr bool Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Remove(
     const_iterator position) {
-    if (iterator == cend()) {
+    if (position == cend()) {
         return false;
     }
-    this->RemoveNode(*iterator.iterator_);
+    this->RemoveNode(*position.iterator_);
     return true;
 }
 
