@@ -23,6 +23,8 @@ class RedBlackTree {
     constexpr RedBlackTree& operator=(RedBlackTree&& other) noexcept;
     constexpr RedBlackTree& operator=(const RedBlackTree& other) = delete;
 
+    [[nodiscard]] constexpr AllocatorTp get_allocator() const;
+
     constexpr virtual ~RedBlackTree();
 
    protected:
@@ -65,8 +67,7 @@ class RedBlackTree {
 
         constexpr Scheduler ScheduleForReturn(Node* node);
 
-        constexpr Node* GetNode(const ValueType* key, size_t insertion_index,
-                                Node* parent = nullptr,
+        constexpr Node* GetNode(ValueTp value, Node* parent = nullptr,
                                 Node::Color color = Node::Color::kBlack);
 
         constexpr AllocatorTp get_allocator() const;
