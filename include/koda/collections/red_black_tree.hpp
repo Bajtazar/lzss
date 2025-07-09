@@ -119,13 +119,12 @@ class RedBlackTree {
     using NodePtr = Node*;
     using NodeInsertionLocation = std::pair<Node*&, Node*>;
 
-    template <std::convertible_to<ValueTp> Key>
     constexpr virtual NodeInsertionLocation FindInsertionLocation(
-        Key&& key) const = 0;
+        const ValueTp& value) const = 0;
 
     constexpr const NodePtr root() const noexcept;
 
-    constexpr void InsertNode(NodePtr node);
+    constexpr void InsertNode(ValueTp value);
 
     constexpr void RemoveNode(NodePtr node);
 

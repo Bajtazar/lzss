@@ -220,4 +220,43 @@ RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<IsConst>::operator==(
     return (current_ == other.current_) && (previous_ == other.previous_);
 }
 
+template <typename ValueTp, typename AllocatorTp>
+constexpr const NodePtr RedBlackTree<ValueTp, AllocatorTp>::root()
+    const noexcept {
+    return root_;
+}
+
+template <typename ValueTp, typename AllocatorTp>
+template <std::three_way_comparable_with<ValueTp> KeyTp>
+constexpr void RedBlackTree<ValueTp, AllocatorTp>::InsertNode(ValueTp value) {
+    if (!root_) [[unlikely]] {
+        root_ = pool_.GetNode(std::move(value), buffer_start_index_);
+        return CheckInvariants();
+    }
+    if (auto inserted = FindInsertionLocation(value)) {
+        BuildNode(std::move(value), inserted->first, inserted->second);
+        assert(inserted->first->parent && "Parent has to exist");
+        if (inserted->first->parent->color == Node::Color::kRed) {
+            FixInsertionImbalance(inserted->first);
+        }
+    }
+    CheckInvariants();
+}
+
+template <typename ValueTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, AllocatorTp>::RemoveNode(NodePtr node) {
+    if (node->left && node->right) {
+        RemoveNodeWithTwoChildren(node);
+        return CheckInvariants();
+    }
+
+    if (node->left || node->right) {
+        RemoveNodeWithOneChild(node, node->left ? node->left : node->right);
+        return CheckInvariants();
+    }
+
+    RemoveChildlessNode(node);
+    CheckInvariants();
+}
+
 }  // namespace koda
