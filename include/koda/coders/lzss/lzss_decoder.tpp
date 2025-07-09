@@ -8,7 +8,6 @@ namespace koda {
 template <std::integral Token,
           SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 template <std::ranges::output_range<Token> RangeTp>
 class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
    public:
@@ -114,7 +113,6 @@ class LzssDecoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
 template <std::integral Token,
           SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr LzssDecoder<Token, AuxiliaryDecoder, Allocator>::LzssDecoder(
     size_t dictionary_size, size_t look_ahead_size,
     AuxiliaryDecoder auxiliary_decoder,
@@ -127,7 +125,6 @@ constexpr LzssDecoder<Token, AuxiliaryDecoder, Allocator>::LzssDecoder(
 template <std::integral Token,
           SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr LzssDecoder<Token, AuxiliaryDecoder, Allocator>::LzssDecoder(
     size_t dictionary_size, size_t look_ahead_size,
     std::optional<size_t> cyclic_buffer_size, const Allocator& allocator)
@@ -138,7 +135,6 @@ constexpr LzssDecoder<Token, AuxiliaryDecoder, Allocator>::LzssDecoder(
 template <std::integral Token,
           SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::Initialize(
     BitInputRange auto&& input) {
     return auxiliary_decoder_.Initialize(std::forward<decltype(input)>(input));
@@ -147,7 +143,6 @@ constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::Initialize(
 template <std::integral Token,
           SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 [[nodiscard]] constexpr auto&&
 LzssDecoder<Token, AuxiliaryDecoder, Allocator>::auxiliary_decoder(
     this auto&& self) {
@@ -157,7 +152,6 @@ LzssDecoder<Token, AuxiliaryDecoder, Allocator>::auxiliary_decoder(
 template <std::integral Token,
           SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::Decode(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
@@ -179,7 +173,6 @@ constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::Decode(
 template <std::integral Token,
           SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto
 LzssDecoder<Token, AuxiliaryDecoder, Allocator>::ProcessCachedSequence(
     std::ranges::output_range<Token> auto&& output) {
@@ -211,7 +204,6 @@ LzssDecoder<Token, AuxiliaryDecoder, Allocator>::ProcessCachedSequence(
 template <std::integral Token,
           SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::ProcessData(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
@@ -229,7 +221,6 @@ constexpr auto LzssDecoder<Token, AuxiliaryDecoder, Allocator>::ProcessData(
 template <std::integral Token,
           SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 /*static*/ constexpr size_t
 LzssDecoder<Token, AuxiliaryDecoder, Allocator>::CalculateDictionarySize(
     size_t dictionary_size, size_t look_ahead_size) {

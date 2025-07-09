@@ -13,7 +13,6 @@ template <std::integral Token = uint8_t,
           SizeAwareDecoder<LzssIntermediateToken<Token>> AuxiliaryDecoder =
               DirectDecoder<LzssIntermediateToken<Token>>,
           typename Allocator = std::allocator<Token>>
-    requires(sizeof(Token) <= sizeof(LzssIntermediateToken<Token>))
 class LzssDecoder
     : public DecoderInterface<Token,
                               LzssDecoder<Token, AuxiliaryDecoder, Allocator>> {
