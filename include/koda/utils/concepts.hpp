@@ -36,4 +36,9 @@ concept ViewableDistinctRange =
     !SpecializationOf<std::remove_cvref_t<Tp>, BaseTp> &&
     std::ranges::viewable_range<Tp>;
 
+template <typename FuncTp, typename ReturnTp, typename... ArgsTp>
+concept Invocable =
+    std::invocable<FuncTp, ArgsTp...> &&
+    std::convertible_to<std::invoke_result_t<FuncTp, ArgsTp...>, FuncTp>;
+
 }  // namespace koda

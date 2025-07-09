@@ -12,4 +12,8 @@ namespace koda {
     return WeakOrdering::kGreater;
 }
 
+/*static*/ constexpr auto ThreeWayComparator::operator()(auto&& left, auto&& right) {
+    return left <=> right;
+}
+
 }  // namespace koda
