@@ -16,7 +16,7 @@ constexpr void SearchBinaryTree<Tp, AllocatorTp>::AddString(StringView string) {
     assert(string.size() == string_size_ &&
            "Inserted string have to have fixed size equal to string_size_");
 
-    InsertNode(Entry{1, buffer_start_index_, string.data()});
+    this->InsertNode(Entry{1, buffer_start_index_, string.data()});
     ++buffer_start_index_;
 }
 
@@ -29,8 +29,8 @@ constexpr bool SearchBinaryTree<Tp, AllocatorTp>::RemoveString(
         return false;
     }
 
-    if (!--node->ref_counter) {
-        RemoveNode(node);
+    if (!--node->value.ref_counter) {
+        this->RemoveNode(node);
     }
 
     ++dictionary_start_index_;
@@ -63,9 +63,9 @@ template <typename Tp, typename AllocatorTp>
 template <typename Tp, typename AllocatorTp>
 constexpr void SearchBinaryTree<Tp, AllocatorTp>::UpdateNodeReference(
     Node* node, const ValueType* key) {
-    ++node->ref_counter;
-    node->key = key;
-    node->insertion_index = buffer_start_index_ - dictionary_start_index_;
+    ++node->value.ref_counter;
+    node->value.key = key;
+    node->value.insertion_index = buffer_start_index_ - dictionary_start_index_;
 }
 
 template <typename Tp, typename AllocatorTp>
@@ -73,11 +73,11 @@ constexpr SearchBinaryTree<Tp, AllocatorTp>::NodeInsertionLocation
 SearchBinaryTree<Tp, AllocatorTp>::FindInsertionLocation(const Entry& entry) {
     const ValueType* key = entry.key;
     const StringView key_view{key, string_size_};
-    Node** node = &root();
+    Node** node = &this->root();
     Node* parent = nullptr;
     while (*node) {
-        switch (
-            OrderCast(key_view <=> StringView{(*node)->key, string_size_})) {
+        switch (OrderCast(key_view <=>
+                          StringView{(*node)->value.key, string_size_})) {
             case WeakOrdering::kEquivalent:
                 UpdateNodeReference(*node, key);
                 return std::nullopt;
@@ -93,7 +93,7 @@ SearchBinaryTree<Tp, AllocatorTp>::FindInsertionLocation(const Entry& entry) {
                 std::unreachable();
         };
     }
-    return NodeSpot{*node, parent};
+    return NodeInsertionLocation{std::in_place, *node, parent};
 }
 
 template <typename Tp, typename AllocatorTp>
@@ -101,14 +101,16 @@ constexpr std::pair<size_t, size_t>
 SearchBinaryTree<Tp, AllocatorTp>::FindString(const ValueType* buffer,
                                               size_t length) const {
     std::pair<size_t, size_t> match{};
-    for (const Node* node = root(); node;) {
-        auto prefix_length = FindCommonPrefixSize(buffer, node->key, length);
+    for (const Node* node = this->root(); node;) {
+        auto prefix_length =
+            FindCommonPrefixSize(buffer, node->value.key, length);
         if (prefix_length == length) {
-            return {node->insertion_index, length};
+            return {node->value.insertion_index, length};
         }
         UpdateMatchInfo(match, prefix_length, node);
 
-        if (StringView{buffer, length} < StringView{node->key, string_size_}) {
+        if (StringView{buffer, length} <
+            StringView{node->value.key, string_size_}) {
             node = node->left;
         } else {
             node = node->right;
@@ -122,7 +124,7 @@ template <typename Tp, typename AllocatorTp>
     std::pair<size_t, size_t>& match_info, size_t prefix_length,
     const Node* node) noexcept {
     if (match_info.second < prefix_length) {
-        match_info.first = node->insertion_index;
+        match_info.first = node->value.insertion_index;
         match_info.second = prefix_length;
     }
 }
@@ -142,8 +144,9 @@ constexpr size_t SearchBinaryTree<Tp, AllocatorTp>::FindCommonPrefixSize(
 template <typename Tp, typename AllocatorTp>
 constexpr SearchBinaryTree<Tp, AllocatorTp>::Node*
 SearchBinaryTree<Tp, AllocatorTp>::FindNodeToRemoval(StringView key_view) {
-    for (Node* node = root(); node;) {
-        switch (OrderCast(key_view <=> StringView{node->key, string_size_})) {
+    for (Node* node = this->root(); node;) {
+        switch (
+            OrderCast(key_view <=> StringView{node->value.key, string_size_})) {
             case WeakOrdering::kEquivalent:
                 return node;
             case WeakOrdering::kLess:

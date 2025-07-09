@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <ranges>
 
 namespace koda {
@@ -35,30 +36,6 @@ template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 [[nodiscard]] constexpr AllocatorTp
 RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::get_allocator() const {
     return pool_.get_allocator();
-}
-
-template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
-constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::Destroy() {
-    // Instead of calling a recursive destructor call, deallocate tree in place
-    // in order to avoid stack overflow for large structures!
-    for (Node* node = root_; root_;) {
-        if (node->left != nullptr) {
-            node = std::exchange(node->left, nullptr);
-            continue;
-        }
-
-        if (node->right != nullptr) {
-            node = std::exchange(node->right, nullptr);
-            continue;
-        }
-
-        // We're leaving - destroy node !
-        std::unique_ptr<Node> destroy_handle{node};
-        if (!node->parent) {
-            return;  // root can be left with dangling pointer
-        }
-        node = node->parent;
-    }
 }
 
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
@@ -223,23 +200,22 @@ RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeIteratorBase<
 }
 
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
-constexpr NodePtr&
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodePtr&
 RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::root() noexcept {
     return root_;
 }
 
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
-constexpr const NodePtr& RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::root()
-    const noexcept {
+constexpr const RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodePtr&
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::root() const noexcept {
     return root_;
 }
 
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
-template <std::three_way_comparable_with<ValueTp> KeyTp>
 constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::InsertNode(
     ValueTp value) {
     if (!root_) [[unlikely]] {
-        root_ = pool_.GetNode(std::move(value), buffer_start_index_);
+        root_ = pool_.GetNode(std::move(value));
         return CheckInvariants();
     }
     if (auto inserted =
@@ -423,15 +399,13 @@ template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 constexpr void
 RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RemoveNodeWithTwoChildren(
     Node* node) {
-    Node* succesor = FindSuccessor(node->right);
-    node->key = succesor->key;
-    node->ref_counter = succesor->ref_counter;
-    node->insertion_index = succesor->insertion_index;
+    Node* successor = FindSuccessor(node->right);
+    node->value = std::move(successor->value);
 
-    if (succesor->right) {
-        return RemoveNodeWithOneChild(succesor, succesor->right);
+    if (successor->right) {
+        return RemoveNodeWithOneChild(successor, successor->right);
     }
-    RemoveChildlessNode(succesor);
+    RemoveChildlessNode(successor);
 }
 
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
@@ -627,21 +601,6 @@ RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RemoveChildlessNode(Node* node) {
     }
 
     RemoveBlackChildlessNode(node);
-}
-
-template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
-constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RemoveNode(
-    Node* node) {
-    if (node->left && node->right) {
-        return RemoveNodeWithTwoChildren(node);
-    }
-
-    if (node->left || node->right) {
-        return RemoveNodeWithOneChild(node,
-                                      node->left ? node->left : node->right);
-    }
-
-    RemoveChildlessNode(node);
 }
 
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>

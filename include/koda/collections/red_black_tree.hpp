@@ -42,6 +42,7 @@ class RedBlackTree {
         constexpr Node& operator=(const Node&) = delete;
 
         ValueTp value;
+        Node* parent;
         Node* left = nullptr;
         Node* right = nullptr;
         Color color;
@@ -167,11 +168,7 @@ class RedBlackTree {
                                                   Node*& grand_parent,
                                                   Node* uncle);
 
-    constexpr Node* FindNodeToRemoval(StringView key_view);
-
     constexpr Node* FindSuccessor(Node* node);
-
-    constexpr void RemoveNode(Node* node);
 
     constexpr void RemoveNodeRotateSiblingRightPath(Node* parent, Node* sibling,
                                                     Node* nephew);

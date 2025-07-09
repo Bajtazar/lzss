@@ -64,11 +64,20 @@ class SearchBinaryTree
 
     [[nodiscard]] constexpr size_t string_size() const noexcept;
 
-    [[nodiscard]] constexpr AllocatorTp get_allocator() const;
+    constexpr ~SearchBinaryTree() override = default;
 
-   constexpr ~SearchBinaryTree() override = default
+    friend class RedBlackTree<details::SearchBinaryTreeEntry<Tp>,
+                              SearchBinaryTree<Tp, AllocatorTp>, AllocatorTp>;
 
-       private : using Entry = details::SearchBinaryTreeEntry<ValueType>;
+   private:
+    using Entry = details::SearchBinaryTreeEntry<ValueType>;
+    using Node =
+        RedBlackTree<details::SearchBinaryTreeEntry<Tp>,
+                     SearchBinaryTree<Tp, AllocatorTp>, AllocatorTp>::Node;
+    using NodeInsertionLocation =
+        RedBlackTree<details::SearchBinaryTreeEntry<Tp>,
+                     SearchBinaryTree<Tp, AllocatorTp>,
+                     AllocatorTp>::NodeInsertionLocation;
 
     size_t dictionary_start_index_ = 0;
     size_t buffer_start_index_ = 0;
