@@ -265,4 +265,28 @@ constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RemoveNode(
     CheckInvariants();
 }
 
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeIterator
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::node_begin() noexcept {
+    return NodeIterator{root_, nullptr};
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeConstIterator
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::node_begin() const noexcept {
+    return NodeConstIterator{root_, nullptr};
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeIterator
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::node_end() noexcept {
+    return NodeIterator{nullptr, root_};
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeConstIterator
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::node_end() const noexcept {
+    return NodeConstIterator{nullptr, root_};
+}
+
 }  // namespace koda
