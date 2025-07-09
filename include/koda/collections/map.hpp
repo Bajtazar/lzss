@@ -73,7 +73,7 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
 
     template <typename... KeyArgs, typename... ValueArgs>
         requires(std::constructible_from<KeyTp, KeyArgs...> &&
-                 std::constructible_from<ValueTp, ValueArgs...>);
+                 std::constructible_from<ValueTp, ValueArgs...>)
     constexpr iterator Emplace(std::piecewise_construct_t,
                                std::tuple<KeyArgs...> key_args,
                                std::tuple<ValueArgs...> value_args);

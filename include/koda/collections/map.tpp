@@ -97,7 +97,7 @@ template <typename KeyTp, typename ValueTp,
           typename AllocatorTp>
 template <typename... KeyArgs, typename... ValueArgs>
     requires(std::constructible_from<KeyTp, KeyArgs...> &&
-             std::constructible_from<ValueTp, ValueArgs...>);
+             std::constructible_from<ValueTp, ValueArgs...>)
 constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Emplace(
     std::piecewise_construct_t, std::tuple<KeyArgs...> key_args,
@@ -106,6 +106,28 @@ Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Emplace(
         entry_type{std::make_from_tuple<key_type>(std::move(key_args)),
                    std::make_from_tuple<value_type>(std::move(value_args))});
     return iterator{NodeIterator{node, node->parent}};
+}
+
+template <typename KeyLookupTp>
+    requires std::predicate<ComparatorTp, KeyTp, KeyLookupTp>
+[[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp,
+                            AllocatorTp>::const_iterator
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Find(KeyLookupTp&& key) {
+    for (Node* node = this->root(); node;) {
+        switch (OrderCast(comparator_(key, node->value.first))) {
+            case WeakOrdering::kEquivalent:
+                return const_iterator{NodeConstIterator{node, node->parent}};
+            case WeakOrdering::kLess:
+                node = node->left;
+                break;
+            case WeakOrdering::kGreater:
+                node = node->right;
+                break;
+            default:
+                std::unreachable();
+        };
+    }
+    return cend();
 }
 
 template <typename KeyTp, typename ValueTp,
