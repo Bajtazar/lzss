@@ -108,6 +108,9 @@ Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Emplace(
     return iterator{NodeIterator{node, node->parent}};
 }
 
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
 template <typename KeyLookupTp>
     requires std::predicate<ComparatorTp, KeyTp, KeyLookupTp>
 [[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp,
@@ -128,6 +131,32 @@ Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Find(KeyLookupTp&& key) {
         };
     }
     return cend();
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+template <typename KeyLookupTp>
+    requires std::predicate<ComparatorTp, KeyTp, KeyLookupTp>
+constexpr bool Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Remove(
+    KeyLookupTp&& key) {
+    if (auto iterator = Find(std::forward<KeyLookupTp>(key));
+        iterator != cend()) {
+        return Remove(iterator);
+    }
+    return false;
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+constexpr bool Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Remove(
+    const_iterator position) {
+    if (iterator == cend()) {
+        return false;
+    }
+    this->RemoveNode(*iterator.iterator_);
+    return true;
 }
 
 template <typename KeyTp, typename ValueTp,

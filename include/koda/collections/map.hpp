@@ -45,6 +45,8 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
         [[nodiscard]] constexpr bool operator==(
             const Iterator& other) const noexcept;
 
+        friend class Map;
+
        private:
         UnderlyingIter iterator_;
     };
@@ -108,6 +110,7 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
         RedBlackTree<std::pair<const KeyTp, ValueTp>, Map, AllocatorTp>;
     using NodeInsertionLocation = RedBlackImpl::NodeInsertionLocation;
     using NodeIterator = RedBlackImpl::NodeIterator;
+    using NodeConstIterator = RedBlackImpl::NodeConstIterator;
 
     [[no_unique_address]] ComparatorTp comparator_;
 
