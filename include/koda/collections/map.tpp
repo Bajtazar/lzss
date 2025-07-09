@@ -116,7 +116,7 @@ template <typename KeyLookupTp>
 [[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp,
                             AllocatorTp>::const_iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Find(KeyLookupTp&& key) const {
-    for (Node* node = this->root(); node;) {
+    for (const Node* node = this->root(); node;) {
         switch (OrderCast(comparator_(key, node->value.first))) {
             case WeakOrdering::kEquivalent:
                 return const_iterator{NodeConstIterator{node, node->parent}};
