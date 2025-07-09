@@ -118,12 +118,14 @@ class RedBlackTree {
     using NodeConstIterator = NodeIteratorBase<true>;
 
     using NodePtr = Node*;
-    using NodeInsertionLocation = std::pair<Node*&, Node*>;
+    using NodeInsertionLocation = std::optional<std::pair<Node*&, Node*>>;
 
     constexpr virtual NodeInsertionLocation FindInsertionLocation(
-        const ValueTp& value) const = 0;
+        const ValueTp& value) = 0;
 
-    constexpr const NodePtr root() const noexcept;
+    constexpr NodePtr& root() noexcept;
+
+    constexpr const NodePtr& root() const noexcept;
 
     constexpr void InsertNode(ValueTp value);
 
@@ -150,7 +152,7 @@ class RedBlackTree {
 
     constexpr void RotateHelper(Node* node, Node* child, Node* root);
 
-    constexpr void BuildNode(ValueType&& value, Node*& node, Node* parent);
+    constexpr void BuildNode(ValueTp&& value, Node*& node, Node* parent);
 
     constexpr void FixInsertionImbalance(Node* node);
 

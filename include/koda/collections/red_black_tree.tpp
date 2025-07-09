@@ -1,7 +1,6 @@
 #pragma once
 
 #include <algorithm>
-#include <cassert>
 #include <ranges>
 
 namespace koda {
@@ -224,7 +223,13 @@ RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeIteratorBase<
 }
 
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
-constexpr const NodePtr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::root()
+constexpr NodePtr&
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::root() noexcept {
+    return root_;
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr const NodePtr& RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::root()
     const noexcept {
     return root_;
 }

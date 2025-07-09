@@ -1,5 +1,7 @@
 #pragma once
 
+#include <koda/collections/red_black_tree.hpp>
+
 #include <cinttypes>
 #include <cstdlib>
 #include <memory>
@@ -10,8 +12,21 @@
 
 namespace koda {
 
+namespace details {
+
+template <typename Tp>
+struct SearchBinaryTreeEntry {
+    size_t ref_counter = 1;
+    size_t insertion_index;
+    const Tp* key;
+};
+
+}  // namespace details
+
 template <typename Tp, typename AllocatorTp = std::allocator<Tp>>
-class SearchBinaryTree {
+class SearchBinaryTree
+    : public RedBlackTree<details::SearchBinaryTreeEntry<Tp>,
+                          SearchBinaryTree<Tp, AllocatorTp>, AllocatorTp> {
    public:
     using ValueType = Tp;
     using StringView = std::basic_string_view<ValueType>;
@@ -32,10 +47,12 @@ class SearchBinaryTree {
         size_t string_size,
         const AllocatorTp& allocator = AllocatorTp{}) noexcept;
 
-    constexpr explicit SearchBinaryTree(SearchBinaryTree&& other) noexcept;
+    constexpr explicit SearchBinaryTree(SearchBinaryTree&& other) noexcept =
+        default;
     constexpr explicit SearchBinaryTree(const SearchBinaryTree& other) = delete;
 
-    constexpr SearchBinaryTree& operator=(SearchBinaryTree&& other) noexcept;
+    constexpr SearchBinaryTree& operator=(SearchBinaryTree&& other) noexcept =
+        default;
     constexpr SearchBinaryTree& operator=(const SearchBinaryTree& other) =
         delete;
 
@@ -49,135 +66,18 @@ class SearchBinaryTree {
 
     [[nodiscard]] constexpr AllocatorTp get_allocator() const;
 
-    constexpr ~SearchBinaryTree();
+   constexpr ~SearchBinaryTree() override = default
 
-   private:
-    struct Node {
-        enum class Color : bool { kBlack = 0, kRed = 1 };
-
-        constexpr explicit Node(const ValueType* key, size_t insertion_index,
-                                Node* parent = nullptr,
-                                Color color = Color::kBlack);
-
-        constexpr Node(Node&&) noexcept = default;
-        constexpr Node(const Node&) = delete;
-
-        constexpr Node& operator=(Node&&) noexcept = default;
-        constexpr Node& operator=(const Node&) = delete;
-
-        size_t ref_counter = 1;
-        size_t insertion_index;
-        const ValueType* key;
-        Node* parent;
-        Node* left = nullptr;
-        Node* right = nullptr;
-        Color color;
-    };
-
-    class NodePool {
-       public:
-        struct Scheduler {
-            NodePool& pool;
-            Node* node;
-
-            constexpr ~Scheduler();
-        };
-
-        constexpr explicit NodePool(const AllocatorTp& allocator) noexcept;
-
-        constexpr NodePool(NodePool&& pool) noexcept;
-        constexpr NodePool(const NodePool& pool) = delete;
-
-        constexpr NodePool& operator=(NodePool&& pool) noexcept;
-        constexpr NodePool& operator=(const NodePool& pool) = delete;
-
-        constexpr void ReturnNode(Node* handle);
-
-        constexpr Scheduler ScheduleForReturn(Node* node);
-
-        constexpr Node* GetNode(const ValueType* key, size_t insertion_index,
-                                Node* parent = nullptr,
-                                Node::Color color = Node::Color::kBlack);
-
-        constexpr AllocatorTp get_allocator() const;
-
-        constexpr ~NodePool();
-
-       private:
-        using ValueTraits = std::allocator_traits<AllocatorTp>;
-        using NodeTraits = typename ValueTraits::rebind_traits<Node>;
-        using NodeAllocatorTp = typename ValueTraits::rebind_alloc<Node>;
-
-        [[no_unique_address]] NodeAllocatorTp allocator_;
-        Node* handle_ = nullptr;
-
-        constexpr void Destroy();
-    };
-
-    // Can be bidirectional but for internal use the forward one will work just
-    // fine
-    class NodeIterator {
-       public:
-        using value_type = const Node&;
-        using pointer_type = const Node*;
-        using difference_type = std::ptrdiff_t;
-
-        constexpr NodeIterator(pointer_type node = nullptr,
-                               pointer_type previous = nullptr) noexcept;
-
-        [[nodiscard]] constexpr value_type operator*() const noexcept;
-
-        [[nodiscard]] constexpr pointer_type operator->() const noexcept;
-
-        constexpr NodeIterator& operator++() noexcept;
-
-        [[nodiscard]] constexpr NodeIterator operator++(int) noexcept;
-
-        [[nodiscard]] constexpr bool operator==(
-            const NodeIterator& other) const noexcept;
-
-       private:
-        pointer_type current_;
-        pointer_type previous_;
-    };
-
-    using NodeSpot = std::pair<Node*&, Node*>;
+       private : using Entry = details::SearchBinaryTreeEntry<ValueType>;
 
     size_t dictionary_start_index_ = 0;
     size_t buffer_start_index_ = 0;
     size_t string_size_;
-    NodePool pool_;
-    Node* root_ = nullptr;
-
-    static constexpr std::ranges::subrange<NodeIterator, NodeIterator> nodes(
-        const Node* root) noexcept;
-
-    constexpr void RotateLeft(Node* node);
-
-    constexpr void RotateRight(Node* node);
-
-    constexpr void RotateHelper(Node* node, Node* child, Node* root);
-
-    constexpr void InsertNewNode(const ValueType* key);
 
     constexpr void UpdateNodeReference(Node* node, const ValueType* key);
 
-    constexpr void BuildNode(const ValueType* key, Node*& node, Node* parent);
-
-    constexpr std::optional<NodeSpot> TryToInserLeaf(const ValueType* key);
-
-    constexpr void FixInsertionImbalance(Node* node);
-
-    constexpr bool FixLocalInsertionImbalance(Node*& node, Node*& parent,
-                                              Node*& grand_parent);
-
-    constexpr void FixLocalInsertionImbalanceRight(Node*& node, Node*& parent,
-                                                   Node*& grand_parent,
-                                                   Node* uncle);
-
-    constexpr void FixLocalInsertionImbalanceLeft(Node*& node, Node*& parent,
-                                                  Node*& grand_parent,
-                                                  Node* uncle);
+    constexpr NodeInsertionLocation FindInsertionLocation(
+        const Entry& value) override final;
 
     constexpr std::pair<size_t, size_t> FindString(const ValueType* buffer,
                                                    size_t length) const;
@@ -191,59 +91,6 @@ class SearchBinaryTree {
                                           size_t length) const noexcept;
 
     constexpr Node* FindNodeToRemoval(StringView key_view);
-
-    constexpr Node* FindSuccessor(Node* node);
-
-    constexpr void RemoveNode(Node* node);
-
-    constexpr void RemoveNodeRotateSiblingRightPath(Node* parent, Node* sibling,
-                                                    Node* nephew);
-
-    constexpr void RemoveNodeRotateSiblingLeftPath(Node* parent, Node* sibling,
-                                                   Node* nephew);
-
-    constexpr void RemoveNodeRotateParentRightPath(Node* parent, Node* sibling,
-                                                   Node* nephew);
-
-    constexpr void RemoveNodeRotateParentLeftPath(Node* parent, Node* sibling,
-                                                  Node* nephew);
-
-    constexpr void RemoveNodeWithTwoChildren(Node* node);
-
-    constexpr void RemoveNodeWithOneChild(Node* node, Node* children);
-
-    constexpr void RemoveRootNode();
-
-    constexpr void PrepareToRemoveRedChildlessNode(Node* node);
-
-    constexpr void RemoveBlackChildlessNodeRightPathSiblingIsRed(
-        Node* node, Node* parent, Node* sibling, Node* left_nephew,
-        Node* right_nephew);
-
-    constexpr bool RemoveBlackChildlessNodeRightPath(Node* node, Node* parent);
-
-    constexpr void RemoveBlackChildlessNodeLeftPathSiblingIsRed(
-        Node* node, Node* parent, Node* sibling, Node* left_nephew,
-        Node* right_nephew);
-
-    constexpr bool RemoveBlackChildlessNodeLeftPath(Node* node, Node* parent);
-
-    constexpr void RemoveChildlessNode(Node* node);
-
-    constexpr void RemoveBlackChildlessNode(Node* node);
-
-    constexpr void Destroy();
-
-    // Only runs when checked build is explicitly requested
-    constexpr void CheckInvariants() const;
-
-#ifdef KODA_CHECKED_BUILD
-
-    constexpr void ValidateRedNodeConstraint() const;
-
-    constexpr void ValidateBlackNodeConstraint() const;
-
-#endif  // KODA_CHECKED_BUILD
 };
 
 }  // namespace koda
