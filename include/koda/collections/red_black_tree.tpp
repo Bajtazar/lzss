@@ -146,4 +146,78 @@ constexpr void RedBlackTree<ValueTp, AllocatorTp>::NodePool::Destroy() {
     }
 }
 
+// Recursiveless tree iterator!
+template <typename ValueTp, typename AllocatorTp>
+template <bool IsConst>
+constexpr RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<
+    IsConst>::NodeIterator(pointer_type node, pointer_type previous) noexcept
+    : current_{node}, previous_{previous} {}
+
+template <typename ValueTp, typename AllocatorTp>
+template <bool IsConst>
+[[nodiscard]] constexpr RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<
+    IsConst>::value_type
+RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<IsConst>::operator*()
+    const noexcept {
+    return *current_;
+}
+
+template <typename ValueTp, typename AllocatorTp>
+template <bool IsConst>
+[[nodiscard]] constexpr RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<
+    IsConst>::pointer_type
+RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<IsConst>::operator->()
+    const noexcept {
+    return current_;
+}
+
+template <typename ValueTp, typename AllocatorTp>
+template <bool IsConst>
+constexpr RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<IsConst>&
+RedBlackTree<ValueTp,
+             AllocatorTp>::NodeIterator<IsConst>::operator++() noexcept {
+    // If iterator came from parent then visit left subtree (if present)
+    // If iterator came from left subtree then visit the right subtree (if
+    // present) Otherwise visit parent (repeat untill parent is a nullptr)
+    while (current_) {
+        auto previous = current_;
+        if (previous_ == current_->parent) {
+            if (current_->left) {
+                current_ = current_->left;
+                previous_ = previous;
+                return *this;
+            }
+        }
+        if (previous_ == current_->left) {
+            if (current_->right) {
+                current_ = current_->right;
+                previous_ = previous;
+                return *this;
+            }
+        }
+        current_ = current_->parent;
+        previous_ = previous;
+    }
+    return *this;
+}
+
+template <typename ValueTp, typename AllocatorTp>
+template <bool IsConst>
+[[nodiscard]] constexpr RedBlackTree<ValueTp,
+                                     AllocatorTp>::NodeIterator<IsConst>
+RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<IsConst>::operator++(
+    int) noexcept {
+    auto temp = *this;
+    ++(*this);
+    return temp;
+}
+
+template <typename ValueTp, typename AllocatorTp>
+template <bool IsConst>
+[[nodiscard]] constexpr bool
+RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<IsConst>::operator==(
+    const NodeIterator& other) const noexcept {
+    return (current_ == other.current_) && (previous_ == other.previous_);
+}
+
 }  // namespace koda
