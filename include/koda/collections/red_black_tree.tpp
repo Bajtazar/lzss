@@ -97,7 +97,7 @@ RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodePool::GetNode(
     Node* node = handle_;
     handle_ = node->left;
 
-    *node = Node{std::move(value), parent, color};
+    NodeTraits::construct(allocator_, node, std::move(value), parent, color);
     return node;
 }
 
