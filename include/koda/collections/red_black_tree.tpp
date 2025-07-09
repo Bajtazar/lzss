@@ -212,12 +212,12 @@ RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::root() const noexcept {
 }
 
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
-constexpr bool RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::InsertNode(
-    ValueTp value) {
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodePtr
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::InsertNode(ValueTp value) {
     if (!root_) [[unlikely]] {
         root_ = pool_.GetNode(std::move(value));
         CheckInvariants();
-        return true;
+        return root_;
     }
     if (auto inserted =
             static_cast<DerivedTp*>(this)->FindInsertionLocation(value)) {
@@ -227,9 +227,9 @@ constexpr bool RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::InsertNode(
             FixInsertionImbalance(inserted->first);
         }
         CheckInvariants();
-        return true;
+        return inserted->first;
     }
-    return false;
+    return nullptr;
 }
 
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
