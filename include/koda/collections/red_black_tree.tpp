@@ -68,7 +68,7 @@ constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::Node::Node(
     : value{std::move(value)}, parent{parent}, color{color} {}
 
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
-constexpr RedBlackTree<ValueTp,
+constexpr RedBlackTree<ValueTp, DerivedTp,
                        AllocatorTp>::NodePool::Scheduler::~Scheduler() {
     pool.ReturnNode(node);
 }
@@ -150,33 +150,35 @@ RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodePool::Destroy() {
 // Recursiveless tree iterator!
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 template <bool IsConst>
-constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeIterator<
-    IsConst>::NodeIterator(pointer_type node, pointer_type previous) noexcept
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeIteratorBase<
+    IsConst>::NodeIteratorBase(pointer_type node,
+                               pointer_type previous) noexcept
     : current_{node}, previous_{previous} {}
 
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 template <bool IsConst>
 [[nodiscard]] constexpr RedBlackTree<
-    ValueTp, DerivedTp, AllocatorTp>::NodeIterator<IsConst>::value_type
-RedBlackTree<ValueTp, DerivedTp,
-             AllocatorTp>::NodeIterator<IsConst>::operator*() const noexcept {
+    ValueTp, DerivedTp, AllocatorTp>::NodeIteratorBase<IsConst>::value_type
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeIteratorBase<
+    IsConst>::operator*() const noexcept {
     return *current_;
 }
 
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 template <bool IsConst>
 [[nodiscard]] constexpr RedBlackTree<
-    ValueTp, DerivedTp, AllocatorTp>::NodeIterator<IsConst>::pointer_type
-RedBlackTree<ValueTp, DerivedTp,
-             AllocatorTp>::NodeIterator<IsConst>::operator->() const noexcept {
+    ValueTp, DerivedTp, AllocatorTp>::NodeIteratorBase<IsConst>::pointer_type
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeIteratorBase<
+    IsConst>::operator->() const noexcept {
     return current_;
 }
 
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 template <bool IsConst>
-constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeIterator<IsConst>&
-RedBlackTree<ValueTp,
-             AllocatorTp>::NodeIterator<IsConst>::operator++() noexcept {
+constexpr RedBlackTree<ValueTp, DerivedTp,
+                       AllocatorTp>::NodeIteratorBase<IsConst>&
+RedBlackTree<ValueTp, DerivedTp,
+             AllocatorTp>::NodeIteratorBase<IsConst>::operator++() noexcept {
     // If iterator came from parent then visit left subtree (if present)
     // If iterator came from left subtree then visit the right subtree (if
     // present) Otherwise visit parent (repeat untill parent is a nullptr)
@@ -204,10 +206,10 @@ RedBlackTree<ValueTp,
 
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 template <bool IsConst>
-[[nodiscard]] constexpr RedBlackTree<ValueTp,
-                                     AllocatorTp>::NodeIterator<IsConst>
+[[nodiscard]] constexpr RedBlackTree<ValueTp, DerivedTp,
+                                     AllocatorTp>::NodeIteratorBase<IsConst>
 RedBlackTree<ValueTp, DerivedTp,
-             AllocatorTp>::NodeIterator<IsConst>::operator++(int) noexcept {
+             AllocatorTp>::NodeIteratorBase<IsConst>::operator++(int) noexcept {
     auto temp = *this;
     ++(*this);
     return temp;
@@ -216,8 +218,8 @@ RedBlackTree<ValueTp, DerivedTp,
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 template <bool IsConst>
 [[nodiscard]] constexpr bool
-RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeIterator<
-    IsConst>::operator==(const NodeIterator& other) const noexcept {
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeIteratorBase<
+    IsConst>::operator==(const NodeIteratorBase& other) const noexcept {
     return (current_ == other.current_) && (previous_ == other.previous_);
 }
 
