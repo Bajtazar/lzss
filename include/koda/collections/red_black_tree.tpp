@@ -6,39 +6,40 @@
 
 namespace koda {
 
-template <typename ValueTp, typename AllocatorTp>
-constexpr RedBlackTree<ValueTp, AllocatorTp>::RedBlackTree(
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RedBlackTree(
     const AllocatorTp& allocator) noexcept
     : pool_{allocator} {}
 
-template <typename ValueTp, typename AllocatorTp>
-constexpr RedBlackTree<ValueTp, AllocatorTp>::RedBlackTree(
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RedBlackTree(
     RedBlackTree&& other) noexcept
     : root_{std::exchange(other.root_, nullptr)},
       pool_{std::move(other.pool_)} {}
 
-template <typename ValueTp, typename AllocatorTp>
-constexpr RedBlackTree<ValueTp, AllocatorTp>&
-RedBlackTree<ValueTp, AllocatorTp>::operator=(RedBlackTree&& other) noexcept {
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>&
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::operator=(
+    RedBlackTree&& other) noexcept {
     Destroy();
     root_ = std::exchange(other.root_, nullptr);
     pool_ = std::move(other.pool_);
     return *this;
 }
 
-template <typename ValueTp, typename AllocatorTp>
-constexpr RedBlackTree<ValueTp, AllocatorTp>::~RedBlackTree() {
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::~RedBlackTree() {
     Destroy();
 }
 
-template <typename ValueTp, typename AllocatorTp>
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 [[nodiscard]] constexpr AllocatorTp
-RedBlackTree<ValueTp, AllocatorTp>::get_allocator() const {
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::get_allocator() const {
     return pool_.get_allocator();
 }
 
-template <typename ValueTp, typename AllocatorTp>
-constexpr void RedBlackTree<ValueTp, AllocatorTp>::Destroy() {
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::Destroy() {
     // Instead of calling a recursive destructor call, deallocate tree in place
     // in order to avoid stack overflow for large structures!
     for (Node* node = root_; root_;) {
@@ -61,32 +62,31 @@ constexpr void RedBlackTree<ValueTp, AllocatorTp>::Destroy() {
     }
 }
 
-template <typename ValueTp, typename AllocatorTp>
-constexpr RedBlackTree<ValueTp, AllocatorTp>::Node::Node(ValueTp value,
-                                                         Node* parent,
-                                                         Color color)
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::Node::Node(
+    ValueTp value, Node* parent, Color color)
     : value{std::move(value)}, parent{parent}, color{color} {}
 
-template <typename ValueTp, typename AllocatorTp>
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 constexpr RedBlackTree<ValueTp,
                        AllocatorTp>::NodePool::Scheduler::~Scheduler() {
     pool.ReturnNode(node);
 }
 
-template <typename ValueTp, typename AllocatorTp>
-constexpr RedBlackTree<ValueTp, AllocatorTp>::NodePool::NodePool(
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodePool::NodePool(
     const AllocatorTp& allocator) noexcept
     : allocator_{allocator} {}
 
-template <typename ValueTp, typename AllocatorTp>
-constexpr RedBlackTree<ValueTp, AllocatorTp>::NodePool::NodePool(
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodePool::NodePool(
     NodePool&& other) noexcept
     : allocator_{std::move(other.allocator_)},
       handle_{std::exchange(other.handle_, nullptr)} {}
 
-template <typename ValueTp, typename AllocatorTp>
-constexpr RedBlackTree<ValueTp, AllocatorTp>::NodePool&
-RedBlackTree<ValueTp, AllocatorTp>::NodePool::operator=(
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodePool&
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodePool::operator=(
     NodePool&& other) noexcept {
     Destroy();
     allocator_ = std::move(other.allocator_);
@@ -94,24 +94,24 @@ RedBlackTree<ValueTp, AllocatorTp>::NodePool::operator=(
     return *this;
 }
 
-template <typename ValueTp, typename AllocatorTp>
-constexpr void RedBlackTree<ValueTp, AllocatorTp>::NodePool::ReturnNode(
-    Node* handle) {
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp,
+                            AllocatorTp>::NodePool::ReturnNode(Node* handle) {
     handle->left = handle_;
     handle_ = handle;
 }
 
-template <typename ValueTp, typename AllocatorTp>
-constexpr RedBlackTree<ValueTp, AllocatorTp>::NodePool::Scheduler
-RedBlackTree<ValueTp, AllocatorTp>::NodePool::ScheduleForReturn(Node* node) {
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodePool::Scheduler
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodePool::ScheduleForReturn(
+    Node* node) {
     return Scheduler{*this, node};
 }
 
-template <typename ValueTp, typename AllocatorTp>
-constexpr RedBlackTree<ValueTp, AllocatorTp>::Node*
-RedBlackTree<ValueTp, AllocatorTp>::NodePool::GetNode(ValueTp value,
-                                                      Node* parent,
-                                                      Node::Color color) {
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::Node*
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodePool::GetNode(
+    ValueTp value, Node* parent, Node::Color color) {
     if (!handle_) {
         Node* node = NodeTraits::allocate(allocator_, 1);
         NodeTraits::construct(allocator_, node, std::move(value), parent,
@@ -125,19 +125,20 @@ RedBlackTree<ValueTp, AllocatorTp>::NodePool::GetNode(ValueTp value,
     return node;
 }
 
-template <typename ValueTp, typename AllocatorTp>
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 constexpr AllocatorTp
-RedBlackTree<ValueTp, AllocatorTp>::NodePool::get_allocator() const {
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodePool::get_allocator() const {
     return allocator_;
 }
 
-template <typename ValueTp, typename AllocatorTp>
-constexpr RedBlackTree<ValueTp, AllocatorTp>::NodePool::~NodePool() {
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodePool::~NodePool() {
     Destroy();
 }
 
-template <typename ValueTp, typename AllocatorTp>
-constexpr void RedBlackTree<ValueTp, AllocatorTp>::NodePool::Destroy() {
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodePool::Destroy() {
     for (Node* node = handle_; node;) {
         Node* old_node = node;
         node = node->left;
@@ -147,33 +148,33 @@ constexpr void RedBlackTree<ValueTp, AllocatorTp>::NodePool::Destroy() {
 }
 
 // Recursiveless tree iterator!
-template <typename ValueTp, typename AllocatorTp>
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 template <bool IsConst>
-constexpr RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeIterator<
     IsConst>::NodeIterator(pointer_type node, pointer_type previous) noexcept
     : current_{node}, previous_{previous} {}
 
-template <typename ValueTp, typename AllocatorTp>
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 template <bool IsConst>
-[[nodiscard]] constexpr RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<
-    IsConst>::value_type
-RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<IsConst>::operator*()
-    const noexcept {
+[[nodiscard]] constexpr RedBlackTree<
+    ValueTp, DerivedTp, AllocatorTp>::NodeIterator<IsConst>::value_type
+RedBlackTree<ValueTp, DerivedTp,
+             AllocatorTp>::NodeIterator<IsConst>::operator*() const noexcept {
     return *current_;
 }
 
-template <typename ValueTp, typename AllocatorTp>
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 template <bool IsConst>
-[[nodiscard]] constexpr RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<
-    IsConst>::pointer_type
-RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<IsConst>::operator->()
-    const noexcept {
+[[nodiscard]] constexpr RedBlackTree<
+    ValueTp, DerivedTp, AllocatorTp>::NodeIterator<IsConst>::pointer_type
+RedBlackTree<ValueTp, DerivedTp,
+             AllocatorTp>::NodeIterator<IsConst>::operator->() const noexcept {
     return current_;
 }
 
-template <typename ValueTp, typename AllocatorTp>
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 template <bool IsConst>
-constexpr RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<IsConst>&
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeIterator<IsConst>&
 RedBlackTree<ValueTp,
              AllocatorTp>::NodeIterator<IsConst>::operator++() noexcept {
     // If iterator came from parent then visit left subtree (if present)
@@ -201,39 +202,41 @@ RedBlackTree<ValueTp,
     return *this;
 }
 
-template <typename ValueTp, typename AllocatorTp>
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 template <bool IsConst>
 [[nodiscard]] constexpr RedBlackTree<ValueTp,
                                      AllocatorTp>::NodeIterator<IsConst>
-RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<IsConst>::operator++(
-    int) noexcept {
+RedBlackTree<ValueTp, DerivedTp,
+             AllocatorTp>::NodeIterator<IsConst>::operator++(int) noexcept {
     auto temp = *this;
     ++(*this);
     return temp;
 }
 
-template <typename ValueTp, typename AllocatorTp>
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 template <bool IsConst>
 [[nodiscard]] constexpr bool
-RedBlackTree<ValueTp, AllocatorTp>::NodeIterator<IsConst>::operator==(
-    const NodeIterator& other) const noexcept {
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeIterator<
+    IsConst>::operator==(const NodeIterator& other) const noexcept {
     return (current_ == other.current_) && (previous_ == other.previous_);
 }
 
-template <typename ValueTp, typename AllocatorTp>
-constexpr const NodePtr RedBlackTree<ValueTp, AllocatorTp>::root()
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr const NodePtr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::root()
     const noexcept {
     return root_;
 }
 
-template <typename ValueTp, typename AllocatorTp>
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 template <std::three_way_comparable_with<ValueTp> KeyTp>
-constexpr void RedBlackTree<ValueTp, AllocatorTp>::InsertNode(ValueTp value) {
+constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::InsertNode(
+    ValueTp value) {
     if (!root_) [[unlikely]] {
         root_ = pool_.GetNode(std::move(value), buffer_start_index_);
         return CheckInvariants();
     }
-    if (auto inserted = FindInsertionLocation(value)) {
+    if (auto inserted =
+            static_cast<DerivedTp*>(this)->FindInsertionLocation(value)) {
         BuildNode(std::move(value), inserted->first, inserted->second);
         assert(inserted->first->parent && "Parent has to exist");
         if (inserted->first->parent->color == Node::Color::kRed) {
@@ -243,8 +246,9 @@ constexpr void RedBlackTree<ValueTp, AllocatorTp>::InsertNode(ValueTp value) {
     CheckInvariants();
 }
 
-template <typename ValueTp, typename AllocatorTp>
-constexpr void RedBlackTree<ValueTp, AllocatorTp>::RemoveNode(NodePtr node) {
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RemoveNode(
+    NodePtr node) {
     if (node->left && node->right) {
         RemoveNodeWithTwoChildren(node);
         return CheckInvariants();
