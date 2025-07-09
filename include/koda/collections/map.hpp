@@ -69,8 +69,14 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
 
     constexpr iterator Insert(entry_type entry);
 
-    template <typename... Args>
-    constexpr iterator Emplace(Args&&... args);
+    constexpr iterator Emplace(key_type key, value_type value);
+
+    template <typename... KeyArgs, typename... ValueArgs>
+        requires(std::constructible_from<KeyTp, KeyArgs...> &&
+                 std::constructible_from<ValueTp, ValueArgs...>);
+    constexpr iterator Emplace(std::piecewise_construct_t,
+                               std::tuple<KeyArgs...> key_args,
+                               std::tuple<ValueArgs...> value_args);
 
     template <typename KeyLookupTp>
         requires std::predicate<ComparatorTp, KeyTp, KeyLookupTp>
@@ -101,6 +107,7 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
     using RedBlackImpl =
         RedBlackTree<std::pair<const KeyTp, ValueTp>, Map, AllocatorTp>;
     using NodeInsertionLocation = RedBlackImpl::NodeInsertionLocation;
+    using NodeIterator = RedBlackImpl::NodeIterator;
 
     [[no_unique_address]] ComparatorTp comparator_;
 

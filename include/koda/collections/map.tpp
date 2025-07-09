@@ -78,7 +78,34 @@ template <typename KeyTp, typename ValueTp,
           typename AllocatorTp>
 constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Insert(entry_type entry) {
-    return this->InsertNode(std::move(entry));
+    auto* node = this->InsertNode(std::move(entry));
+    return iterator{NodeIterator{node, node->parent}};
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Emplace(key_type key,
+                                                        value_type value) {
+    auto* node = this->InsertNode(entry_type{std::move(key), std::move(value)});
+    return iterator{NodeIterator{node, node->parent}};
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+template <typename... KeyArgs, typename... ValueArgs>
+    requires(std::constructible_from<KeyTp, KeyArgs...> &&
+             std::constructible_from<ValueTp, ValueArgs...>);
+constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Emplace(
+    std::piecewise_construct_t, std::tuple<KeyArgs...> key_args,
+    std::tuple<ValueArgs...> value_args) {
+    auto* node = this->InsertNode(
+        entry_type{std::make_from_tuple<key_type>(std::move(key_args)),
+                   std::make_from_tuple<value_type>(std::move(value_args))});
+    return iterator{NodeIterator{node, node->parent}};
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -87,11 +114,10 @@ template <typename KeyTp, typename ValueTp,
 constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::NodeInsertionLocation
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::FindInsertionLocation(
     const entry_type& entry) {
-    const key_type& key = entry.first;
     Node** node = &this->root();
     Node* parent = nullptr;
     while (*node) {
-        switch (OrderCast(comparator_(key, (*node)->value.first))) {
+        switch (OrderCast(comparator_(entry.first, (*node)->value.first))) {
             case WeakOrdering::kEquivalent:
                 return std::nullopt;
             case WeakOrdering::kLess:
