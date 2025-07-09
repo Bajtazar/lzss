@@ -82,6 +82,18 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
 
     constexpr bool Remove(const_iterator position);
 
+    [[nodiscard]] constexpr iterator begin() noexcept;
+
+    [[nodiscard]] constexpr iterator end() noexcept;
+
+    [[nodiscard]] constexpr const_iterator begin() const noexcept;
+
+    [[nodiscard]] constexpr const_iterator end() const noexcept;
+
+    [[nodiscard]] constexpr const_iterator cbegin() const noexcept;
+
+    [[nodiscard]] constexpr const_iterator cend() const noexcept;
+
     friend class RedBlackTree<std::pair<const KeyTp, ValueTp>, Map,
                               AllocatorTp>;
 
