@@ -150,13 +150,7 @@ class RedBlackTree {
 
     constexpr void RotateHelper(Node* node, Node* child, Node* root);
 
-    constexpr void InsertNewNode(const ValueType* key);
-
-    constexpr void UpdateNodeReference(Node* node, const ValueType* key);
-
-    constexpr void BuildNode(const ValueType* key, Node*& node, Node* parent);
-
-    constexpr std::optional<NodeSpot> TryToInserLeaf(const ValueType* key);
+    constexpr void BuildNode(ValueType&& value, Node*& node, Node* parent);
 
     constexpr void FixInsertionImbalance(Node* node);
 
@@ -170,17 +164,6 @@ class RedBlackTree {
     constexpr void FixLocalInsertionImbalanceLeft(Node*& node, Node*& parent,
                                                   Node*& grand_parent,
                                                   Node* uncle);
-
-    constexpr std::pair<size_t, size_t> FindString(const ValueType* buffer,
-                                                   size_t length) const;
-
-    constexpr static void UpdateMatchInfo(std::pair<size_t, size_t>& match_info,
-                                          size_t prefix_length,
-                                          const Node* node) noexcept;
-
-    constexpr size_t FindCommonPrefixSize(const ValueType* buffer,
-                                          const ValueType* node,
-                                          size_t length) const noexcept;
 
     constexpr Node* FindNodeToRemoval(StringView key_view);
 

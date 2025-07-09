@@ -289,4 +289,494 @@ RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::node_end() const noexcept {
     return NodeConstIterator{nullptr, root_};
 }
 
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RotateLeft(
+    Node* node) {
+    Node* right = node->right;
+    Node* right_left = right->left;
+
+    node->right = right_left;
+    right->left = node;
+
+    RotateHelper(node, right_left, right);
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RotateRight(
+    Node* node) {
+    Node* left = node->left;
+    Node* left_right = left->right;
+
+    node->left = left_right;
+    left->right = node;
+
+    RotateHelper(node, left_right, left);
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RotateHelper(
+    Node* node, Node* child, Node* root) {
+    Node* parent = node->parent;
+    root->parent = parent;
+    node->parent = root;
+    if (child) {
+        child->parent = node;
+    }
+    if (parent) {
+        if (node == parent->right) {
+            parent->right = root;
+        } else {
+            parent->left = root;
+        }
+    } else {
+        root_ = root;
+    }
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::BuildNode(
+    ValueTp&& value, Node*& node, Node* parent) {
+    node = pool_.GetNode(std::move(value), parent, Node::Color::kRed);
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp,
+                            AllocatorTp>::FixInsertionImbalance(Node* node) {
+    Node* parent = node->parent;
+
+    for (; parent && parent->color == Node::Color::kRed;) {
+        Node* grand_parent = parent->parent;
+
+        if (!grand_parent) {
+            parent->color = Node::Color::kBlack;
+            return;
+        }
+
+        if (FixLocalInsertionImbalance(node, parent, grand_parent)) {
+            return;
+        }
+
+        parent->color = Node::Color::kBlack;
+        grand_parent->color = Node::Color::kRed;
+        node = grand_parent;
+        parent = node->parent;
+    }
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr bool
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::FixLocalInsertionImbalance(
+    Node*& node, Node*& parent, Node*& grand_parent) {
+    Node* uncle = grand_parent->right == parent ? grand_parent->left
+                                                : grand_parent->right;
+    if (!uncle || uncle->color == Node::Color::kBlack) {
+        if (grand_parent->right == parent) {
+            FixLocalInsertionImbalanceRight(node, parent, grand_parent, uncle);
+        } else {
+            FixLocalInsertionImbalanceLeft(node, parent, grand_parent, uncle);
+        }
+        parent->color = Node::Color::kBlack;
+        grand_parent->color = Node::Color::kRed;
+        return true;
+    }
+    uncle->color = Node::Color::kBlack;
+    return false;
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::FixLocalInsertionImbalanceRight(
+    Node*& node, Node*& parent, Node*& grand_parent, Node* uncle) {
+    if (node == parent->left) {
+        RotateRight(parent);
+        node = parent;
+        parent = grand_parent->right;
+    }
+    RotateLeft(grand_parent);
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::FixLocalInsertionImbalanceLeft(
+    Node*& node, Node*& parent, Node*& grand_parent, Node* uncle) {
+    if (node == parent->right) {
+        RotateLeft(parent);
+        node = parent;
+        parent = grand_parent->left;
+    }
+    RotateRight(grand_parent);
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::Node*
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::FindSuccessor(Node* node) {
+    for (; node->left; node = node->left);
+    return node;
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RemoveNodeWithTwoChildren(
+    Node* node) {
+    Node* succesor = FindSuccessor(node->right);
+    node->key = succesor->key;
+    node->ref_counter = succesor->ref_counter;
+    node->insertion_index = succesor->insertion_index;
+
+    if (succesor->right) {
+        return RemoveNodeWithOneChild(succesor, succesor->right);
+    }
+    RemoveChildlessNode(succesor);
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RemoveNodeWithOneChild(
+    Node* node, Node* children) {
+    children->color = Node::Color::kBlack;
+    children->parent = node->parent;
+
+    if (node->parent) {
+        if (node == node->parent->left) {
+            node->parent->left = children;
+        } else {
+            node->parent->right = children;
+        }
+    } else {
+        root_ = children;
+    }
+
+    pool_.ReturnNode(node);
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RemoveRootNode() {
+    pool_.ReturnNode(std::exchange(root_, nullptr));
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::PrepareToRemoveRedChildlessNode(
+    Node* node) {
+    if (node->parent->right == node) {
+        node->parent->right = nullptr;
+    } else {
+        node->parent->left = nullptr;
+    }
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::
+    RemoveBlackChildlessNodeRightPathSiblingIsRed(Node* node, Node* parent,
+                                                  Node* sibling,
+                                                  Node* left_nephew,
+                                                  Node* right_nephew) {
+    RotateRight(parent);
+    parent->color = Node::Color::kRed;
+    sibling->color = Node::Color::kBlack;
+    sibling = right_nephew;
+
+    left_nephew = right_nephew->left;
+    if (left_nephew && left_nephew->color == Node::Color::kRed) {
+        return RemoveNodeRotateParentRightPath(parent, sibling, left_nephew);
+    }
+    right_nephew = right_nephew->right;
+    if (right_nephew && right_nephew->color == Node::Color::kRed) {
+        return RemoveNodeRotateSiblingRightPath(parent, sibling, right_nephew);
+    }
+
+    sibling->color = Node::Color::kRed;
+    parent->color = Node::Color::kBlack;
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr bool RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::
+    RemoveBlackChildlessNodeRightPath(Node* node, Node* parent) {
+    Node* sibling = parent->left;
+    Node* left_nephew = sibling->left;
+    Node* right_nephew = sibling->right;
+
+    if (sibling->color == Node::Color::kRed) {
+        RemoveBlackChildlessNodeRightPathSiblingIsRed(
+            node, parent, sibling, left_nephew, right_nephew);
+        return true;
+    }
+
+    if (left_nephew && left_nephew->color == Node::Color::kRed) {
+        RemoveNodeRotateParentRightPath(parent, sibling, left_nephew);
+        return true;
+    }
+
+    if (right_nephew && right_nephew->color == Node::Color::kRed) {
+        RemoveNodeRotateSiblingRightPath(parent, sibling, right_nephew);
+        return true;
+    }
+
+    sibling->color = Node::Color::kRed;
+
+    if (parent->color == Node::Color::kRed) {
+        parent->color = Node::Color::kBlack;
+        return true;
+    }
+    return false;
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::
+    RemoveBlackChildlessNodeLeftPathSiblingIsRed(Node* node, Node* parent,
+                                                 Node* sibling,
+                                                 Node* left_nephew,
+                                                 Node* right_nephew) {
+    RotateLeft(parent);
+    parent->color = Node::Color::kRed;
+    sibling->color = Node::Color::kBlack;
+    sibling = left_nephew;
+
+    right_nephew = left_nephew->right;
+    if (right_nephew && right_nephew->color == Node::Color::kRed) {
+        return RemoveNodeRotateParentLeftPath(parent, sibling, right_nephew);
+    }
+    left_nephew = left_nephew->left;
+    if (left_nephew && left_nephew->color == Node::Color::kRed) {
+        return RemoveNodeRotateSiblingLeftPath(parent, sibling, left_nephew);
+    }
+
+    sibling->color = Node::Color::kRed;
+    parent->color = Node::Color::kBlack;
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr bool
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RemoveBlackChildlessNodeLeftPath(
+    Node* node, Node* parent) {
+    Node* sibling = parent->right;
+    Node* left_nephew = sibling->left;
+    Node* right_nephew = sibling->right;
+
+    if (sibling->color == Node::Color::kRed) {
+        RemoveBlackChildlessNodeLeftPathSiblingIsRed(node, parent, sibling,
+                                                     left_nephew, right_nephew);
+        return true;
+    }
+
+    if (right_nephew && right_nephew->color == Node::Color::kRed) {
+        RemoveNodeRotateParentLeftPath(parent, sibling, right_nephew);
+        return true;
+    }
+
+    if (left_nephew && left_nephew->color == Node::Color::kRed) {
+        RemoveNodeRotateSiblingLeftPath(parent, sibling, left_nephew);
+        return true;
+    }
+
+    sibling->color = Node::Color::kRed;
+
+    if (parent->color == Node::Color::kRed) {
+        parent->color = Node::Color::kBlack;
+        return true;
+    }
+    return false;
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp,
+                            AllocatorTp>::RemoveBlackChildlessNode(Node* node) {
+    if (node->parent->right == node) {
+        node->parent->right = nullptr;
+        if (RemoveBlackChildlessNodeRightPath(node, node->parent)) {
+            return;
+        }
+    } else {
+        node->parent->left = nullptr;
+        if (RemoveBlackChildlessNodeLeftPath(node, node->parent)) {
+            return;
+        }
+    }
+
+    for (node = node->parent; Node* parent = node->parent;
+         node = node->parent) {
+        if (parent->right == node) {
+            if (RemoveBlackChildlessNodeRightPath(node, parent)) {
+                return;
+            }
+        } else {
+            if (RemoveBlackChildlessNodeLeftPath(node, parent)) {
+                return;
+            }
+        }
+    }
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RemoveChildlessNode(Node* node) {
+    if (node == root_) {
+        return RemoveRootNode();
+    }
+
+    // will deallocate node after all logic has been handled
+    auto handle = pool_.ScheduleForReturn(node);
+
+    if (node->color == Node::Color::kRed) {
+        return PrepareToRemoveRedChildlessNode(node);
+    }
+
+    RemoveBlackChildlessNode(node);
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RemoveNode(
+    Node* node) {
+    if (node->left && node->right) {
+        return RemoveNodeWithTwoChildren(node);
+    }
+
+    if (node->left || node->right) {
+        return RemoveNodeWithOneChild(node,
+                                      node->left ? node->left : node->right);
+    }
+
+    RemoveChildlessNode(node);
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RemoveNodeRotateSiblingRightPath(
+    Node* parent, Node* sibling, Node* nephew) {
+    RotateLeft(sibling);
+    sibling->color = Node::Color::kRed;
+    nephew->color = Node::Color::kBlack;
+    RemoveNodeRotateParentRightPath(parent, nephew, sibling);
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RemoveNodeRotateSiblingLeftPath(
+    Node* parent, Node* sibling, Node* nephew) {
+    RotateRight(sibling);
+    sibling->color = Node::Color::kRed;
+    nephew->color = Node::Color::kBlack;
+    RemoveNodeRotateParentLeftPath(parent, nephew, sibling);
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RemoveNodeRotateParentRightPath(
+    Node* parent, Node* sibling, Node* nephew) {
+    RotateRight(parent);
+    sibling->color = parent->color;
+    parent->color = Node::Color::kBlack;
+    nephew->color = Node::Color::kBlack;
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::RemoveNodeRotateParentLeftPath(
+    Node* parent, Node* sibling, Node* nephew) {
+    RotateLeft(parent);
+    sibling->color = parent->color;
+    parent->color = Node::Color::kBlack;
+    nephew->color = Node::Color::kBlack;
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::Destroy() {
+    // Instead of calling a recursive destructor call, deallocate tree in place
+    // in order to avoid stack overflow for large structures!
+    for (Node* node = root_; root_;) {
+        if (node->left != nullptr) {
+            node = std::exchange(node->left, nullptr);
+            continue;
+        }
+
+        if (node->right != nullptr) {
+            node = std::exchange(node->right, nullptr);
+            continue;
+        }
+
+        // We're leaving - destroy node !
+        std::unique_ptr<Node> destroy_handle{node};
+        if (!node->parent) {
+            return;  // root can be left with dangling pointer
+        }
+        node = node->parent;
+    }
+}
+
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::CheckInvariants()
+    const {
+#ifdef KODA_CHECKED_BUILD
+    ValidateRedNodeConstraint();
+    ValidateBlackNodeConstraint();
+#endif  // KODA_CHECKED_BUILD
+}
+
+#ifdef KODA_CHECKED_BUILD
+
+// A red node does not have a red child
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp,
+                            AllocatorTp>::ValidateRedNodeConstraint() const {
+    for (const Node& node : nodes(root_)) {
+        if (node.color == Node::Color::kRed) {
+            if (node.left && node.left->color == Node::Color::kRed) {
+                throw std::logic_error{"Red node invariant broken!"};
+            }
+
+            if (node.right && node.right->color == Node::Color::kRed) {
+                throw std::logic_error{"Red node invariant broken!"};
+            }
+        }
+    }
+}
+
+// Every path from a given node to any of its leaf nodes goes through the same
+// number of black nodes
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, DerivedTp,
+                            AllocatorTp>::ValidateBlackNodeConstraint() const {
+    class SubtreeDetacher {
+       public:
+        constexpr SubtreeDetacher(const Node& node) noexcept
+            : node_{node}, parent_{node.parent} {
+            const_cast<Node&>(node_).parent = nullptr;
+        }
+
+        constexpr ~SubtreeDetacher() {
+            const_cast<Node&>(node_).parent = parent_;
+        }
+
+       private:
+        const Node& node_;
+        Node* parent_;
+    };
+
+    for (const Node& node : nodes(root_)) {
+        int64_t total_black_count = -1;
+
+        // temporarly remove parent!
+        // Otherwise it will start seeking higher nodes and will miss sentinel!
+        SubtreeDetacher detacher{node};
+        for (const Node& child : nodes(&node)) {
+            if (!child.left && !child.right) {
+                int64_t count = 0;
+                for (auto* path_node = &child; path_node != &node;
+                     path_node = path_node->parent) {
+                    if (path_node->color == Node::Color::kBlack) {
+                        ++count;
+                    }
+                }
+                if (total_black_count == -1) {
+                    total_black_count = count;
+                } else if (total_black_count != count) {
+                    throw std::logic_error{"Black node invariant broken!"};
+                }
+            }
+        }
+    }
+}
+
+#endif  // KODA_CHECKED_BUILD
+
 }  // namespace koda
