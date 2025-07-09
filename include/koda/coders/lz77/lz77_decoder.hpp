@@ -39,7 +39,6 @@ class Lz77Decoder
     [[nodiscard]] constexpr auto&& auxiliary_decoder(this auto&& self);
 
    private:
-    using SequenceView = typename FusedDictionaryAndBuffer<Token>::SequenceView;
     using IMToken = Lz77IntermediateToken<Token>;
 
     template <std::ranges::output_range<Token> RangeTp>
