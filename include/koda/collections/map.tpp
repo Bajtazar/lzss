@@ -7,9 +7,7 @@ template <typename KeyTp, typename ValueTp,
           typename AllocatorTp>
 constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Map(
     const ComparatorTp& comparator, const AllocatorTp& allocator)
-    : RedBlackTree<std::pair<const KeyTp, ValueTp>, Map,
-                   AllocatorTp>{allocator},
-      comparator_{comparator} {}
+    : RedBlackImpl{allocator}, comparator_{comparator} {}
 
 template <typename KeyTp, typename ValueTp,
           Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
@@ -79,6 +77,36 @@ template <typename KeyTp, typename ValueTp,
           Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
           typename AllocatorTp>
 constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
-Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Insert(entry_type entry) {}
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Insert(entry_type entry) {
+    return this->InsertNode(std::move(entry));
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::NodeInsertionLocation
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::FindInsertionLocation(
+    const entry_type& entry) {
+    const key_type& key = entry.first;
+    Node** node = &this->root();
+    Node* parent = nullptr;
+    while (*node) {
+        switch (OrderCast(comparator_(key, (*node)->value.first))) {
+            case WeakOrdering::kEquivalent:
+                return std::nullopt;
+            case WeakOrdering::kLess:
+                parent = *node;
+                node = &(*node)->left;
+                break;
+            case WeakOrdering::kGreater:
+                parent = *node;
+                node = &(*node)->right;
+                break;
+            default:
+                std::unreachable();
+        };
+    }
+    return NodeInsertionLocation{std::in_place, *node, parent};
+}
 
 }  // namespace koda

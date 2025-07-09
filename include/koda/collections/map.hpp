@@ -98,7 +98,14 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
                               AllocatorTp>;
 
    private:
+    using RedBlackImpl =
+        RedBlackTree<std::pair<const KeyTp, ValueTp>, Map, AllocatorTp>;
+    using NodeInsertionLocation = RedBlackImpl::NodeInsertionLocation;
+
     [[no_unique_address]] ComparatorTp comparator_;
+
+    constexpr NodeInsertionLocation FindInsertionLocation(
+        const entry_type& value) override final;
 };
 
 }  // namespace koda

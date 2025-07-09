@@ -128,7 +128,7 @@ class RedBlackTree {
 
     constexpr const NodePtr& root() const noexcept;
 
-    constexpr void InsertNode(ValueTp value);
+    constexpr bool InsertNode(ValueTp value);
 
     constexpr void RemoveNode(NodePtr node);
 
