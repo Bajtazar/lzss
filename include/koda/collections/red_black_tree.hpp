@@ -144,9 +144,6 @@ class RedBlackTree {
     NodePool pool_;
     Node* root_ = nullptr;
 
-    static constexpr std::ranges::subrange<NodeIterator, NodeIterator> nodes(
-        const Node* root) noexcept;
-
     constexpr void RotateLeft(Node* node);
 
     constexpr void RotateRight(Node* node);
@@ -212,6 +209,8 @@ class RedBlackTree {
     constexpr void CheckInvariants() const;
 
 #ifdef KODA_CHECKED_BUILD
+    static constexpr std::ranges::subrange<NodeConstIterator, NodeConstIterator>
+    nodes(const Node* root) noexcept;
 
     constexpr void ValidateRedNodeConstraint() const;
 

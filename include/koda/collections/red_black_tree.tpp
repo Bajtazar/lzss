@@ -678,6 +678,16 @@ constexpr void RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::CheckInvariants()
 
 #ifdef KODA_CHECKED_BUILD
 
+template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
+/*static*/ constexpr std::ranges::subrange<
+    typename RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeConstIterator,
+    typename RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::NodeConstIterator>
+RedBlackTree<ValueTp, DerivedTp, AllocatorTp>::nodes(
+    const Node* root) noexcept {
+    auto parent = root ? root->parent : nullptr;
+    return {NodeConstIterator{root, parent}, NodeConstIterator{parent, root}};
+}
+
 // A red node does not have a red child
 template <typename ValueTp, typename DerivedTp, typename AllocatorTp>
 constexpr void RedBlackTree<ValueTp, DerivedTp,
