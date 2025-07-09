@@ -16,11 +16,12 @@ template <typename KeyTp, typename ValueTp,
 class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
                                 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>,
                                 AllocatorTp> {
+    using RedBlackImpl =
+        RedBlackTree<std::pair<const KeyTp, ValueTp>, Map, AllocatorTp>;
+
     template <bool IsConst>
     class Iterator {
-        using UnderlyingIter =
-            RedBlackTree<std::pair<const KeyTp, ValueTp>, Map,
-                         AllocatorTp>::NodeIteratorBase<IsConst>;
+        using UnderlyingIter = RedBlackImpl::NodeIteratorBase<IsConst>;
 
        public:
         using value_type =
@@ -106,8 +107,6 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
                               AllocatorTp>;
 
    private:
-    using RedBlackImpl =
-        RedBlackTree<std::pair<const KeyTp, ValueTp>, Map, AllocatorTp>;
     using NodeInsertionLocation = RedBlackImpl::NodeInsertionLocation;
     using NodeIterator = RedBlackImpl::NodeIterator;
     using NodeConstIterator = RedBlackImpl::NodeConstIterator;
