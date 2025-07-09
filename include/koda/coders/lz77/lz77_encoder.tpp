@@ -67,14 +67,21 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::InitializeBuffer(
     // but is used to construct an intermediate token for the longest match!
     const size_t buffer_size = 1 + search_tree_.string_size();
 
-    std::vector<Token> init_view{std::from_range,
-                                 input | std::views::take(buffer_size)};
-
     auto [dict_size, cyclic_buffer_size] =
         std::get<FusedDictAndBufferInfo>(dictionary_and_buffer_);
-    dictionary_and_buffer_ = FusedDictionaryAndBuffer{
-        dict_size, SequenceView{init_view}, std::move(cyclic_buffer_size),
-        search_tree_.get_allocator()};
+
+    if constexpr (std::ranges::sized_range<decltype(input)>) {
+        dictionary_and_buffer_ = FusedDictionaryAndBuffer{
+            dict_size, input | std::views::take(buffer_size),
+            std::move(cyclic_buffer_size), search_tree_.get_allocator()};
+    } else {
+        std::vector<Token> init_view{std::from_range,
+                                     input | std::views::take(buffer_size)};
+
+        dictionary_and_buffer_ = FusedDictionaryAndBuffer{
+            dict_size, init_view, std::move(cyclic_buffer_size),
+            search_tree_.get_allocator()};
+    }
 
     return input | std::views::drop(buffer_size);
 }
