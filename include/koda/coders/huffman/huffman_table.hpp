@@ -31,15 +31,8 @@ namespace details {
 template <std::integral Token, std::integral CountTp>
 class MakeHuffmanTableFn {
    public:
-    explicit constexpr MakeHuffmanTableFn(const Map<Token, CountTp>& count)
-        : count_{} {
-        for (const auto& [token, occurences] : count) {
-            if (auto iter = count_.Find(occurences); iter != count_.end()) {
-                iter->second.emplace_back(token);
-            } else {
-                count_.Emplace(occurences, token);
-            }
-        }
+    explicit constexpr MakeHuffmanTableFn(const Map<Token, CountTp>& count) {
+        InitializeWorkTable(count);
     }
 
     constexpr HuffmanTable<Token>&& table() && {}
@@ -55,14 +48,27 @@ class MakeHuffmanTableFn {
 
     using NodeOrLeaf = Node::NodeOrLeaf;
 
-    Map<CountTp, std::vector<NodeOrLeaf>> count_;
+    Map<CountTp, std::vector<NodeOrLeaf>> work_table_;
+
+    constexpr void InitializeWorkTable(const Map<Token, CountTp>& count) {
+        for (const auto& [token, occurences] : count) {
+            if (auto iter = work_table_.Find(occurences);
+                iter != work_table_.end()) {
+                iter->second.emplace_back(token);
+            } else {
+                work_table_.Emplace(occurences, token);
+            }
+        }
+    }
 };
 
 }  // namespace details
 
 template <std::integral Token, std::integral CountTp>
 [[nodiscard]] constexpr HuffmanTable<Token> MakeHuffmanTable(
-    const Map<Token, CountTp>& count) {}
+    const Map<Token, CountTp>& count) {
+    return details::MakeHuffmanTableFn{count}.table();
+}
 
 }  // namespace koda
 
