@@ -68,6 +68,12 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
     constexpr explicit Map(const ComparatorTp& comparator = ComparatorTp{},
                            const AllocatorTp& allocator = AllocatorTp{});
 
+    template <std::ranges::input_range Range>
+        requires SpecializationOf<std::ranges::range_value_t<Range>, std::pair>
+    constexpr explicit Map(Range&& range,
+                           const ComparatorTp& comparator = ComparatorTp{},
+                           const AllocatorTp& allocator = AllocatorTp{});
+
     constexpr Map(const Map& map) = delete;
     constexpr Map(Map&& map) = default;
 

@@ -12,6 +12,19 @@ constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Map(
 template <typename KeyTp, typename ValueTp,
           Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
           typename AllocatorTp>
+template <std::ranges::input_range Range>
+    requires SpecializationOf<std::ranges::range_value_t<Range>, std::pair>
+constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Map(
+    Range&& range, const ComparatorTp& comparator, const AllocatorTp& allocator)
+    : Map{allocator, comparator} {
+    for (auto&& [key, value] : range) {
+        Emplace(std::forward_like<Range>(key), std::forward_like<Range>(value));
+    }
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
 template <bool IsConst>
 constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Iterator<
     IsConst>::Iterator(UnderlyingIter iterator) noexcept
