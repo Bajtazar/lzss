@@ -29,13 +29,13 @@ class MakeHuffmanTableFn {
     constexpr HuffmanTable<Token>&& table() && {
         if (NodePtr* root =
                 std::get_if<NodePtr>(&work_table_.begin()->second.front())) {
-            Node* node = FindLeftmost(root->get());
+            Node* node = FindLeftmost(*root);
             AppendLeafNodes(node);
 
             while (node) {
                 if (std::holds_alternative<NodePtr>(node->right)) {
                     symbols_.push_back(1);
-                    node = FindLeftmost(std::get<NodePtr>(node->right).get());
+                    node = FindLeftmost(std::get<NodePtr>(node->right));
                     AppendLeafNodes(node);
                     continue;
                 }
@@ -47,7 +47,7 @@ class MakeHuffmanTableFn {
                     symbols_.pop_back();
                 } while (node && [&]() {
                     if (auto* ptr = std::get_if<NodePtr>(&node->right)) {
-                        return ptr->get() == previous;
+                        return *ptr == previous;
                     }
                     return false;
                 }());
@@ -64,7 +64,7 @@ class MakeHuffmanTableFn {
 
    private:
     struct Node {
-        using NodeOrLeaf = std::variant<std::unique_ptr<Node>, Token>;
+        using NodeOrLeaf = std::variant<Node*, Token>;
 
         NodeOrLeaf left;
         NodeOrLeaf right;
@@ -72,7 +72,7 @@ class MakeHuffmanTableFn {
     };
 
     using NodeOrLeaf = Node::NodeOrLeaf;
-    using NodePtr = std::unique_ptr<Node>;
+    using NodePtr = Node*;
 
     Map<CountTp, std::vector<NodeOrLeaf>> work_table_;
     std::vector<bool> symbols_;
@@ -99,12 +99,12 @@ class MakeHuffmanTableFn {
 
     constexpr NodeOrLeaf ConcatenateNodes(NodeOrLeaf&& left,
                                           NodeOrLeaf&& right) {
-        std::unique_ptr<Node> node{new Node{std::move(left), std::move(right)}};
-        if (auto* left_node = std::get_if<NodePtr>(&left)) {
-            (*left_node)->parent = node.get();
+        auto* node = new Node{std::move(left), std::move(right)};
+        if (auto* left_node = std::get_if<NodePtr>(&node->left)) {
+            (*left_node)->parent = node;
         }
-        if (auto* right_node = std::get_if<NodePtr>(&right)) {
-            (*right_node)->parent = node.get();
+        if (auto* right_node = std::get_if<NodePtr>(&node->right)) {
+            (*right_node)->parent = node;
         }
         return node;
     }
@@ -156,7 +156,7 @@ class MakeHuffmanTableFn {
 
     constexpr Node* FindLeftmost(Node* node) {
         for (; std::holds_alternative<NodePtr>(node->left);
-             node = std::get<NodePtr>(node->left).get()) {
+             node = std::get<NodePtr>(node->left)) {
             symbols_.push_back(0);
         }
         return node;
