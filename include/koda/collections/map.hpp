@@ -107,6 +107,8 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
 
     constexpr bool Remove(iterator position);
 
+    [[nodiscard]] constexpr size_t size() const noexcept;
+
     [[nodiscard]] constexpr iterator begin() noexcept;
 
     [[nodiscard]] constexpr iterator end() noexcept;
@@ -137,6 +139,7 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
     using NodeConstIterator = RedBlackImpl::NodeConstIterator;
     using Node = RedBlackImpl::Node;
 
+    size_t size = 0;
     [[no_unique_address]] ComparatorTp comparator_;
 
     constexpr NodeInsertionLocation FindInsertionLocation(

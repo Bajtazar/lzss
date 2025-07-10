@@ -116,7 +116,11 @@ template <typename KeyTp, typename ValueTp,
 constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Insert(entry_type entry) {
     auto* node = this->InsertNode(std::move(entry));
-    return node ? iterator{NodeIterator{node}} : end();
+    if (node) {
+        ++size_;
+        return iterator{NodeIterator{node}};
+    }
+    return end();
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -126,7 +130,11 @@ constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Emplace(key_type key,
                                                         value_type value) {
     auto* node = this->InsertNode(entry_type{std::move(key), std::move(value)});
-    return node ? iterator{NodeIterator{node}} : end();
+    if (node) {
+        ++size_;
+        return iterator{NodeIterator{node}};
+    }
+    return end();
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -142,7 +150,11 @@ Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Emplace(
     auto* node = this->InsertNode(
         entry_type{std::make_from_tuple<key_type>(std::move(key_args)),
                    std::make_from_tuple<value_type>(std::move(value_args))});
-    return iterator{NodeIterator{node}};
+    if (node) {
+        ++size_;
+        return iterator{NodeIterator{node}};
+    }
+    return end();
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -216,7 +228,16 @@ constexpr bool Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Remove(
         return false;
     }
     this->RemoveNode(&(*position.iterator_));
+    --size_;
     return true;
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+[[nodiscard]] constexpr size_t Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>
+    : size() const noexcept {
+    return size_;
 }
 
 template <typename KeyTp, typename ValueTp,
