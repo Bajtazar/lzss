@@ -25,17 +25,16 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
 
        public:
         using value_type =
-            std::conditional_t<IsConst, const std::pair<const KeyTp, ValueTp>&,
-                               std::pair<const KeyTp, ValueTp>&>;
-        using pointer_type =
-            std::conditional_t<IsConst, const std::pair<const KeyTp, ValueTp>*,
-                               std::pair<const KeyTp, ValueTp>*>;
+            std::conditional_t<IsConst, const std::pair<const KeyTp, ValueTp>,
+                               std::pair<const KeyTp, ValueTp>>;
+        using reference_type = value_type&;
+        using pointer_type = value_type*;
         using difference_type = std::ptrdiff_t;
 
         constexpr explicit Iterator(
             UnderlyingIter iterator = UnderlyingIter{}) noexcept;
 
-        [[nodiscard]] constexpr value_type operator*() const noexcept;
+        [[nodiscard]] constexpr reference_type operator*() const noexcept;
 
         [[nodiscard]] constexpr pointer_type operator->() const noexcept;
 

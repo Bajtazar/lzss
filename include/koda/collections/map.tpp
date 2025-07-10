@@ -22,7 +22,7 @@ template <typename KeyTp, typename ValueTp,
           typename AllocatorTp>
 template <bool IsConst>
 [[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp,
-                            AllocatorTp>::Iterator<IsConst>::value_type
+                            AllocatorTp>::Iterator<IsConst>::reference_type
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Iterator<IsConst>::operator*()
     const noexcept {
     return (*iterator_).value;
