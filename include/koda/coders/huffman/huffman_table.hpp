@@ -88,9 +88,11 @@ class MakeHuffmanTableFn {
             iter != work_table_.end()) {
             iter->second.emplace_back(std::move(token));
         } else {
-            work_table_.Emplace(
-                occurences,
-                std::vector{std::move(token)});
+            // Seems like there is a bug in the std::initializer_list variant of
+            // std::vector's constructor so this is a workaround
+            std::vector<NodeOrLeaf> vec;
+            vec.emplace_back(std::move(token));
+            work_table_.Emplace(occurences, std::move(vec));
         }
     }
 
