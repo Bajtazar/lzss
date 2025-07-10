@@ -95,8 +95,7 @@ class RedBlackTree {
         using pointer_type = std::conditional_t<IsConst, const Node*, Node*>;
         using difference_type = std::ptrdiff_t;
 
-        constexpr NodeIteratorBase(pointer_type node = nullptr,
-                                   pointer_type previous = nullptr) noexcept;
+        constexpr NodeIteratorBase(pointer_type node = nullptr) noexcept;
 
         [[nodiscard]] constexpr value_type operator*() const noexcept;
 
@@ -111,7 +110,8 @@ class RedBlackTree {
 
        private:
         pointer_type current_;
-        pointer_type previous_;
+
+        static constexpr pointer_type FindLeftmost(pointer_type node) noexcept;
     };
 
     using ValueTraits = std::allocator_traits<AllocatorTp>;

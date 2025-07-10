@@ -79,7 +79,7 @@ template <typename KeyTp, typename ValueTp,
 constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Insert(entry_type entry) {
     auto* node = this->InsertNode(std::move(entry));
-    return iterator{NodeIterator{node, node->parent}};
+    return iterator{NodeIterator{node}};
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -89,7 +89,7 @@ constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Emplace(key_type key,
                                                         value_type value) {
     auto* node = this->InsertNode(entry_type{std::move(key), std::move(value)});
-    return iterator{NodeIterator{node, node->parent}};
+    return iterator{NodeIterator{node}};
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -105,7 +105,7 @@ Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Emplace(
     auto* node = this->InsertNode(
         entry_type{std::make_from_tuple<key_type>(std::move(key_args)),
                    std::make_from_tuple<value_type>(std::move(value_args))});
-    return iterator{NodeIterator{node, node->parent}};
+    return iterator{NodeIterator{node}};
 }
 
 template <typename KeyTp, typename ValueTp,
