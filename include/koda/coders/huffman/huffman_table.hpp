@@ -74,6 +74,7 @@ class MakeHuffmanTableFn {
     };
 
     using NodeOrLeaf = Node::NodeOrLeaf;
+    using NodePtr = std::unique_ptr<Node>;
 
     Map<CountTp, std::vector<NodeOrLeaf>> work_table_;
     std::vector<bool> symbols_;
@@ -158,16 +159,15 @@ class MakeHuffmanTableFn {
     }
 
     constexpr void AppendLeafNodes(Node* node) {
-        if (Token* token = std::get_if<Token>(node->left)) {
-            symbols_.push_back(0);
-            table_.Emplace(*token, symbols_);
-            symbols_.pop_back();
-        }
-        if (Token* token = std::get_if<Token>(node->right)) {
-            symbols_.push_back(1);
-            table_.Emplace(*token, symbols_);
-            symbols_.pop_back();
-        }
+        auto set_token_fn = [&](const NodeOrLeaf& leaf, bool bit) {
+            if (Token* token = std::get_if<Token>(&leaf)) {
+                symbols_.push_back(bit);
+                table_.Emplace(*token, symbols_);
+                symbols_.pop_back();
+            }
+        };
+        set_token_fn(node->left, 0);
+        set_token_fn(node->left, 1);
     }
 };
 
