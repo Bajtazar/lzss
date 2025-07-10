@@ -261,6 +261,60 @@ Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::cend() const noexcept {
 template <typename KeyTp, typename ValueTp,
           Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
           typename AllocatorTp>
+[[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp,
+                            AllocatorTp>::reverse_iterator
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::rbegin() noexcept {
+    return std::make_reverse_iterator(end());
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+[[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp,
+                            AllocatorTp>::reverse_iterator
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::rend() noexcept {
+    return std::make_reverse_iterator(begin());
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+[[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp,
+                            AllocatorTp>::const_reverse_iterator
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::rbegin() const noexcept {
+    return std::make_reverse_iterator(end());
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+[[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp,
+                            AllocatorTp>::const_reverse_iterator
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::rend() const noexcept {
+    return std::make_reverse_iterator(begin());
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+[[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp,
+                            AllocatorTp>::const_reverse_iterator
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::rcbegin() const noexcept {
+    return rbegin();
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+[[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp,
+                            AllocatorTp>::const_reverse_iterator
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::rcend() const noexcept {
+    return rend();
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
 constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::NodeInsertionLocation
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::FindInsertionLocation(
     const entry_type& entry) {

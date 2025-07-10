@@ -5,6 +5,7 @@
 #include <koda/utils/concepts.hpp>
 
 #include <concepts>
+#include <iterator>
 
 namespace koda {
 
@@ -61,6 +62,8 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
     using key_type = const KeyTp;
     using iterator = Iterator<false>;
     using const_iterator = Iterator<true>;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     constexpr explicit Map(const ComparatorTp& comparator = ComparatorTp{},
                            const AllocatorTp& allocator = AllocatorTp{});
@@ -109,6 +112,18 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
     [[nodiscard]] constexpr const_iterator cbegin() const noexcept;
 
     [[nodiscard]] constexpr const_iterator cend() const noexcept;
+
+    [[nodiscard]] constexpr reverse_iterator rbegin() noexcept;
+
+    [[nodiscard]] constexpr reverse_iterator rend() noexcept;
+
+    [[nodiscard]] constexpr const_reverse_iterator rbegin() const noexcept;
+
+    [[nodiscard]] constexpr const_reverse_iterator rend() const noexcept;
+
+    [[nodiscard]] constexpr const_reverse_iterator rcbegin() const noexcept;
+
+    [[nodiscard]] constexpr const_reverse_iterator rcend() const noexcept;
 
    private:
     using NodeInsertionLocation = RedBlackImpl::NodeInsertionLocation;
