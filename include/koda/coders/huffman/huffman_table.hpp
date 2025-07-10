@@ -9,18 +9,8 @@
 
 namespace koda {
 
-struct HuffmanTableEntryComparator {
-    template <std::integral Token>
-    [[nodiscard]] static constexpr WeakOrdering operator()(
-        const std::pair<const Token, std::vector<bool>>& left,
-        const std::pair<const Token, std::vector<bool>>& right) noexcept;
-};
-
-template <std::integral Token,
-          typename AllocatorTp =
-              std::allocator<std::pair<const Token, std::vector<bool>>>>
-using HuffmanTable =
-    Map<Token, std::vector<bool>, HuffmanTableEntryComparator, AllocatorTp>;
+template <std::integral Token>
+using HuffmanTable = Map<Token, std::vector<bool>>;
 
 template <std::integral Token, std::integral CountTp>
 [[nodiscard]] constexpr HuffmanTable<Token> MakeHuffmanTable(
@@ -36,13 +26,14 @@ class MakeHuffmanTableFn {
     }
 
     constexpr HuffmanTable<Token>&& table() && {
-        if (NodePtr* root = std::get_if<NodePtr>(work_table_.begin()->second)) {
+        if (NodePtr* root =
+                std::get_if<NodePtr>(&work_table_.begin()->second.front())) {
             Node* node = FindLeftmost(root->get());
             AppendLeafNodes(node);
 
             while (node) {
                 if (std::holds_alternative<NodePtr>(node->right)) {
-                    symbol.push_back(1);
+                    symbols_.push_back(1);
                     node = FindLeftmost(std::get<NodePtr>(node->right).get());
                     AppendLeafNodes(node);
                     continue;
@@ -52,21 +43,22 @@ class MakeHuffmanTableFn {
                 do {
                     previous = node;
                     node = node->parent;
-                    symbol.pop_back();
-                } while (node && previous == [&]() {
-                    if (auto* ptr = std::get_if<NodePtr>(node->right)) {
-                        return ptr->get();
+                    symbols_.pop_back();
+                } while (node && [&]() {
+                    if (auto* ptr = std::get_if<NodePtr>(&node->right)) {
+                        return ptr->get() == previous;
                     }
-                    return nullptr;
+                    return false;
                 }());
                 if (node) {
                     AppendLeafNodes(node);
                 }
             }
-            return std::move(table_);
+        } else {
+            table_.Emplace(std::get<Token>(work_table_.begin()->second.front()),
+                           std::vector<bool>{});
         }
-        return HuffmanTable<Token>{std::pair{
-            std::get<Token>(work_table_.begin()->second), std::vector<bool>{}}};
+        return std::move(table_);
     }
 
    private:
@@ -87,7 +79,7 @@ class MakeHuffmanTableFn {
 
     constexpr void InitializeWorkTable(const Map<Token, CountTp>& count) {
         for (const auto& [token, occurences] : count) {
-            Emplace(occurences, {token});
+            Emplace(occurences, NodeOrLeaf{token});
         }
     }
 
@@ -96,7 +88,9 @@ class MakeHuffmanTableFn {
             iter != work_table_.end()) {
             iter->second.emplace_back(std::move(token));
         } else {
-            work_table_.Emplace(occurences, std::move(token));
+            work_table_.Emplace(
+                occurences,
+                std::vector{std::move(token)});
         }
     }
 
@@ -145,7 +139,7 @@ class MakeHuffmanTableFn {
 
     constexpr void ProcessWorkTable() {
         // Map sort elements in ascending order
-        while (work_table_.size() > 1) {
+        while (work_table_.size() > 1 || work_table_.front().size() > 1) {
             auto iter = work_table_.begin();
             if (iter->second.size() > 1) {
                 EmplaceEquivariantSupernode(iter);
@@ -165,7 +159,7 @@ class MakeHuffmanTableFn {
 
     constexpr void AppendLeafNodes(Node* node) {
         auto set_token_fn = [&](const NodeOrLeaf& leaf, bool bit) {
-            if (Token* token = std::get_if<Token>(&leaf)) {
+            if (const Token* token = std::get_if<Token>(&leaf)) {
                 symbols_.push_back(bit);
                 table_.Emplace(*token, symbols_);
                 symbols_.pop_back();
