@@ -128,8 +128,9 @@ constexpr void RedBlackTree<ValueTp, AllocatorTp>::NodePool::Destroy() {
 template <typename ValueTp, typename AllocatorTp>
 template <bool IsConst>
 constexpr RedBlackTree<ValueTp, AllocatorTp>::NodeIteratorBase<
-    IsConst>::NodeIteratorBase(pointer_type node) noexcept
-    : current_{node ? FindLeftmost(node) : nullptr} {}
+    IsConst>::NodeIteratorBase(pointer_type node, bool is_sentinel) noexcept
+    : current_{(node && !is_sentinel) ? FindLeftmost(node) : node},
+      is_sentinel_{is_sentinel || !node} {}
 
 template <typename ValueTp, typename AllocatorTp>
 template <bool IsConst>
@@ -164,6 +165,12 @@ RedBlackTree<ValueTp,
         previous = current_;
         current_ = current_->parent;
     } while (current_ && previous == current_->right);
+
+    if (!current_) {
+        current_ = previous;
+        is_sentinel_ = true;
+    }
+
     return *this;
 }
 
@@ -183,7 +190,7 @@ template <bool IsConst>
 [[nodiscard]] constexpr bool
 RedBlackTree<ValueTp, AllocatorTp>::NodeIteratorBase<IsConst>::operator==(
     const NodeIteratorBase& other) const noexcept {
-    return current_ == other.current_;
+    return (is_sentinel_ == other.is_sentinel_) && (current_ == other.current_);
 }
 
 template <typename ValueTp, typename AllocatorTp>
@@ -259,13 +266,13 @@ RedBlackTree<ValueTp, AllocatorTp>::node_begin() const noexcept {
 template <typename ValueTp, typename AllocatorTp>
 constexpr RedBlackTree<ValueTp, AllocatorTp>::NodeIterator
 RedBlackTree<ValueTp, AllocatorTp>::node_end() noexcept {
-    return NodeIterator{nullptr};
+    return NodeIterator{root_, true};
 }
 
 template <typename ValueTp, typename AllocatorTp>
 constexpr RedBlackTree<ValueTp, AllocatorTp>::NodeConstIterator
 RedBlackTree<ValueTp, AllocatorTp>::node_end() const noexcept {
-    return NodeConstIterator{nullptr};
+    return NodeConstIterator{root_, true};
 }
 
 template <typename ValueTp, typename AllocatorTp>
@@ -681,7 +688,7 @@ template <typename ValueTp, typename AllocatorTp>
     typename RedBlackTree<ValueTp, AllocatorTp>::NodeConstIterator,
     typename RedBlackTree<ValueTp, AllocatorTp>::NodeConstIterator>
 RedBlackTree<ValueTp, AllocatorTp>::nodes(const Node* root) noexcept {
-    return {NodeConstIterator{root}, NodeConstIterator{nullptr}};
+    return {NodeConstIterator{root}, NodeConstIterator{root, true}};
 }
 
 // A red node does not have a red child

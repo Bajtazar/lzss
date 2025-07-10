@@ -79,7 +79,7 @@ template <typename KeyTp, typename ValueTp,
 constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Insert(entry_type entry) {
     auto* node = this->InsertNode(std::move(entry));
-    return iterator{NodeIterator{node}};
+    return node ? iterator{NodeIterator{node}} : end();
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -89,7 +89,7 @@ constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Emplace(key_type key,
                                                         value_type value) {
     auto* node = this->InsertNode(entry_type{std::move(key), std::move(value)});
-    return iterator{NodeIterator{node}};
+    return node ? iterator{NodeIterator{node}} : end();
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -119,7 +119,7 @@ Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Find(KeyLookupTp&& key) const {
     for (const Node* node = this->root(); node;) {
         switch (OrderCast(comparator_(key, node->value.first))) {
             case WeakOrdering::kEquivalent:
-                return const_iterator{NodeConstIterator{node, node->parent}};
+                return const_iterator{NodeConstIterator{node, false}};
             case WeakOrdering::kLess:
                 node = node->left;
                 break;
@@ -143,7 +143,7 @@ Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Find(KeyLookupTp&& key) {
     for (Node* node = this->root(); node;) {
         switch (OrderCast(comparator_(key, node->value.first))) {
             case WeakOrdering::kEquivalent:
-                return iterator{NodeIterator{node, node->parent}};
+                return iterator{NodeIterator{node}};
             case WeakOrdering::kLess:
                 node = node->left;
                 break;

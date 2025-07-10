@@ -95,7 +95,8 @@ class RedBlackTree {
         using pointer_type = std::conditional_t<IsConst, const Node*, Node*>;
         using difference_type = std::ptrdiff_t;
 
-        constexpr NodeIteratorBase(pointer_type node = nullptr) noexcept;
+        constexpr NodeIteratorBase(pointer_type node = nullptr,
+                                   bool is_sentinel = false) noexcept;
 
         [[nodiscard]] constexpr value_type operator*() const noexcept;
 
@@ -109,7 +110,12 @@ class RedBlackTree {
             const NodeIteratorBase& other) const noexcept;
 
        private:
+        // Since Node alignment is larger than 2 then it's youngest bit could be
+        // used to store information whether the iterator stores a sentinel.
+        // However that would require a lot of pointer masking during data
+        // access slowing down the iterator itself
         pointer_type current_;
+        bool is_sentinel_;
 
         static constexpr pointer_type FindLeftmost(pointer_type node) noexcept;
     };
