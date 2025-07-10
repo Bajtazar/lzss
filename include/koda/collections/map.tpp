@@ -235,8 +235,8 @@ constexpr bool Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Remove(
 template <typename KeyTp, typename ValueTp,
           Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
           typename AllocatorTp>
-[[nodiscard]] constexpr size_t Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>
-    : size() const noexcept {
+[[nodiscard]] constexpr size_t
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::size() const noexcept {
     return size_;
 }
 

@@ -139,7 +139,7 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
     using NodeConstIterator = RedBlackImpl::NodeConstIterator;
     using Node = RedBlackImpl::Node;
 
-    size_t size = 0;
+    size_t size_ = 0;
     [[no_unique_address]] ComparatorTp comparator_;
 
     constexpr NodeInsertionLocation FindInsertionLocation(
