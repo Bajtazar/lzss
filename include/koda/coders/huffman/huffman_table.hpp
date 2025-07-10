@@ -52,11 +52,56 @@ class MakeHuffmanTableFn {
 
     constexpr void InitializeWorkTable(const Map<Token, CountTp>& count) {
         for (const auto& [token, occurences] : count) {
-            if (auto iter = work_table_.Find(occurences);
-                iter != work_table_.end()) {
-                iter->second.emplace_back(token);
+            Emplace(occurences, {token});
+        }
+    }
+
+    constexpr void Emplace(CountTp occurences, NodeOrLeaf token) {
+        if (auto iter = work_table_.Find(occurences);
+            iter != work_table_.end()) {
+            iter->second.emplace_back(std::move(token));
+        } else {
+            work_table_.Emplace(occurences, std::move(token));
+        }
+    }
+
+    constexpr NodeOrLeaf ConcatenateNodes(NodeOrLeaf&& left,
+                                          NodeOrLeaf&& right) {
+        std::unique_ptr node{new Node{std::move(left), std::move(right)}};
+        if (auto* left_node = std::get_if<Node>(&left)) {
+            left_node->parent = node.get();
+        }
+        if (auto* right_node = std::get_if<Node>(&right)) {
+            right_node->parent = node.get();
+        }
+        return node;
+    }
+
+    constexpr void RemoveElementsFromEquivariantNodes(const auto& iter,
+                                                      size_t length = 1) {
+        auto& equivariant = iter->second;
+        equivariant.erase(equivariant.begin(),
+                          std::next(equivariant.begin(), 2));
+        if (equivariant.empty()) {
+            work_table_.Remove(iter);
+        }
+    }
+
+    constexpr void EmplaceEquivariantSupernode(const auto& iter) {
+        auto& least_common = iter->second;
+        auto new_node = ConcatenateNodes(least_common[0], least_common[1]);
+        auto new_occur = 2 * iter->first;
+        RemoveElementsFromEquivariantNodes(iter, 2);
+        Emplace(new_occur, std::move(new_node));
+    }
+
+    constexpr void ProcessWorkTable() {
+        // Map sort elements in ascending order
+        while (work_table_.size() > 1) {
+            auto iter = work_table_.begin();
+            if (iter->second.size() > 1) {
+                EmplaceEquivariantSupernode(iter);
             } else {
-                work_table_.Emplace(occurences, token);
             }
         }
     }
