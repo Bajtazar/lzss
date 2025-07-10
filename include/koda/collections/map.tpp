@@ -165,21 +165,7 @@ template <typename KeyLookupTp>
 [[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp,
                             AllocatorTp>::const_iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Find(KeyLookupTp&& key) const {
-    for (const Node* node = this->root(); node;) {
-        switch (OrderCast(comparator_(key, node->value.first))) {
-            case WeakOrdering::kEquivalent:
-                return const_iterator{NodeConstIterator{node, false}};
-            case WeakOrdering::kLess:
-                node = node->left;
-                break;
-            case WeakOrdering::kGreater:
-                node = node->right;
-                break;
-            default:
-                std::unreachable();
-        };
-    }
-    return cend();
+    return FindHelper(std::forward<KeyLookupTp>(key));
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -189,21 +175,7 @@ template <typename KeyLookupTp>
     requires Invocable<ComparatorTp, std::weak_ordering, KeyTp, KeyLookupTp>
 [[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Find(KeyLookupTp&& key) {
-    for (Node* node = this->root(); node;) {
-        switch (OrderCast(comparator_(key, node->value.first))) {
-            case WeakOrdering::kEquivalent:
-                return iterator{NodeIterator{node}};
-            case WeakOrdering::kLess:
-                node = node->left;
-                break;
-            case WeakOrdering::kGreater:
-                node = node->right;
-                break;
-            default:
-                std::unreachable();
-        };
-    }
-    return end();
+    return FindHelper(std::forward<KeyLookupTp>(key));
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -371,6 +343,47 @@ Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::FindInsertionLocation(
         };
     }
     return NodeInsertionLocation{std::in_place, *node, parent};
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+template <typename KeyLookupTp, typename Self>
+    requires Invocable<ComparatorTp, std::weak_ordering, KeyTp, KeyLookupTp>
+constexpr auto Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::FindHelper(
+    this Self&& self, KeyLookupTp&& key) {
+    for (auto* node = self.root(); node;) {
+        switch (OrderCast(self.comparator_(key, node->value.first))) {
+            case WeakOrdering::kEquivalent:
+                return NodeToIter(node);
+            case WeakOrdering::kLess:
+                node = node->left;
+                break;
+            case WeakOrdering::kGreater:
+                node = node->right;
+                break;
+            default:
+                std::unreachable();
+        };
+    }
+    return self.end();
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+/*static*/ constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::NodeToIter(Node* node) {
+    return iterator{NodeIterator{node, false}};
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+/*static*/ constexpr Map<KeyTp, ValueTp, ComparatorTp,
+                         AllocatorTp>::const_iterator
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::NodeToIter(const Node* node) {
+    return const_iterator{NodeConstIterator{node, false}};
 }
 
 }  // namespace koda

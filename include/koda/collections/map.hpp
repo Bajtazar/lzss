@@ -144,6 +144,14 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
 
     constexpr NodeInsertionLocation FindInsertionLocation(
         const entry_type& value) override final;
+
+    template <typename KeyLookupTp, typename Self>
+        requires Invocable<ComparatorTp, std::weak_ordering, KeyTp, KeyLookupTp>
+    constexpr auto FindHelper(this Self&& self, KeyLookupTp&& key);
+
+    static constexpr iterator NodeToIter(Node* node);
+
+    static constexpr const_iterator NodeToIter(const Node* node);
 };
 
 }  // namespace koda
