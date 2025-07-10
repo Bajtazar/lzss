@@ -23,6 +23,7 @@ class MakeHuffmanTableFn {
    public:
     explicit constexpr MakeHuffmanTableFn(const Map<Token, CountTp>& count) {
         InitializeWorkTable(count);
+        ProcessWorkTable();
     }
 
     constexpr HuffmanTable<Token>&& table() && {
@@ -98,12 +99,12 @@ class MakeHuffmanTableFn {
 
     constexpr NodeOrLeaf ConcatenateNodes(NodeOrLeaf&& left,
                                           NodeOrLeaf&& right) {
-        std::unique_ptr node{new Node{std::move(left), std::move(right)}};
+        std::unique_ptr<Node> node{new Node{std::move(left), std::move(right)}};
         if (auto* left_node = std::get_if<NodePtr>(&left)) {
-            left_node->parent = node.get();
+            (*left_node)->parent = node.get();
         }
         if (auto* right_node = std::get_if<NodePtr>(&right)) {
-            right_node->parent = node.get();
+            (*right_node)->parent = node.get();
         }
         return node;
     }
@@ -120,19 +121,20 @@ class MakeHuffmanTableFn {
 
     constexpr void EmplaceEquivariantSupernode(const auto& iter) {
         auto& least_common = iter->second;
-        auto new_node = ConcatenateNodes(least_common[0], least_common[1]);
+        auto new_node = ConcatenateNodes(std::move(least_common[0]),
+                                         std::move(least_common[1]));
         auto new_occur = 2 * iter->first;
         RemoveElementsFromEquivariantNodes(iter, 2);
         Emplace(new_occur, std::move(new_node));
     }
 
-    constexpr void EmplaceSupernode(const auto& iter) {
+    constexpr void EmplaceSupernode(auto iter) {
         auto& least_common = iter->second;
         auto least_common_occur = iter->first;
         auto& second_least_common = (++iter)->second;
 
-        auto new_node =
-            ConcatenateNodes(least_common[0], second_least_common[0]);
+        auto new_node = ConcatenateNodes(std::move(least_common[0]),
+                                         std::move(second_least_common[0]));
         auto new_occur = least_common_occur + iter->first;
         RemoveElementsFromEquivariantNodes(iter, 1);
         work_table_.Remove(least_common_occur);
@@ -141,7 +143,8 @@ class MakeHuffmanTableFn {
 
     constexpr void ProcessWorkTable() {
         // Map sort elements in ascending order
-        while (work_table_.size() > 1 || work_table_.front().size() > 1) {
+        while (work_table_.size() > 1 ||
+               work_table_.begin()->second.size() > 1) {
             auto iter = work_table_.begin();
             if (iter->second.size() > 1) {
                 EmplaceEquivariantSupernode(iter);
