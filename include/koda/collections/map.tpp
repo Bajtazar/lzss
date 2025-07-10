@@ -115,12 +115,7 @@ template <typename KeyTp, typename ValueTp,
           typename AllocatorTp>
 constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Insert(entry_type entry) {
-    auto* node = this->InsertNode(std::move(entry));
-    if (node) {
-        ++size_;
-        return iterator{NodeIterator{node}};
-    }
-    return end();
+    return InsertHelper(this->InsertNode(std::move(entry)));
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -129,12 +124,8 @@ template <typename KeyTp, typename ValueTp,
 constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Emplace(key_type key,
                                                         value_type value) {
-    auto* node = this->InsertNode(entry_type{std::move(key), std::move(value)});
-    if (node) {
-        ++size_;
-        return iterator{NodeIterator{node}};
-    }
-    return end();
+    return InsertHelper(
+        this->InsertNode(entry_type{std::move(key), std::move(value)}));
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -147,14 +138,9 @@ constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Emplace(
     std::piecewise_construct_t, std::tuple<KeyArgs...> key_args,
     std::tuple<ValueArgs...> value_args) {
-    auto* node = this->InsertNode(
+    return InsertHelper(this->InsertNode(
         entry_type{std::make_from_tuple<key_type>(std::move(key_args)),
-                   std::make_from_tuple<value_type>(std::move(value_args))});
-    if (node) {
-        ++size_;
-        return iterator{NodeIterator{node}};
-    }
-    return end();
+                   std::make_from_tuple<value_type>(std::move(value_args))}));
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -367,6 +353,18 @@ constexpr auto Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::FindHelper(
         };
     }
     return self.end();
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::InsertHelper(Node* node) {
+    if (node) {
+        ++size_;
+        return iterator{NodeIterator{node}};
+    }
+    return end();
 }
 
 template <typename KeyTp, typename ValueTp,

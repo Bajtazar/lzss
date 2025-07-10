@@ -149,6 +149,8 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
         requires Invocable<ComparatorTp, std::weak_ordering, KeyTp, KeyLookupTp>
     constexpr auto FindHelper(this Self&& self, KeyLookupTp&& key);
 
+    constexpr iterator InsertHelper(Node* node);
+
     static constexpr iterator NodeToIter(Node* node);
 
     static constexpr const_iterator NodeToIter(const Node* node);
