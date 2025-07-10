@@ -67,6 +67,30 @@ template <typename KeyTp, typename ValueTp,
           Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
           typename AllocatorTp>
 template <bool IsConst>
+constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Iterator<IsConst>&
+Map<KeyTp, ValueTp, ComparatorTp,
+    AllocatorTp>::Iterator<IsConst>::operator--() noexcept {
+    --iterator_;
+    return *this;
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+template <bool IsConst>
+[[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp,
+                            AllocatorTp>::Iterator<IsConst>
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Iterator<IsConst>::operator--(
+    int) noexcept {
+    auto temp = *this;
+    --(*this);
+    return temp;
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+template <bool IsConst>
 [[nodiscard]] constexpr bool
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Iterator<IsConst>::operator==(
     const Iterator& other) const noexcept {

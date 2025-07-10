@@ -43,6 +43,10 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
 
         [[nodiscard]] constexpr Iterator operator++(int) noexcept;
 
+        constexpr Iterator& operator--() noexcept;
+
+        [[nodiscard]] constexpr Iterator operator--(int) noexcept;
+
         [[nodiscard]] constexpr bool operator==(
             const Iterator& other) const noexcept;
 
