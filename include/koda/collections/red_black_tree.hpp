@@ -11,8 +11,7 @@
 
 namespace koda {
 
-template <typename ValueTp, typename DerivedTp,
-          typename AllocatorTp = std::allocator<ValueTp>>
+template <typename ValueTp, typename AllocatorTp = std::allocator<ValueTp>>
 class RedBlackTree {
    public:
     constexpr RedBlackTree(

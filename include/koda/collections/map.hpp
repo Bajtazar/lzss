@@ -14,10 +14,10 @@ template <typename KeyTp, typename ValueTp,
           typename AllocatorTp =
               std::allocator<std::pair<const KeyTp, ValueTp>>>
 class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
-                                Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>,
+
                                 AllocatorTp> {
     using RedBlackImpl =
-        RedBlackTree<std::pair<const KeyTp, ValueTp>, Map, AllocatorTp>;
+        RedBlackTree<std::pair<const KeyTp, ValueTp>, AllocatorTp>;
 
     template <bool IsConst>
     class Iterator {
@@ -106,9 +106,6 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
     [[nodiscard]] constexpr const_iterator cbegin() const noexcept;
 
     [[nodiscard]] constexpr const_iterator cend() const noexcept;
-
-    friend class RedBlackTree<std::pair<const KeyTp, ValueTp>, Map,
-                              AllocatorTp>;
 
    private:
     using NodeInsertionLocation = RedBlackImpl::NodeInsertionLocation;

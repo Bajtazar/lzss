@@ -25,8 +25,7 @@ struct SearchBinaryTreeEntry {
 
 template <typename Tp, typename AllocatorTp = std::allocator<Tp>>
 class SearchBinaryTree
-    : public RedBlackTree<details::SearchBinaryTreeEntry<Tp>,
-                          SearchBinaryTree<Tp, AllocatorTp>, AllocatorTp> {
+    : public RedBlackTree<details::SearchBinaryTreeEntry<Tp>, AllocatorTp> {
    public:
     using ValueType = Tp;
     using StringView = std::basic_string_view<ValueType>;
@@ -66,13 +65,9 @@ class SearchBinaryTree
 
     constexpr ~SearchBinaryTree() override = default;
 
-    friend class RedBlackTree<details::SearchBinaryTreeEntry<Tp>,
-                              SearchBinaryTree<Tp, AllocatorTp>, AllocatorTp>;
-
    private:
     using Entry = details::SearchBinaryTreeEntry<Tp>;
-    using RedBlackImpl =
-        RedBlackTree<Entry, SearchBinaryTree<Tp, AllocatorTp>, AllocatorTp>;
+    using RedBlackImpl = RedBlackTree<Entry, AllocatorTp>;
     using Node = RedBlackImpl::Node;
     using NodeInsertionLocation = RedBlackImpl::NodeInsertionLocation;
 
