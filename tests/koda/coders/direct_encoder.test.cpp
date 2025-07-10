@@ -5,29 +5,9 @@
 #include <koda/utils/back_inserter_iterator.hpp>
 #include <koda/utils/bit_iterator.hpp>
 
-#include <gtest/gtest.h>
-
 #include <bitset>
 #include <iterator>
 #include <vector>
-
-TEST(Map, map) {
-    koda::Map<uint32_t, std::string> map;
-    map.Emplace(1, "a");
-    map.Emplace(3, "b");
-    map.Emplace(2, "c");
-    map.Emplace(8, "d");
-    map.Emplace(6, "e");
-    map.Emplace(12, "f");
-    map.Emplace(9, "g");
-    map.Emplace(17, "h");
-    map.Emplace(16, "i");
-    map.Emplace(13, "j");
-
-    for (auto const& [key, value] : map) {
-        std::cout << key << " -> " << value << "\n";
-    }
-}
 
 static_assert(koda::SizeAwareEncoder<koda::DirectEncoder<uint8_t>, uint8_t>);
 
