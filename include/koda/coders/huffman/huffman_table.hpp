@@ -35,7 +35,32 @@ class MakeHuffmanTableFn {
         InitializeWorkTable(count);
     }
 
-    constexpr HuffmanTable<Token>&& table() && {}
+    constexpr HuffmanTable<Token>&& table() && {
+        if (Node* node = std::get_if<Node>(work_table_.begin()->second)) {
+            HuffmanTable<Token> table;
+            std::vector<bool> symbol;
+
+            node = FindLeftmost(node);
+
+            while (node) {
+                if (std::holds_alternative<Node>(node->right)) {
+                    symbol.push_back(1);
+                    node = FindLeftmost(std::get<Node>(node->right));
+                    return *this;
+                }
+
+                Node* previous;
+                do {
+                    previous = node;
+                    node = node->parent;
+                    symbol.pop_back();
+                } while (node && previous == std::get_if<Node>(node->right));
+            }
+            return table;
+        }
+        return HuffmanTable<Token>{std::pair{
+            std::get<Token>(work_table_.begin()->second), std::vector<bool>{}}};
+    }
 
    private:
     struct Node {
