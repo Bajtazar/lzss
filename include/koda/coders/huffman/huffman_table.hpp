@@ -37,16 +37,15 @@ class MakeHuffmanTableFn {
 
     constexpr HuffmanTable<Token>&& table() && {
         if (Node* node = std::get_if<Node>(work_table_.begin()->second)) {
-            HuffmanTable<Token> table;
-            std::vector<bool> symbol;
-
             node = FindLeftmost(node);
+            AppendLeafNodes(node);
 
             while (node) {
                 if (std::holds_alternative<Node>(node->right)) {
                     symbol.push_back(1);
                     node = FindLeftmost(std::get<Node>(node->right));
-                    return *this;
+                    AppendLeafNodes(node);
+                    continue;
                 }
 
                 Node* previous;
@@ -55,8 +54,11 @@ class MakeHuffmanTableFn {
                     node = node->parent;
                     symbol.pop_back();
                 } while (node && previous == std::get_if<Node>(node->right));
+                if (node) {
+                    AppendLeafNodes(node);
+                }
             }
-            return table;
+            return std::move(table_);
         }
         return HuffmanTable<Token>{std::pair{
             std::get<Token>(work_table_.begin()->second), std::vector<bool>{}}};
@@ -74,6 +76,8 @@ class MakeHuffmanTableFn {
     using NodeOrLeaf = Node::NodeOrLeaf;
 
     Map<CountTp, std::vector<NodeOrLeaf>> work_table_;
+    std::vector<bool> symbols_;
+    HuffmanTable<Token> table_;
 
     constexpr void InitializeWorkTable(const Map<Token, CountTp>& count) {
         for (const auto& [token, occurences] : count) {
@@ -142,6 +146,27 @@ class MakeHuffmanTableFn {
             } else {
                 EmplaceSupernode(iter);
             }
+        }
+    }
+
+    constexpr Node* FindLeftmost(Node* node) {
+        for (; std::holds_alternative<Node>(node->left);
+             node = std::get<Node>(node->left)) {
+            symbols_.push_back(0);
+        }
+        return node;
+    }
+
+    constexpr void AppendLeafNodes(Node* node) {
+        if (Token* token = std::get_if<Token>(node->left)) {
+            symbols_.push_back(0);
+            table_.Emplace(*token, symbols_);
+            symbols_.pop_back();
+        }
+        if (Token* token = std::get_if<Token>(node->right)) {
+            symbols_.push_back(1);
+            table_.Emplace(*token, symbols_);
+            symbols_.pop_back();
         }
     }
 };
