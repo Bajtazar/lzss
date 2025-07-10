@@ -187,6 +187,41 @@ RedBlackTree<ValueTp, AllocatorTp>::NodeIteratorBase<IsConst>::operator++(
 
 template <typename ValueTp, typename AllocatorTp>
 template <bool IsConst>
+constexpr RedBlackTree<ValueTp, AllocatorTp>::NodeIteratorBase<IsConst>&
+RedBlackTree<ValueTp,
+             AllocatorTp>::NodeIteratorBase<IsConst>::operator--() noexcept {
+    if (is_sentinel_) {
+        current_ = FindRightmost(current_);
+        is_sentinel_ = false;
+        return *this;
+    }
+
+    if (current_->left) {
+        current_ = FindRightmost(current_->left);
+        return *this;
+    }
+
+    pointer_type previous;
+    do {
+        previous = current_;
+        current_ = current_->parent;
+    } while (current_ && previous == current_->left);
+    return *this;
+}
+
+template <typename ValueTp, typename AllocatorTp>
+template <bool IsConst>
+[[nodiscard]] constexpr RedBlackTree<ValueTp,
+                                     AllocatorTp>::NodeIteratorBase<IsConst>
+RedBlackTree<ValueTp, AllocatorTp>::NodeIteratorBase<IsConst>::operator--(
+    int) noexcept {
+    auto temp = *this;
+    --(*this);
+    return temp;
+}
+
+template <typename ValueTp, typename AllocatorTp>
+template <bool IsConst>
 [[nodiscard]] constexpr bool
 RedBlackTree<ValueTp, AllocatorTp>::NodeIteratorBase<IsConst>::operator==(
     const NodeIteratorBase& other) const noexcept {
@@ -200,6 +235,16 @@ template <bool IsConst>
 RedBlackTree<ValueTp, AllocatorTp>::NodeIteratorBase<IsConst>::FindLeftmost(
     pointer_type node) noexcept {
     for (; node->left; node = node->left);
+    return node;
+}
+
+template <typename ValueTp, typename AllocatorTp>
+template <bool IsConst>
+/*static*/ constexpr RedBlackTree<ValueTp, AllocatorTp>::NodeIteratorBase<
+    IsConst>::pointer_type
+RedBlackTree<ValueTp, AllocatorTp>::NodeIteratorBase<IsConst>::FindRightmost(
+    pointer_type node) noexcept {
+    for (; node->right; node = node->right);
     return node;
 }
 

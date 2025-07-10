@@ -86,8 +86,6 @@ class RedBlackTree {
         constexpr void Destroy();
     };
 
-    // Can be bidirectional but for internal use the forward one will work just
-    // fine
     template <bool IsConst>
     class NodeIteratorBase {
        public:
@@ -106,6 +104,10 @@ class RedBlackTree {
 
         [[nodiscard]] constexpr NodeIteratorBase operator++(int) noexcept;
 
+        constexpr NodeIteratorBase& operator--() noexcept;
+
+        [[nodiscard]] constexpr NodeIteratorBase operator--(int) noexcept;
+
         [[nodiscard]] constexpr bool operator==(
             const NodeIteratorBase& other) const noexcept;
 
@@ -118,6 +120,8 @@ class RedBlackTree {
         bool is_sentinel_;
 
         static constexpr pointer_type FindLeftmost(pointer_type node) noexcept;
+
+        static constexpr pointer_type FindRightmost(pointer_type node) noexcept;
     };
 
     using ValueTraits = std::allocator_traits<AllocatorTp>;
