@@ -1,27 +1,25 @@
 #pragma once
 
+#include <koda/collections/map.hpp>
+
 #include <cinttypes>
 #include <concepts>
-#include <set>
 #include <vector>
 
 namespace koda {
 
-template <std::integral Token>
-struct HuffmanTableEntry {
-    std::vector<bool> binary_symbol;
-    Token token;
-};
-
 struct HuffmanTableEntryComparator {
-    template <std::integral LToken, std::integral RToken>
-    [[nodiscard]] static constexpr bool operator()(
-        const HuffmanTableEntry<LToken>& left,
-        const HuffmanTableEntry<RToken>& right) noexcept;
+    template <std::integral Token>
+    [[nodiscard]] static constexpr WeakOrdering operator()(
+        const std::pair<const Token, std::vector<bool>>& left,
+        const std::pair<const Token, std::vector<bool>>& right) noexcept;
 };
 
-template <std::integral Token>
-using HuffmanTable = std::set<HuffmanTableEntry<Token>>;
+template <std::integral Token,
+          typename AllocatorTp =
+              std::allocator<std::pair<const Token, std::vector<bool>>>>
+using HuffmanTable =
+    Map<Token, std::vector<bool>, HuffmanTableEntryComparator, AllocatorTp>;
 
 }  // namespace koda
 
