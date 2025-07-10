@@ -62,6 +62,32 @@ class MakeHuffmanTableFn {
         return std::move(table_);
     }
 
+    constexpr ~MakeHuffmanTableFn() {
+        if (NodePtr* root =
+                std::get_if<NodePtr>(&work_table_.begin()->second.front())) {
+            for (Node* node = *root; root;) {
+                if (auto* left = std::get_if<NodePtr>(&node->left)) {
+                    node->left = Token{};
+                    node = *left;
+                    continue;
+                }
+
+                if (auto* right = std::get_if<NodePtr>(&node->right)) {
+                    node->right = Token{};
+                    node = *right;
+                    continue;
+                }
+
+                // We're leaving - destroy node !
+                std::unique_ptr<Node> destroy_handle{node};
+                if (!node->parent) {
+                    return;  // root can be left with dangling pointer
+                }
+                node = node->parent;
+            }
+        }
+    }
+
    private:
     struct Node {
         using NodeOrLeaf = std::variant<Node*, Token>;
