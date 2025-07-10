@@ -94,15 +94,15 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
                                std::tuple<ValueArgs...> value_args);
 
     template <typename KeyLookupTp>
-        requires std::predicate<ComparatorTp, KeyTp, KeyLookupTp>
+        requires Invocable<ComparatorTp, std::weak_ordering, KeyTp, KeyLookupTp>
     [[nodiscard]] constexpr iterator Find(KeyLookupTp&& key);
 
     template <typename KeyLookupTp>
-        requires std::predicate<ComparatorTp, KeyTp, KeyLookupTp>
+        requires Invocable<ComparatorTp, std::weak_ordering, KeyTp, KeyLookupTp>
     [[nodiscard]] constexpr const_iterator Find(KeyLookupTp&& key) const;
 
     template <typename KeyLookupTp>
-        requires std::predicate<ComparatorTp, KeyTp, KeyLookupTp>
+        requires Invocable<ComparatorTp, std::weak_ordering, KeyTp, KeyLookupTp>
     constexpr bool Remove(KeyLookupTp&& key);
 
     constexpr bool Remove(iterator position);

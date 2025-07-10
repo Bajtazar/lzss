@@ -161,7 +161,7 @@ template <typename KeyTp, typename ValueTp,
           Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
           typename AllocatorTp>
 template <typename KeyLookupTp>
-    requires std::predicate<ComparatorTp, KeyTp, KeyLookupTp>
+    requires Invocable<ComparatorTp, std::weak_ordering, KeyTp, KeyLookupTp>
 [[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp,
                             AllocatorTp>::const_iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Find(KeyLookupTp&& key) const {
@@ -186,7 +186,7 @@ template <typename KeyTp, typename ValueTp,
           Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
           typename AllocatorTp>
 template <typename KeyLookupTp>
-    requires std::predicate<ComparatorTp, KeyTp, KeyLookupTp>
+    requires Invocable<ComparatorTp, std::weak_ordering, KeyTp, KeyLookupTp>
 [[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Find(KeyLookupTp&& key) {
     for (Node* node = this->root(); node;) {
@@ -210,7 +210,7 @@ template <typename KeyTp, typename ValueTp,
           Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
           typename AllocatorTp>
 template <typename KeyLookupTp>
-    requires std::predicate<ComparatorTp, KeyTp, KeyLookupTp>
+    requires Invocable<ComparatorTp, std::weak_ordering, KeyTp, KeyLookupTp>
 constexpr bool Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Remove(
     KeyLookupTp&& key) {
     if (iterator iter = Find(std::forward<KeyLookupTp>(key)); iter != end()) {
