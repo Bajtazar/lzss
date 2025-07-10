@@ -12,12 +12,12 @@ HuffmanTableEntryComparator::operator()(
     const auto& left_binary = left.second;
     const auto& right_binary = right.second;
     if (left_binary.size() < right_binary.size()) {
-        return true;
+        return WeakOrdering::kLess;
     }
     if (left_binary.size() > right_binary.size()) {
-        return false;
+        return WeakOrdering::kGreater;
     }
-    return left_binary < right_binary;
+    return OrderCast(left_binary <=> right_binary);
 }
 
 }  // namespace koda
