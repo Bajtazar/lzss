@@ -113,7 +113,7 @@ class MakeHuffmanTableFn {
                                                       size_t length = 1) {
         auto& equivariant = iter->second;
         equivariant.erase(equivariant.begin(),
-                          std::next(equivariant.begin(), 2));
+                          std::next(equivariant.begin(), length));
         if (equivariant.empty()) {
             work_table_.Remove(iter);
         }
