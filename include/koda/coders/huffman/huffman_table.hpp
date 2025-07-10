@@ -95,6 +95,19 @@ class MakeHuffmanTableFn {
         Emplace(new_occur, std::move(new_node));
     }
 
+    constexpr void EmplaceSupernode(const auto& iter) {
+        auto& least_common = iter->second;
+        auto least_common_occur = iter->first;
+        auto& second_least_common = (++iter)->second;
+
+        auto new_node =
+            ConcatenateNodes(least_common[0], second_least_common[0]);
+        auto new_occur = least_common_occur + iter->first;
+        RemoveElementsFromEquivariantNodes(iter, 1);
+        work_table_.Remove(least_common_occur);
+        Emplace(new_occur, std::move(new_node));
+    }
+
     constexpr void ProcessWorkTable() {
         // Map sort elements in ascending order
         while (work_table_.size() > 1) {
@@ -102,6 +115,7 @@ class MakeHuffmanTableFn {
             if (iter->second.size() > 1) {
                 EmplaceEquivariantSupernode(iter);
             } else {
+                EmplaceSupernode(iter);
             }
         }
     }
