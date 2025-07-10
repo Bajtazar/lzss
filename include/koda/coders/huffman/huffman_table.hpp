@@ -36,14 +36,14 @@ class MakeHuffmanTableFn {
     }
 
     constexpr HuffmanTable<Token>&& table() && {
-        if (Node* node = std::get_if<Node>(work_table_.begin()->second)) {
-            node = FindLeftmost(node);
+        if (NodePtr* root = std::get_if<NodePtr>(work_table_.begin()->second)) {
+            Node* node = FindLeftmost(root->get());
             AppendLeafNodes(node);
 
             while (node) {
-                if (std::holds_alternative<Node>(node->right)) {
+                if (std::holds_alternative<NodePtr>(node->right)) {
                     symbol.push_back(1);
-                    node = FindLeftmost(std::get<Node>(node->right));
+                    node = FindLeftmost(std::get<NodePtr>(node->right).get());
                     AppendLeafNodes(node);
                     continue;
                 }
@@ -53,7 +53,12 @@ class MakeHuffmanTableFn {
                     previous = node;
                     node = node->parent;
                     symbol.pop_back();
-                } while (node && previous == std::get_if<Node>(node->right));
+                } while (node && previous == [&]() {
+                    if (auto* ptr = std::get_if<NodePtr>(node->right)) {
+                        return ptr->get();
+                    }
+                    return nullptr;
+                }());
                 if (node) {
                     AppendLeafNodes(node);
                 }
@@ -98,10 +103,10 @@ class MakeHuffmanTableFn {
     constexpr NodeOrLeaf ConcatenateNodes(NodeOrLeaf&& left,
                                           NodeOrLeaf&& right) {
         std::unique_ptr node{new Node{std::move(left), std::move(right)}};
-        if (auto* left_node = std::get_if<Node>(&left)) {
+        if (auto* left_node = std::get_if<NodePtr>(&left)) {
             left_node->parent = node.get();
         }
-        if (auto* right_node = std::get_if<Node>(&right)) {
+        if (auto* right_node = std::get_if<NodePtr>(&right)) {
             right_node->parent = node.get();
         }
         return node;
@@ -151,8 +156,8 @@ class MakeHuffmanTableFn {
     }
 
     constexpr Node* FindLeftmost(Node* node) {
-        for (; std::holds_alternative<Node>(node->left);
-             node = std::get<Node>(node->left)) {
+        for (; std::holds_alternative<NodePtr>(node->left);
+             node = std::get<NodePtr>(node->left).get()) {
             symbols_.push_back(0);
         }
         return node;
@@ -167,7 +172,7 @@ class MakeHuffmanTableFn {
             }
         };
         set_token_fn(node->left, 0);
-        set_token_fn(node->left, 1);
+        set_token_fn(node->right, 1);
     }
 };
 
