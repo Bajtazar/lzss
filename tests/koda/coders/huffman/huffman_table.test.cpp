@@ -43,12 +43,20 @@ BeginConstexprTest(HuffmanTable, ListScenario) {
 EndConstexprTest;
 
 BeginConstexprTest(HuffmanTable, AllSameScenario) {
-    using HuffmanEntry = koda::HuffmanTable<uint32_t>::entry_type;
+    using HuffmanEntry = koda::HuffmanTable<char>::entry_type;
 
-    const koda::HuffmanTable<uint32_t> kExpected = {
-        HuffmanEntry{'a', std::vector<bool>{}}};
+    const koda::HuffmanTable<char> kExpected = {
+        HuffmanEntry{'a', std::vector<bool>{1, 0, 1}},
+        HuffmanEntry{'b', std::vector<bool>{1, 0, 0}},
+        HuffmanEntry{'c', std::vector<bool>{1, 1, 1}},
+        HuffmanEntry{'d', std::vector<bool>{1, 1, 0}},
+        HuffmanEntry{'e', std::vector<bool>{0, 0, 1}},
+        HuffmanEntry{'f', std::vector<bool>{0, 0, 0}},
+        HuffmanEntry{'g', std::vector<bool>{0, 1, 1}},
+        HuffmanEntry{'h', std::vector<bool>{0, 1, 0}}};
 
-    koda::Map<char, size_t> counts = {{'a', 1}};
+    koda::Map<char, size_t> counts = {{'a', 1}, {'b', 1}, {'c', 1}, {'d', 1},
+                                      {'e', 1}, {'f', 1}, {'g', 1}, {'h', 1}};
 
     auto table = koda::MakeHuffmanTable(counts);
 
@@ -57,9 +65,9 @@ BeginConstexprTest(HuffmanTable, AllSameScenario) {
 EndConstexprTest;
 
 BeginConstexprTest(HuffmanTable, OneElementScenario) {
-    using HuffmanEntry = koda::HuffmanTable<uint32_t>::entry_type;
+    using HuffmanEntry = koda::HuffmanTable<char>::entry_type;
 
-    const koda::HuffmanTable<uint32_t> kExpected = {
+    const koda::HuffmanTable<char> kExpected = {
         HuffmanEntry{'a', std::vector<bool>{}}};
 
     koda::Map<char, size_t> counts = {{'a', 1}};
