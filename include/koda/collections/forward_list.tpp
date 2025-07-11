@@ -78,11 +78,83 @@ constexpr ForwardList<ValueTp, AllocatorTp>::~ForwardList() {
 }
 
 template <typename ValueTp, typename AllocatorTp>
+[[nodiscard]] constexpr size_t ForwardList<ValueTp, AllocatorTp>::size()
+    const noexcept {
+    return size_;
+}
+
+template <typename ValueTp, typename AllocatorTp>
+template <typename... Args>
+    requires std::constructible_from<ValueTp, Args...>
+constexpr iterator ForwardList<ValueTp, AllocatorTp>::PushFront(
+    Args&&... args) {
+    Node* node = pool_.GetNode(std::forward<Args>(args)...);
+    node->next = root_;
+    root_ = node;
+    return iterator{node};
+}
+
+template <typename ValueTp, typename AllocatorTp>
+constexpr void ForwardList<ValueTp, AllocatorTp>::PopFront() {
+    Node* node = root_;
+    root_ = node->next;
+    pool_.ReturnNode(node);
+}
+
+template <typename ValueTp, typename AllocatorTp>
+[[nodiscard]] AllocatorTp ForwardList<ValueTp, AllocatorTp>::get_allocator()
+    const {
+    return pool_.get_allocator();
+}
+
+template <typename ValueTp, typename AllocatorTp>
+[[nodiscard]] constexpr AllocatorTp ForwardList<ValueTp, AllocatorTp>::iterator
+    AllocatorTp
+    ForwardList<ValueTp, AllocatorTp>::begin() noexcept {
+    return iterator{root_};
+}
+
+template <typename ValueTp, typename AllocatorTp>
+[[nodiscard]] constexpr AllocatorTp ForwardList<ValueTp, AllocatorTp>::iterator
+    AllocatorTp
+    ForwardList<ValueTp, AllocatorTp>::end() noexcept {
+    return iterator{nullptr};
+}
+
+template <typename ValueTp, typename AllocatorTp>
+[[nodiscard]] constexpr AllocatorTp
+    ForwardList<ValueTp, AllocatorTp>::const_iterator AllocatorTp
+    ForwardList<ValueTp, AllocatorTp>::begin() const noexcept {
+    return const_iterator{root_};
+}
+
+template <typename ValueTp, typename AllocatorTp>
+[[nodiscard]] constexpr AllocatorTp
+    ForwardList<ValueTp, AllocatorTp>::const_iterator AllocatorTp
+    ForwardList<ValueTp, AllocatorTp>::end() const noexcept {
+    return const_iterator{nullptr};
+}
+
+template <typename ValueTp, typename AllocatorTp>
+[[nodiscard]] constexpr AllocatorTp
+    ForwardList<ValueTp, AllocatorTp>::const_iterator AllocatorTp
+    ForwardList<ValueTp, AllocatorTp>::cbegin() const noexcept {
+    return begin();
+}
+
+template <typename ValueTp, typename AllocatorTp>
+[[nodiscard]] constexpr AllocatorTp
+    ForwardList<ValueTp, AllocatorTp>::const_iterator AllocatorTp
+    ForwardList<ValueTp, AllocatorTp>::cend() const noexcept {
+    return end();
+}
+
+template <typename ValueTp, typename AllocatorTp>
 constexpr ForwardList<ValueTp, AllocatorTp>::Destroy() {
     for (Node* node = root_; node;) {
         auto next_node = node->next;
-        NodeTraits::destroy(pool_.get_allocator(), node);
-        NodeTraits::dealloate(pool_.get_allocator(), node, 1);
+        NodeTraits::destroy(pool_.get_node_allocator(), node);
+        NodeTraits::deallocate(pool_.get_node_allocator(), node, 1);
         node = next_node;
     }
 }

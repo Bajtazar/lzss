@@ -110,6 +110,8 @@ class ForwardList {
 
         constexpr AllocatorTp get_allocator() const;
 
+        constexpr NodeAllocatorTp& get_node_allocator() noexcept;
+
         constexpr ~NodePool();
 
        private:
