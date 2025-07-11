@@ -150,6 +150,78 @@ template <typename ValueTp, typename AllocatorTp>
 }
 
 template <typename ValueTp, typename AllocatorTp>
+constexpr ForwardList<ValueTp, AllocatorTp>::NodePool::NodePool(
+    const AllocatorTp& allocator)
+    : allocator_{allocator} {}
+
+template <typename ValueTp, typename AllocatorTp>
+constexpr ForwardList<ValueTp, AllocatorTp>::NodePool::NodePool(
+    NodePool&& pool) noexcept
+    : allocator_{std::move(pool.allocator_)},
+      handle_{std::exchange(pool.handle_)} {}
+
+template <typename ValueTp, typename AllocatorTp>
+constexpr ForwardList<ValueTp, AllocatorTp>::NodePool&
+ForwardList<ValueTp, AllocatorTp>::NodePool::operator=(
+    NodePool&& pool) noexcept {
+    Destroy();
+    allocator_ = std::move(pool.allocator_);
+    handle_ = std::exchange(pool.handle_);
+    return *this;
+}
+
+template <typename ValueTp, typename AllocatorTp>
+constexpr void ForwardList<ValueTp, AllocatorTp>::NodePool::ReturnNode(
+    Node* handle) {
+    handle->left = handle_;
+    handle_ = handle;
+    std::destroy_at(&handle_->value);
+}
+
+template <typename ValueTp, typename AllocatorTp>
+template <typename... Args>
+    requires std::constructible_from<ValueTp, Args...>
+constexpr ForwardList<ValueTp, AllocatorTp>::Node*
+ForwardList<ValueTp, AllocatorTp>::NodePool::GetNode(Args&&... args) {
+    if (!handle_) {
+        Node* node = NodeTraits::allocate(allocator_, 1);
+        NodeTraits::construct(allocator_, node, std::forward<Args>(args)...);
+        return node;
+    }
+    Node* node = handle_;
+    handle_ = node->left;
+
+    NodeTraits::construct(allocator_, node, std::forward<Args>(args)...);
+    return node;
+}
+
+template <typename ValueTp, typename AllocatorTp>
+constexpr AllocatorTp
+ForwardList<ValueTp, AllocatorTp>::NodePool::get_allocator() const\ {
+    return allocator_;
+}
+
+template <typename ValueTp, typename AllocatorTp>
+constexpr ForwardList<ValueTp, AllocatorTp>::NodeAllocatorTp&
+ForwardList<ValueTp, AllocatorTp>::NodePool::get_node_allocator() noexcept {
+    return allocator_;
+}
+
+template <typename ValueTp, typename AllocatorTp>
+constexpr ForwardList<ValueTp, AllocatorTp>::NodePool::~NodePool() {
+    Destroy();
+}
+
+template <typename ValueTp, typename AllocatorTp>
+constexpr void ForwardList<ValueTp, AllocatorTp>::NodePool::Destroy() {
+    for (Node* node = handle_; node;) {
+        Node* old_node = node;
+        node = node->left;
+        NodeTraits::deallocate(allocator_, old_node, 1);
+    }
+}
+
+template <typename ValueTp, typename AllocatorTp>
 constexpr ForwardList<ValueTp, AllocatorTp>::Destroy() {
     for (Node* node = root_; node;) {
         auto next_node = node->next;

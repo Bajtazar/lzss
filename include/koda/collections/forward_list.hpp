@@ -87,14 +87,7 @@ class ForwardList {
 
     class NodePool {
        public:
-        struct Scheduler {
-            NodePool& pool;
-            Node* node;
-
-            constexpr ~Scheduler();
-        };
-
-        constexpr explicit NodePool(const AllocatorTp& allocator) noexcept;
+        constexpr explicit NodePool(const AllocatorTp& allocator);
 
         constexpr NodePool(NodePool&& pool) noexcept;
         constexpr NodePool(const NodePool& pool) = delete;
