@@ -7,7 +7,7 @@ namespace koda {
 template <typename ValueTp, typename AllocatorTp>
 template <bool IsConst>
 constexpr ForwardList<ValueTp, AllocatorTp>::Iterator<IsConst>::Iterator(
-    pointer_type node) noexcept
+    UnderlyingPtr node) noexcept
     : node_{node} {}
 
 template <typename ValueTp, typename AllocatorTp>

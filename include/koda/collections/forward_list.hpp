@@ -13,13 +13,15 @@ class ForwardList {
 
     template <bool IsConst>
     class Iterator {
+        using UnderlyingPtr = std::conditional_t<IsConst, const Node*, Node*>;
+
        public:
         using value_type = std::conditional_t<IsConst, const ValueTp, ValueTp>;
         using reference_type = value_type&;
         using pointer_type = value_type*;
         using difference_type = std::ptrdiff_t;
 
-        constexpr explicit Iterator(pointer_type node = nullptr) noexcept;
+        constexpr explicit Iterator(UnderlyingPtr node = nullptr) noexcept;
 
         [[nodiscard]] constexpr value_type operator*() const noexcept;
 
@@ -33,7 +35,7 @@ class ForwardList {
             const Iterator& right) const noexcept;
 
        private:
-        Node* node_;
+        UnderlyingPtr node_;
     };
 
    public:
