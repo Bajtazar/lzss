@@ -75,7 +75,7 @@ constexpr void RedBlackTree<ValueTp, AllocatorTp>::NodePool::ReturnNode(
     Node* handle) {
     handle->left = handle_;
     handle_ = handle;
-    std::destroy_at(&handle_->value);
+    std::destroy_at(std::addressof(handle_->value));
 }
 
 template <typename ValueTp, typename AllocatorTp>
@@ -456,8 +456,8 @@ constexpr void RedBlackTree<ValueTp, AllocatorTp>::RemoveNodeWithTwoChildren(
     Node* successor = FindSuccessor(node->right);
 
     auto allocator = pool_.get_allocator();
-    ValueTraits::destroy(allocator, &node->value);
-    ValueTraits::construct(allocator, &node->value,
+    ValueTraits::destroy(allocator, std::addressof(node->value));
+    ValueTraits::construct(allocator, std::addressof(node->value),
                            std::move(successor->value));
 
     if (successor->right) {
