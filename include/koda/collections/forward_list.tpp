@@ -84,6 +84,12 @@ template <typename ValueTp, typename AllocatorTp>
 }
 
 template <typename ValueTp, typename AllocatorTp>
+[[nodiscard]] constexpr bool ForwardList<ValueTp, AllocatorTp>::empty()
+    const noexcept {
+    return !size_;
+}
+
+template <typename ValueTp, typename AllocatorTp>
 template <typename... Args>
     requires std::constructible_from<ValueTp, Args...>
 constexpr iterator ForwardList<ValueTp, AllocatorTp>::PushFront(
@@ -91,6 +97,7 @@ constexpr iterator ForwardList<ValueTp, AllocatorTp>::PushFront(
     Node* node = pool_.GetNode(std::forward<Args>(args)...);
     node->next = root_;
     root_ = node;
+    ++size_;
     return iterator{node};
 }
 
@@ -98,6 +105,7 @@ template <typename ValueTp, typename AllocatorTp>
 constexpr void ForwardList<ValueTp, AllocatorTp>::PopFront() {
     Node* node = root_;
     root_ = node->next;
+    --size_;
     pool_.ReturnNode(node);
 }
 

@@ -53,6 +53,8 @@ class ForwardList {
 
     [[nodiscard]] constexpr size_t size() const noexcept;
 
+    [[nodiscard]] constexpr bool empty() const noexcept;
+
     template <typename... Args>
         requires std::constructible_from<ValueTp, Args...>
     constexpr iterator PushFront(Args&&... args);
