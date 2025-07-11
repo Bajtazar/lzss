@@ -456,6 +456,7 @@ constexpr void RedBlackTree<ValueTp, AllocatorTp>::RemoveNodeWithTwoChildren(
     Node* successor = FindSuccessor(node->right);
 
     auto allocator = pool_.get_allocator();
+    ValueTraits::destroy(allocator, &node->value);
     ValueTraits::construct(allocator, &node->value,
                            std::move(successor->value));
 
