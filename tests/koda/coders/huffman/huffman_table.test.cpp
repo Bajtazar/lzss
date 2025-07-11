@@ -1,6 +1,7 @@
 #include <koda/coders/huffman/huffman_table.hpp>
 #include <koda/tests/tests.hpp>
 
+
 BeginConstexprTest(HuffmanTable, FirstScenario) {
     using HuffmanEntry = koda::HuffmanTable<uint32_t>::entry_type;
 
@@ -35,6 +36,20 @@ BeginConstexprTest(HuffmanTable, ListScenario) {
 
     koda::Map<char, size_t> counts = {{'a', 1}, {'e', 2},  {'o', 4},
                                       {'x', 8}, {'r', 16}, {'t', 32}};
+
+    auto table = koda::MakeHuffmanTable(counts);
+
+    ConstexprAssertEqual(table, kExpected);
+}
+EndConstexprTest;
+
+BeginConstexprTest(HuffmanTable, AllSameScenario) {
+    using HuffmanEntry = koda::HuffmanTable<uint32_t>::entry_type;
+
+    const koda::HuffmanTable<uint32_t> kExpected = {
+        HuffmanEntry{'a', std::vector<bool>{}}};
+
+    koda::Map<char, size_t> counts = {{'a', 1}};
 
     auto table = koda::MakeHuffmanTable(counts);
 
