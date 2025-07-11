@@ -16,9 +16,21 @@ template <std::ranges::input_range Range>
     requires SpecializationOf<std::ranges::range_value_t<Range>, std::pair>
 constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Map(
     Range&& range, const ComparatorTp& comparator, const AllocatorTp& allocator)
-    : Map{allocator, comparator} {
+    : Map{comparator, allocator} {
     for (auto&& [key, value] : range) {
         Emplace(std::forward_like<Range>(key), std::forward_like<Range>(value));
+    }
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Map(
+    std::initializer_list<entry_type> init, const ComparatorTp& comparator,
+    const AllocatorTp& allocator)
+    : Map{comparator, allocator} {
+    for (auto&& value : init) {
+        Insert(std::move(value));
     }
 }
 
@@ -196,6 +208,14 @@ template <typename KeyTp, typename ValueTp,
 [[nodiscard]] constexpr size_t
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::size() const noexcept {
     return size_;
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+[[nodiscard]] constexpr bool
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::empty() const noexcept {
+    return !size_;
 }
 
 template <typename KeyTp, typename ValueTp,

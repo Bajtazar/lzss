@@ -74,6 +74,10 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
                            const ComparatorTp& comparator = ComparatorTp{},
                            const AllocatorTp& allocator = AllocatorTp{});
 
+    constexpr Map(std::initializer_list<entry_type> init,
+                  const ComparatorTp& comparator = ComparatorTp{},
+                  const AllocatorTp& allocator = AllocatorTp{});
+
     constexpr Map(const Map& map) = delete;
     constexpr Map(Map&& map) = default;
 
@@ -108,6 +112,8 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
     constexpr bool Remove(iterator position);
 
     [[nodiscard]] constexpr size_t size() const noexcept;
+
+    [[nodiscard]] constexpr bool empty() const noexcept;
 
     [[nodiscard]] constexpr iterator begin() noexcept;
 
