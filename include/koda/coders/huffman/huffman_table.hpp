@@ -28,37 +28,10 @@ class MakeHuffmanTableFn {
     }
 
     constexpr HuffmanTable<Token>&& table() && {
-        if (NodePtr* root =
-                std::get_if<NodePtr>(&work_table_.begin()->second.front())) {
-            Node* node = FindLeftmost(root->get());
-            AppendLeafNodes(node);
-
-            while (node) {
-                if (std::holds_alternative<NodePtr>(node->right)) {
-                    symbols_.push_back(1);
-                    node = FindLeftmost(std::get<NodePtr>(node->right).get());
-                    AppendLeafNodes(node);
-                    continue;
-                }
-
-                Node* previous;
-                do {
-                    previous = node;
-                    node = node->parent;
-                    symbols_.pop_back();
-                } while (node && [&]() {
-                    if (auto* ptr = std::get_if<NodePtr>(&node->right)) {
-                        return ptr->get() == previous;
-                    }
-                    return false;
-                }());
-                if (node) {
-                    AppendLeafNodes(node);
-                }
-            }
+        if (NodePtr* root = std::get_if<NodePtr>(&GetRoot())) {
+            UnwindTree(root->get());
         } else {
-            table_.Emplace(std::get<Token>(work_table_.begin()->second.front()),
-                           std::vector<bool>{});
+            table_.Emplace(std::get<Token>(GetRoot()), std::vector<bool>{});
         }
         return std::move(table_);
     }
@@ -179,6 +152,59 @@ class MakeHuffmanTableFn {
         };
         set_token_fn(node->left, 0);
         set_token_fn(node->right, 1);
+    }
+
+    constexpr NodeOrLeaf& GetRoot() {
+        assert((work_table_.size() == 1) &&
+               (work_table_.begin()->second.size() == 1));
+        return work_table_.begin()->second.front();
+    }
+
+    constexpr bool UnwindTreeCheckLeftSubtree(Node*& node) {
+        if (std::holds_alternative<NodePtr>(node->right)) {
+            symbols_.push_back(1);
+            node = FindLeftmost(std::get<NodePtr>(node->right).get());
+            AppendLeafNodes(node);
+            return true;
+        }
+        return false;
+    }
+
+    constexpr void UnwindTreeReturnToFirstUnvisitedParent(Node*& node) {
+        static constexpr auto kIsRightChild = [](const Node* node,
+                                                 const Node* previous) {
+            if (auto* right_node = std::get_if<NodePtr>(&node->right)) {
+                return right_node->get() == previous;
+            }
+            return false;
+        };
+
+        Node* previous;
+
+        do {
+            previous = node;
+            node = node->parent;
+            symbols_.pop_back();
+        } while (node && kIsRightChild(node, previous));
+    }
+
+    constexpr void UnwindTree(Node* root) {
+        // For each visited node check whether its children are leaves (leaves
+        // are NOT visited by this algorithm)
+        Node* node = FindLeftmost(root);
+        AppendLeafNodes(node);
+
+        while (node) {
+            if (UnwindTreeCheckLeftSubtree(node)) {
+                continue;
+            }
+
+            UnwindTreeReturnToFirstUnvisitedParent(node);
+
+            if (node) {
+                AppendLeafNodes(node);
+            }
+        }
     }
 };
 
