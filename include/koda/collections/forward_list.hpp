@@ -41,13 +41,14 @@ class ForwardList {
     using const_iterator = Iterator<true>;
     using value_type = ValueTp;
 
-    constexpr explicit ForwardList() noexcept = default;
+    constexpr explicit ForwardList(
+        const AllocatorTp& allocator = AllocatorTp{});
 
     constexpr ForwardList(const ForwardList&) noexcept = delete;
-    constexpr ForwardList(ForwardList&&) noexcept = default;
+    constexpr ForwardList(ForwardList&&) noexcept;
 
     constexpr ForwardList& operator=(const ForwardList&) noexcept = delete;
-    constexpr ForwardList& operator=(ForwardList&&) noexcept = default;
+    constexpr ForwardList& operator=(ForwardList&&) noexcept;
 
     [[nodiscard]] constexpr size_t size() const noexcept;
 
@@ -71,12 +72,12 @@ class ForwardList {
 
     [[nodiscard]] constexpr const_iterator cend() const noexcept;
 
-    constexpr ~ForwardList() noexcept = default;
+    constexpr ~ForwardList() noexcept;
 
    private:
     struct Node {
         ValueTp value;
-        std::unique_ptr<Node> next;
+        Node* next;
     };
 
     class NodePool {
@@ -96,11 +97,11 @@ class ForwardList {
         constexpr NodePool& operator=(NodePool&& pool) noexcept;
         constexpr NodePool& operator=(const NodePool& pool) = delete;
 
-        constexpr void ReturnNode(std::unique_ptr<Node> handle);
+        constexpr void ReturnNode(Node* handle);
 
         template <typename... Args>
             requires std::constructible_from<ValueTp, Args...>
-        constexpr std::unique_ptr<Node> GetNode(Args&&... args);
+        constexpr Node* GetNode(Args&&... args);
 
         constexpr AllocatorTp get_allocator() const;
 
@@ -112,12 +113,13 @@ class ForwardList {
         using NodeAllocatorTp = typename ValueTraits::rebind_alloc<Node>;
 
         [[no_unique_address]] NodeAllocatorTp allocator_;
-        std::unique_ptr<Node> handle_ = nullptr;
+        Node* handle_ = nullptr;
 
         constexpr void Destroy();
     };
 
-    std::unique_ptr<Node> root_ = nullptr;
+    NodePool pool_;
+    Node* root_ = nullptr;
     size_t size_;
 };
 
