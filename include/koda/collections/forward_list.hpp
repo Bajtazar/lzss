@@ -33,7 +33,7 @@ class ForwardList {
             const Iterator& left, const Iterator& right) const noexcept;
 
        private:
-        Node* node;
+        Node* node_;
     };
 
    public:
@@ -124,3 +124,5 @@ class ForwardList {
 };
 
 }  // namespace koda
+
+#include <koda/collections/forward_list.tpp>
