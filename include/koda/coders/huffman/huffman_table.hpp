@@ -116,6 +116,7 @@ class MakeHuffmanTableFn {
     constexpr void Emplace(CountTp occurences, NodeOrLeaf token) {
         if (auto iter = work_table_.Find(occurences);
             iter != work_table_.end()) {
+            assert(iter->first == occurences);
             iter->second.PushFront(std::move(token));
         } else {
             // Seems like there is a bug in the std::initializer_list variant of
