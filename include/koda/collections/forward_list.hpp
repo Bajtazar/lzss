@@ -23,7 +23,7 @@ class ForwardList {
 
         constexpr explicit Iterator(UnderlyingPtr node = nullptr) noexcept;
 
-        [[nodiscard]] constexpr value_type operator*() const noexcept;
+        [[nodiscard]] constexpr reference_type operator*() const noexcept;
 
         [[nodiscard]] constexpr pointer_type operator->() const noexcept;
 

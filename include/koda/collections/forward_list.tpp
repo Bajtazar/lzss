@@ -12,8 +12,8 @@ constexpr ForwardList<ValueTp, AllocatorTp>::Iterator<IsConst>::Iterator(
 
 template <typename ValueTp, typename AllocatorTp>
 template <bool IsConst>
-[[nodiscard]] constexpr ForwardList<ValueTp,
-                                    AllocatorTp>::Iterator<IsConst>::value_type
+[[nodiscard]] constexpr ForwardList<ValueTp, AllocatorTp>::Iterator<
+    IsConst>::reference_type
 ForwardList<ValueTp, AllocatorTp>::Iterator<IsConst>::operator*()
     const noexcept {
     return node_->value;
