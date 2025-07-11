@@ -34,12 +34,18 @@ class HuffmanEncoder
 
    private:
     using BitRange =
-        decltype(std::declval<std::vector<bool>>() | views::BigEndianInput);
+        decltype(std::declval<std::vector<bool>>() | views::LittleEndianInput);
     using BitIterator = std::ranges::iterator_t<BitRange>;
     using BitSentinel = std::ranges::iterator_t<BitSentinel>;
+    using BitPair = std::pair<BitIterator, BitSentinel>;
 
     HuffmanTable<Token, Allocator> table_;
     std::optional<std::pair<BitIterator, BitSentinel>> state_;
+
+    constexpr auto EncodeToken(const Token& token, auto output_iter,
+                               const auto& output_sent);
 };
 
 }  // namespace koda
+
+#include <koda/coders/huffman/huffman_encoder.tpp>
