@@ -175,7 +175,7 @@ template <typename ValueTp, typename AllocatorTp>
 constexpr ForwardList<ValueTp, AllocatorTp>::NodePool::NodePool(
     NodePool&& pool) noexcept
     : allocator_{std::move(pool.allocator_)},
-      handle_{std::exchange(pool.handle_)} {}
+      handle_{std::exchange(pool.handle_, nullptr)} {}
 
 template <typename ValueTp, typename AllocatorTp>
 constexpr ForwardList<ValueTp, AllocatorTp>::NodePool&
@@ -183,7 +183,7 @@ ForwardList<ValueTp, AllocatorTp>::NodePool::operator=(
     NodePool&& pool) noexcept {
     Destroy();
     allocator_ = std::move(pool.allocator_);
-    handle_ = std::exchange(pool.handle_);
+    handle_ = std::exchange(pool.handle_, nullptr);
     return *this;
 }
 
