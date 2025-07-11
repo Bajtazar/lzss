@@ -47,6 +47,10 @@ class RedBlackTree {
         Color color;
     };
 
+    using ValueTraits = std::allocator_traits<AllocatorTp>;
+    using NodeTraits = typename ValueTraits::rebind_traits<Node>;
+    using NodeAllocatorTp = typename ValueTraits::rebind_alloc<Node>;
+
     class NodePool {
        public:
         struct Scheduler {
@@ -73,13 +77,11 @@ class RedBlackTree {
 
         constexpr AllocatorTp get_allocator() const;
 
+        constexpr NodeAllocatorTp& get_node_allocator() noexcept;
+
         constexpr ~NodePool();
 
        private:
-        using ValueTraits = std::allocator_traits<AllocatorTp>;
-        using NodeTraits = typename ValueTraits::rebind_traits<Node>;
-        using NodeAllocatorTp = typename ValueTraits::rebind_alloc<Node>;
-
         [[no_unique_address]] NodeAllocatorTp allocator_;
         Node* handle_ = nullptr;
 
@@ -123,8 +125,6 @@ class RedBlackTree {
 
         static constexpr pointer_type FindRightmost(pointer_type node) noexcept;
     };
-
-    using ValueTraits = std::allocator_traits<AllocatorTp>;
 
     using NodeIterator = NodeIteratorBase<false>;
     using NodeConstIterator = NodeIteratorBase<true>;

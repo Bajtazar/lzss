@@ -109,6 +109,13 @@ RedBlackTree<ValueTp, AllocatorTp>::NodePool::get_allocator() const {
 }
 
 template <typename ValueTp, typename AllocatorTp>
+[[nodiscard]]
+constexpr RedBlackTree<ValueTp, AllocatorTp>::NodeAllocatorTp&
+RedBlackTree<ValueTp, AllocatorTp>::NodePool::get_node_allocator() noexcept {
+    return allocator_;
+}
+
+template <typename ValueTp, typename AllocatorTp>
 constexpr RedBlackTree<ValueTp, AllocatorTp>::NodePool::~NodePool() {
     Destroy();
 }
@@ -708,12 +715,13 @@ constexpr void RedBlackTree<ValueTp, AllocatorTp>::Destroy() {
             continue;
         }
 
-        // We're leaving - destroy node !
-        std::unique_ptr<Node> destroy_handle{node};
-        if (!node->parent) {
+        Node* parent = node->parent;
+        NodeTraits::destroy(pool_.get_node_allocator(), node);
+        NodeTraits::deallocate(pool_.get_node_allocator(), node, 1);
+        if (!parent) {
             return;  // root can be left with dangling pointer
         }
-        node = node->parent;
+        node = parent;
     }
 }
 
