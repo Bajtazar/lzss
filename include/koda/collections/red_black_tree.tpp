@@ -75,7 +75,8 @@ constexpr void RedBlackTree<ValueTp, AllocatorTp>::NodePool::ReturnNode(
     Node* handle) {
     handle->left = handle_;
     handle_ = handle;
-    std::destroy_at(std::addressof(handle_->value));
+    auto value_alloc = get_allocator();
+    ValueTraits::destroy(value_alloc, std::addressof(handle_->value));
 }
 
 template <typename ValueTp, typename AllocatorTp>
