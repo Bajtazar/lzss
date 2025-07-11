@@ -190,7 +190,7 @@ ForwardList<ValueTp, AllocatorTp>::NodePool::operator=(
 template <typename ValueTp, typename AllocatorTp>
 constexpr void ForwardList<ValueTp, AllocatorTp>::NodePool::ReturnNode(
     Node* handle) {
-    handle->left = handle_;
+    handle->next = handle_;
     handle_ = handle;
     std::destroy_at(&handle_->value);
 }
@@ -206,7 +206,7 @@ ForwardList<ValueTp, AllocatorTp>::NodePool::GetNode(Args&&... args) {
         return node;
     }
     Node* node = handle_;
-    handle_ = node->left;
+    handle_ = node->next;
 
     NodeTraits::construct(allocator_, node, std::forward<Args>(args)...);
     return node;
@@ -233,7 +233,7 @@ template <typename ValueTp, typename AllocatorTp>
 constexpr void ForwardList<ValueTp, AllocatorTp>::NodePool::Destroy() {
     for (Node* node = handle_; node;) {
         Node* old_node = node;
-        node = node->left;
+        node = node->next;
         NodeTraits::deallocate(allocator_, old_node, 1);
     }
 }
