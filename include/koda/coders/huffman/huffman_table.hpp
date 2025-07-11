@@ -1,5 +1,6 @@
 #pragma once
 
+#include <koda/collections/forward_list.hpp>
 #include <koda/collections/map.hpp>
 
 #include <cinttypes>
@@ -102,7 +103,7 @@ class MakeHuffmanTableFn {
     using NodeOrLeaf = Node::NodeOrLeaf;
     using NodePtr = Node*;
 
-    Map<CountTp, std::vector<NodeOrLeaf>> work_table_;
+    Map<CountTp, ForwardList<NodeOrLeaf>> work_table_;
     std::vector<bool> symbols_;
     HuffmanTable<Token> table_;
 
@@ -115,12 +116,12 @@ class MakeHuffmanTableFn {
     constexpr void Emplace(CountTp occurences, NodeOrLeaf token) {
         if (auto iter = work_table_.Find(occurences);
             iter != work_table_.end()) {
-            iter->second.emplace_back(std::move(token));
+            iter->second.PushFront(std::move(token));
         } else {
             // Seems like there is a bug in the std::initializer_list variant of
             // std::vector's constructor so this is a workaround
-            std::vector<NodeOrLeaf> vec;
-            vec.emplace_back(std::move(token));
+            ForwardList<NodeOrLeaf> vec;
+            vec.PushFront(std::move(token));
             assert(work_table_.Emplace(occurences, std::move(vec)) !=
                    work_table_.end());
         }
@@ -141,8 +142,9 @@ class MakeHuffmanTableFn {
     constexpr void RemoveElementsFromEquivariantNodes(const auto& iter,
                                                       size_t length = 1) {
         auto& equivariant = iter->second;
-        equivariant.erase(equivariant.begin(),
-                          std::next(equivariant.begin(), length));
+        for (size_t i = 0; i < length; ++i) {
+            equivariant.PopFront();
+        }
         if (equivariant.empty()) {
             work_table_.Remove(iter);
         }
@@ -150,8 +152,10 @@ class MakeHuffmanTableFn {
 
     constexpr void EmplaceEquivariantSupernode(const auto& iter) {
         auto& least_common = iter->second;
-        auto new_node = ConcatenateNodes(std::move(least_common[0]),
-                                         std::move(least_common[1]));
+        auto fist_common_iter = least_common.begin();
+        auto second_common_iter = std::next(fist_common_iter);
+        auto new_node = ConcatenateNodes(std::move(*fist_common_iter),
+                                         std::move(*second_common_iter));
         auto new_occur = 2 * iter->first;
         RemoveElementsFromEquivariantNodes(iter, 2);
         Emplace(new_occur, std::move(new_node));
@@ -162,8 +166,9 @@ class MakeHuffmanTableFn {
         auto least_common_occur = iter->first;
         auto& second_least_common = (++iter)->second;
 
-        auto new_node = ConcatenateNodes(std::move(least_common[0]),
-                                         std::move(second_least_common[0]));
+        auto new_node =
+            ConcatenateNodes(std::move(least_common.front()),
+                             std::move(second_least_common.front()));
         auto new_occur = least_common_occur + iter->first;
         RemoveElementsFromEquivariantNodes(iter, 1);
         work_table_.Remove(least_common_occur);
