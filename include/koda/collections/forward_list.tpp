@@ -119,6 +119,18 @@ template <typename ValueTp, typename AllocatorTp>
 }
 
 template <typename ValueTp, typename AllocatorTp>
+[[nodiscard]] constexpr ForwardList<ValueTp, AllocatorTp>::value_type&
+ForwardList<ValueTp, AllocatorTp>::front() noexcept {
+    return root_->value;
+}
+
+template <typename ValueTp, typename AllocatorTp>
+[[nodiscard]] constexpr const ForwardList<ValueTp, AllocatorTp>::value_type&
+ForwardList<ValueTp, AllocatorTp>::front() const noexcept {
+    return root_->value;
+}
+
+template <typename ValueTp, typename AllocatorTp>
 [[nodiscard]] constexpr ForwardList<ValueTp, AllocatorTp>::iterator
 ForwardList<ValueTp, AllocatorTp>::begin() noexcept {
     return iterator{root_};

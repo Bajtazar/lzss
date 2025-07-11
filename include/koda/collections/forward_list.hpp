@@ -63,6 +63,10 @@ class ForwardList {
 
     [[nodiscard]] AllocatorTp get_allocator() const;
 
+    [[nodiscard]] constexpr value_type& front() noexcept;
+
+    [[nodiscard]] constexpr const value_type& front() const noexcept;
+
     [[nodiscard]] constexpr iterator begin() noexcept;
 
     [[nodiscard]] constexpr iterator end() noexcept;
