@@ -161,7 +161,7 @@ class RedBlackTree {
 
     constexpr void RotateHelper(Node* node, Node* child, Node* root);
 
-    constexpr void BuildNode(ValueTp&& value, Node*& node, Node* parent);
+    constexpr Node* BuildNode(ValueTp&& value, Node*& node, Node* parent);
 
     constexpr void FixInsertionImbalance(Node* node);
 

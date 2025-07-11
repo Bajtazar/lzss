@@ -267,13 +267,14 @@ RedBlackTree<ValueTp, AllocatorTp>::InsertNode(ValueTp value) {
         return root_;
     }
     if (auto inserted = this->FindInsertionLocation(value)) {
-        BuildNode(std::move(value), inserted->first, inserted->second);
-        assert(inserted->first->parent && "Parent has to exist");
-        if (inserted->first->parent->color == Node::Color::kRed) {
-            FixInsertionImbalance(inserted->first);
+        Node* new_node =
+            BuildNode(std::move(value), inserted->first, inserted->second);
+        assert(new_node->parent && "Parent has to exist");
+        if (new_node->parent->color == Node::Color::kRed) {
+            FixInsertionImbalance(new_node);
         }
         CheckInvariants();
-        return inserted->first;
+        return new_node;
     }
     return nullptr;
 }
@@ -362,10 +363,10 @@ constexpr void RedBlackTree<ValueTp, AllocatorTp>::RotateHelper(Node* node,
 }
 
 template <typename ValueTp, typename AllocatorTp>
-constexpr void RedBlackTree<ValueTp, AllocatorTp>::BuildNode(ValueTp&& value,
-                                                             Node*& node,
-                                                             Node* parent) {
-    node = pool_.GetNode(std::move(value), parent, Node::Color::kRed);
+constexpr RedBlackTree<ValueTp, AllocatorTp>::Node*
+RedBlackTree<ValueTp, AllocatorTp>::BuildNode(ValueTp&& value, Node*& node,
+                                              Node* parent) {
+    return node = pool_.GetNode(std::move(value), parent, Node::Color::kRed);
 }
 
 template <typename ValueTp, typename AllocatorTp>
