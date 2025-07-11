@@ -91,11 +91,11 @@ class MakeHuffmanTableFn {
             assert(iter->first == occurences);
             iter->second.PushFront(std::move(token));
         } else {
-            // Seems like there is a bug in the std::initializer_list variant of
-            // std::vector's constructor so this is a workaround
-            ForwardList<NodeOrLeaf> vec;
-            vec.PushFront(std::move(token));
-            assert(work_table_.Emplace(occurences, std::move(vec)) !=
+            // std::initializer_list contains only constant elements so if they
+            // are move-only then the container cannot be initialized with it
+            ForwardList<NodeOrLeaf> equivariant;
+            equivariant.PushFront(std::move(token));
+            assert(work_table_.Emplace(occurences, std::move(equivariant)) !=
                    work_table_.end());
         }
     }
