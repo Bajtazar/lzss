@@ -88,6 +88,14 @@ class RedBlackTree {
         constexpr void Destroy();
     };
 
+    struct IteratorFromBeginingT {};
+    struct IteratorFromSentinelT {};
+    struct IteratorFromNodeT {};
+
+    static constexpr IteratorFromBeginingT kIteratorFromBegining{};
+    static constexpr IteratorFromSentinelT kIteratorFromSentinel{};
+    static constexpr IteratorFromNodeT kIteratorFromNode{};
+
     template <bool IsConst>
     class NodeIteratorBase {
        public:
@@ -95,8 +103,15 @@ class RedBlackTree {
         using pointer_type = std::conditional_t<IsConst, const Node*, Node*>;
         using difference_type = std::ptrdiff_t;
 
-        constexpr NodeIteratorBase(pointer_type node = nullptr,
-                                   bool is_sentinel = false) noexcept;
+        constexpr NodeIteratorBase(
+            pointer_type node = nullptr,
+            IteratorFromBeginingT = kIteratorFromBegining) noexcept;
+
+        constexpr NodeIteratorBase(pointer_type node,
+                                   IteratorFromSentinelT) noexcept;
+
+        constexpr NodeIteratorBase(pointer_type node,
+                                   IteratorFromNodeT) noexcept;
 
         [[nodiscard]] constexpr value_type operator*() const noexcept;
 

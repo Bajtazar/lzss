@@ -372,7 +372,7 @@ template <typename KeyTp, typename ValueTp,
           typename AllocatorTp>
 /*static*/ constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::NodeToIter(Node* node) {
-    return iterator{NodeIterator{node, false}};
+    return iterator{NodeIterator{node, Map::kIteratorFromNode}};
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -381,7 +381,7 @@ template <typename KeyTp, typename ValueTp,
 /*static*/ constexpr Map<KeyTp, ValueTp, ComparatorTp,
                          AllocatorTp>::const_iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::NodeToIter(const Node* node) {
-    return const_iterator{NodeConstIterator{node, false}};
+    return const_iterator{NodeConstIterator{node, Map::kIteratorFromNode}};
 }
 
 }  // namespace koda
