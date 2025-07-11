@@ -8,6 +8,26 @@ namespace koda {
 
 namespace details {
 
+/// There are a couple of ways in which the huffman table creator coould be
+/// implemented. Firstly it could be implemented using a std::priority_queue.
+/// There are two problems with this approach. Firstly the std::priority_queue
+/// does not support constexprs during the time of this code creation. Secondly
+/// it would require a lot of copying of node-leaf variants since the underlying
+/// collection is a std::vector. Second option is to use a specialized
+/// collection such as a Fibonnacy tree. The problem with this approach is that
+/// for two elements removed a one additional is added. Fibbonaci heap is not
+/// designed with a lot of insertions in mind so it would get slow very fast.
+/// The third option is a multimap. The problem with multimap is that for much
+/// of STL containers the insertion/removal operations on them invalidates their
+/// pointers. That would require a manual scanning for the second symbol after
+/// the first one was removed (koda::Map may also invalidate iterator after node
+/// removal due to the internal rebalancing mechanism that moves node value
+/// during a node with two children removal). This implementation utilized
+/// fourth startegy that is a simple map with an equviariance classes. Each
+/// equivariance class contains elements with the same key. This logic is ment
+/// to be used only once so it doesn't have to be the fastest one and this is
+/// why there is no explicit allocation control given to the user
+
 template <std::integral Token, std::integral CountTp>
 class MakeHuffmanTableFn {
    public:
