@@ -67,14 +67,16 @@ class MakeHuffmanTableFn {
                 std::get_if<NodePtr>(&work_table_.begin()->second.front())) {
             for (Node* node = *root; root;) {
                 if (auto* left = std::get_if<NodePtr>(&node->left)) {
+                    auto temp = *left;
                     node->left = Token{};
-                    node = *left;
+                    node = temp;
                     continue;
                 }
 
                 if (auto* right = std::get_if<NodePtr>(&node->right)) {
+                    auto temp = *right;
                     node->right = Token{};
-                    node = *right;
+                    node = temp;
                     continue;
                 }
 
@@ -119,7 +121,8 @@ class MakeHuffmanTableFn {
             // std::vector's constructor so this is a workaround
             std::vector<NodeOrLeaf> vec;
             vec.emplace_back(std::move(token));
-            work_table_.Emplace(occurences, std::move(vec));
+            assert(work_table_.Emplace(occurences, std::move(vec)) !=
+                   work_table_.end());
         }
     }
 
