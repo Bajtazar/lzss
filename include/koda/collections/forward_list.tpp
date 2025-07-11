@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 namespace koda {
 
 template <typename ValueTp, typename AllocatorTp>
@@ -19,7 +21,8 @@ ForwardList<ValueTp, AllocatorTp>::Iterator<IsConst>::operator*()
 
 template <typename ValueTp, typename AllocatorTp>
 template <bool IsConst>
-[[nodiscard]] constexpr ForwardList<ValueTp, AllocatorTp>::pointer_type
+[[nodiscard]] constexpr ForwardList<ValueTp, AllocatorTp>::Iterator<
+    IsConst>::pointer_type
 ForwardList<ValueTp, AllocatorTp>::Iterator<IsConst>::operator->()
     const noexcept {
     return &(*(*this));
@@ -46,8 +49,8 @@ template <typename ValueTp, typename AllocatorTp>
 template <bool IsConst>
 [[nodiscard]] constexpr bool
 ForwardList<ValueTp, AllocatorTp>::Iterator<IsConst>::operator==(
-    const Iterator& left, const Iterator& right) const noexcept {
-    return left.node_ == right.node_;
+    const Iterator& right) const noexcept {
+    return node_ == right.node_;
 }
 
 template <typename ValueTp, typename AllocatorTp>
@@ -63,7 +66,7 @@ constexpr ForwardList<ValueTp, AllocatorTp>::ForwardList(
       size_{std::exchange(other.size_, 0)} {}
 
 template <typename ValueTp, typename AllocatorTp>
-constexpr ForwardList<ValueTp, AllocatorTp>
+constexpr ForwardList<ValueTp, AllocatorTp>&
 ForwardList<ValueTp, AllocatorTp>::operator=(ForwardList&& other) noexcept {
     Destroy();
     pool_ = std::move(other.pool_);
@@ -92,8 +95,8 @@ template <typename ValueTp, typename AllocatorTp>
 template <typename ValueTp, typename AllocatorTp>
 template <typename... Args>
     requires std::constructible_from<ValueTp, Args...>
-constexpr iterator ForwardList<ValueTp, AllocatorTp>::PushFront(
-    Args&&... args) {
+constexpr ForwardList<ValueTp, AllocatorTp>::iterator
+ForwardList<ValueTp, AllocatorTp>::PushFront(Args&&... args) {
     Node* node = pool_.GetNode(std::forward<Args>(args)...);
     node->next = root_;
     root_ = node;
@@ -116,44 +119,38 @@ template <typename ValueTp, typename AllocatorTp>
 }
 
 template <typename ValueTp, typename AllocatorTp>
-[[nodiscard]] constexpr AllocatorTp ForwardList<ValueTp, AllocatorTp>::iterator
-    AllocatorTp
-    ForwardList<ValueTp, AllocatorTp>::begin() noexcept {
+[[nodiscard]] constexpr ForwardList<ValueTp, AllocatorTp>::iterator
+ForwardList<ValueTp, AllocatorTp>::begin() noexcept {
     return iterator{root_};
 }
 
 template <typename ValueTp, typename AllocatorTp>
-[[nodiscard]] constexpr AllocatorTp ForwardList<ValueTp, AllocatorTp>::iterator
-    AllocatorTp
-    ForwardList<ValueTp, AllocatorTp>::end() noexcept {
+[[nodiscard]] constexpr ForwardList<ValueTp, AllocatorTp>::iterator
+ForwardList<ValueTp, AllocatorTp>::end() noexcept {
     return iterator{nullptr};
 }
 
 template <typename ValueTp, typename AllocatorTp>
-[[nodiscard]] constexpr AllocatorTp
-    ForwardList<ValueTp, AllocatorTp>::const_iterator AllocatorTp
-    ForwardList<ValueTp, AllocatorTp>::begin() const noexcept {
+[[nodiscard]] constexpr ForwardList<ValueTp, AllocatorTp>::const_iterator
+ForwardList<ValueTp, AllocatorTp>::begin() const noexcept {
     return const_iterator{root_};
 }
 
 template <typename ValueTp, typename AllocatorTp>
-[[nodiscard]] constexpr AllocatorTp
-    ForwardList<ValueTp, AllocatorTp>::const_iterator AllocatorTp
-    ForwardList<ValueTp, AllocatorTp>::end() const noexcept {
+[[nodiscard]] constexpr ForwardList<ValueTp, AllocatorTp>::const_iterator
+ForwardList<ValueTp, AllocatorTp>::end() const noexcept {
     return const_iterator{nullptr};
 }
 
 template <typename ValueTp, typename AllocatorTp>
-[[nodiscard]] constexpr AllocatorTp
-    ForwardList<ValueTp, AllocatorTp>::const_iterator AllocatorTp
-    ForwardList<ValueTp, AllocatorTp>::cbegin() const noexcept {
+[[nodiscard]] constexpr ForwardList<ValueTp, AllocatorTp>::const_iterator
+ForwardList<ValueTp, AllocatorTp>::cbegin() const noexcept {
     return begin();
 }
 
 template <typename ValueTp, typename AllocatorTp>
-[[nodiscard]] constexpr AllocatorTp
-    ForwardList<ValueTp, AllocatorTp>::const_iterator AllocatorTp
-    ForwardList<ValueTp, AllocatorTp>::cend() const noexcept {
+[[nodiscard]] constexpr ForwardList<ValueTp, AllocatorTp>::const_iterator
+ForwardList<ValueTp, AllocatorTp>::cend() const noexcept {
     return end();
 }
 
@@ -205,7 +202,7 @@ ForwardList<ValueTp, AllocatorTp>::NodePool::GetNode(Args&&... args) {
 
 template <typename ValueTp, typename AllocatorTp>
 constexpr AllocatorTp
-ForwardList<ValueTp, AllocatorTp>::NodePool::get_allocator() const\ {
+ForwardList<ValueTp, AllocatorTp>::NodePool::get_allocator() const {
     return allocator_;
 }
 
@@ -230,7 +227,7 @@ constexpr void ForwardList<ValueTp, AllocatorTp>::NodePool::Destroy() {
 }
 
 template <typename ValueTp, typename AllocatorTp>
-constexpr ForwardList<ValueTp, AllocatorTp>::Destroy() {
+constexpr void ForwardList<ValueTp, AllocatorTp>::Destroy() {
     for (Node* node = root_; node;) {
         auto next_node = node->next;
         NodeTraits::destroy(pool_.get_node_allocator(), node);

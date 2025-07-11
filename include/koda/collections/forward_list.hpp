@@ -30,7 +30,7 @@ class ForwardList {
         [[nodiscard]] constexpr Iterator operator++(int) noexcept;
 
         [[nodiscard]] constexpr bool operator==(
-            const Iterator& left, const Iterator& right) const noexcept;
+            const Iterator& right) const noexcept;
 
        private:
         Node* node_;
