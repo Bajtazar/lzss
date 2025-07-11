@@ -44,11 +44,12 @@ class ForwardList {
     constexpr explicit ForwardList(
         const AllocatorTp& allocator = AllocatorTp{});
 
-    constexpr ForwardList(const ForwardList&) noexcept = delete;
-    constexpr ForwardList(ForwardList&&) noexcept;
+    constexpr ForwardList(const ForwardList& other) noexcept = delete;
+    constexpr ForwardList(ForwardList&& other) noexcept;
 
-    constexpr ForwardList& operator=(const ForwardList&) noexcept = delete;
-    constexpr ForwardList& operator=(ForwardList&&) noexcept;
+    constexpr ForwardList& operator=(const ForwardList& other) noexcept =
+        delete;
+    constexpr ForwardList& operator=(ForwardList&& other) noexcept;
 
     [[nodiscard]] constexpr size_t size() const noexcept;
 
@@ -72,13 +73,17 @@ class ForwardList {
 
     [[nodiscard]] constexpr const_iterator cend() const noexcept;
 
-    constexpr ~ForwardList() noexcept;
+    constexpr ~ForwardList();
 
    private:
     struct Node {
         ValueTp value;
         Node* next;
     };
+
+    using ValueTraits = std::allocator_traits<AllocatorTp>;
+    using NodeTraits = typename ValueTraits::rebind_traits<Node>;
+    using NodeAllocatorTp = typename ValueTraits::rebind_alloc<Node>;
 
     class NodePool {
        public:
@@ -108,10 +113,6 @@ class ForwardList {
         constexpr ~NodePool();
 
        private:
-        using ValueTraits = std::allocator_traits<AllocatorTp>;
-        using NodeTraits = typename ValueTraits::rebind_traits<Node>;
-        using NodeAllocatorTp = typename ValueTraits::rebind_alloc<Node>;
-
         [[no_unique_address]] NodeAllocatorTp allocator_;
         Node* handle_ = nullptr;
 
@@ -120,7 +121,9 @@ class ForwardList {
 
     NodePool pool_;
     Node* root_ = nullptr;
-    size_t size_;
+    size_t size_ = 0;
+
+    constexpr void Destroy();
 };
 
 }  // namespace koda
