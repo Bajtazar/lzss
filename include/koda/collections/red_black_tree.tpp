@@ -762,9 +762,9 @@ constexpr void RedBlackTree<ValueTp, AllocatorTp>::PopulateClonedRoot(
     requires std::is_copy_constructible_v<ValueTp>
 {
     Node* node = root_;
-    Node* clone = cloned_root
+    Node* clone = cloned_root;
 
-        while (node) {
+    while (node) {
         CloneNodeChildren(node, clone);
 
         if (node->left) {

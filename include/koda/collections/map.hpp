@@ -78,11 +78,13 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
                   const ComparatorTp& comparator = ComparatorTp{},
                   const AllocatorTp& allocator = AllocatorTp{});
 
-    constexpr Map(const Map& map) = delete;
-    constexpr Map(Map&& map) = default;
+    constexpr Map(const Map& other)
+        requires std::is_copy_constructible_v<entry_type>;
+    constexpr Map(Map&& other) = default;
 
-    constexpr Map& operator=(const Map& map) = delete;
-    constexpr Map& operator=(Map&& map) = default;
+    constexpr Map& operator=(const Map& other)
+        requires std::is_copy_constructible_v<entry_type>;
+    constexpr Map& operator=(Map&& other) = default;
 
     constexpr ~Map() noexcept override = default;
 

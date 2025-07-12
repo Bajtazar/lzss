@@ -37,6 +37,30 @@ constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Map(
 template <typename KeyTp, typename ValueTp,
           Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
           typename AllocatorTp>
+constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Map(const Map& other)
+    requires std::is_copy_constructible_v<entry_type>
+    : size_{other.size_}, comparator_{other.comparator_} {
+    this->root() = other.Clone();
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
+constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>&
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::operator=(const Map& other)
+    requires std::is_copy_constructible_v<entry_type>
+{
+    this->Destroy();
+    size_ = other.size_;
+    comparator_ = other.comparator_;
+    this->root() = other.Clone();
+
+    return *this;
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
 template <bool IsConst>
 constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Iterator<
     IsConst>::Iterator(UnderlyingIter iterator) noexcept
