@@ -187,7 +187,7 @@ template <typename KeyLookupTp>
 [[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp,
                             AllocatorTp>::const_iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Find(KeyLookupTp&& key) const {
-    return FindHelper(std::forward<KeyLookupTp>(key));
+    return FindHelper(*this, std::forward<KeyLookupTp>(key));
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -197,7 +197,7 @@ template <typename KeyLookupTp>
     requires Invocable<ComparatorTp, std::weak_ordering, KeyTp, KeyLookupTp>
 [[nodiscard]] constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::iterator
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Find(KeyLookupTp&& key) {
-    return FindHelper(std::forward<KeyLookupTp>(key));
+    return FindHelper(*this, std::forward<KeyLookupTp>(key));
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -378,11 +378,16 @@ Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::FindInsertionLocation(
 template <typename KeyTp, typename ValueTp,
           Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
           typename AllocatorTp>
-template <typename KeyLookupTp, typename Self>
+template <typename Self, typename KeyLookupTp>
     requires Invocable<ComparatorTp, std::weak_ordering, KeyTp, KeyLookupTp>
-constexpr auto Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::FindHelper(
-    this Self&& self, KeyLookupTp&& key) {
-    for (auto* node = self.root(); node;) {
+constexpr Map<KeyTp, ValueTp, ComparatorTp,
+              AllocatorTp>::Iterator<std::is_const_v<Self>>
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::FindHelper(Self& self,
+                                                           KeyLookupTp&& key) {
+    using NodeTp =
+        std::conditional_t<std::is_const_v<Self>, const Node*, Node*>;
+
+    for (NodeTp node = self.root(); node;) {
         switch (OrderCast(self.comparator_(key, node->value.first))) {
             case WeakOrdering::kEquivalent:
                 return NodeToIter(node);

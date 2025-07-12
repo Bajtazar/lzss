@@ -153,9 +153,10 @@ class Map : public RedBlackTree<std::pair<const KeyTp, ValueTp>,
     constexpr NodeInsertionLocation FindInsertionLocation(
         const entry_type& value) override final;
 
-    template <typename KeyLookupTp, typename Self>
+    template <typename Self, typename KeyLookupTp>
         requires Invocable<ComparatorTp, std::weak_ordering, KeyTp, KeyLookupTp>
-    constexpr auto FindHelper(this Self&& self, KeyLookupTp&& key);
+    static constexpr Iterator<std::is_const_v<Self>> FindHelper(
+        Self& self, KeyLookupTp&& key);
 
     constexpr iterator InsertHelper(Node* node);
 
