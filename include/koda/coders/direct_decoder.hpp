@@ -11,8 +11,6 @@ struct DirectDecoder : public DecoderInterface<Token, DirectDecoder<Token>> {
 
     constexpr explicit DirectDecoder() noexcept = default;
 
-    constexpr float TokenBitSize(Token token) const;
-
     constexpr auto Decode(BitInputRange auto&& input,
                           std::ranges::output_range<Token> auto&& output);
 

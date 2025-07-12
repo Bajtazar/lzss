@@ -201,10 +201,4 @@ concept Decoder =
         } -> SpecializationOf<CoderResult>;
     };
 
-template <typename DecoderTp, typename Tp>
-concept SizeAwareDecoder =
-    Decoder<DecoderTp, Tp> && requires(DecoderTp decoder, Tp token) {
-        { decoder.TokenBitSize(token) } -> std::same_as<float>;
-    };
-
 }  // namespace koda

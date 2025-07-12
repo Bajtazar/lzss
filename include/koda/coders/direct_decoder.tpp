@@ -9,11 +9,6 @@
 namespace koda {
 
 template <typename Token>
-constexpr float DirectDecoder<Token>::TokenBitSize(Token token) const {
-    return Traits::TokenBitSize(token);
-}
-
-template <typename Token>
 constexpr auto DirectDecoder<Token>::Decode(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {

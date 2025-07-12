@@ -6,7 +6,7 @@
 namespace koda {
 
 template <std::integral Token,
-          SizeAwareDecoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
+          Decoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
 template <std::ranges::output_range<Token> RangeTp>
 class Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
@@ -113,7 +113,7 @@ class Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
 };
 
 template <std::integral Token,
-          SizeAwareDecoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
+          Decoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
 constexpr Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::Lz77Decoder(
     size_t dictionary_size, size_t look_ahead_size,
@@ -125,7 +125,7 @@ constexpr Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::Lz77Decoder(
       auxiliary_decoder_{std::move(auxiliary_decoder)} {}
 
 template <std::integral Token,
-          SizeAwareDecoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
+          Decoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
 constexpr Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::Lz77Decoder(
     size_t dictionary_size, size_t look_ahead_size,
@@ -135,7 +135,7 @@ constexpr Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::Lz77Decoder(
                   std::move(cyclic_buffer_size), std::move(allocator)} {}
 
 template <std::integral Token,
-          SizeAwareDecoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
+          Decoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
 constexpr auto Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::Initialize(
     BitInputRange auto&& input) {
@@ -143,7 +143,7 @@ constexpr auto Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::Initialize(
 }
 
 template <std::integral Token,
-          SizeAwareDecoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
+          Decoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
 [[nodiscard]] constexpr auto&&
 Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::auxiliary_decoder(
@@ -152,7 +152,7 @@ Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::auxiliary_decoder(
 }
 
 template <std::integral Token,
-          SizeAwareDecoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
+          Decoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
 constexpr auto Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::Decode(
     BitInputRange auto&& input,
@@ -173,7 +173,7 @@ constexpr auto Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::Decode(
 }
 
 template <std::integral Token,
-          SizeAwareDecoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
+          Decoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
 constexpr auto
 Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::ProcessCachedSequence(
@@ -206,7 +206,7 @@ Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::ProcessCachedSequence(
 }
 
 template <std::integral Token,
-          SizeAwareDecoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
+          Decoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
 constexpr auto Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::ProcessData(
     BitInputRange auto&& input,
@@ -223,7 +223,7 @@ constexpr auto Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::ProcessData(
 }
 
 template <std::integral Token,
-          SizeAwareDecoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
+          Decoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator>
 /*static*/ constexpr size_t
 Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::CalculateDictionarySize(

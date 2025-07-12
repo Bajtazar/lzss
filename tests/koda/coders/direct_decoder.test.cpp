@@ -9,7 +9,7 @@
 #include <iterator>
 #include <vector>
 
-static_assert(koda::SizeAwareDecoder<koda::DirectDecoder<uint8_t>, uint8_t>);
+static_assert(koda::Decoder<koda::DirectDecoder<uint8_t>, uint8_t>);
 
 namespace {
 

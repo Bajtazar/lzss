@@ -12,7 +12,7 @@
 namespace koda {
 
 template <std::integral Token = uint8_t,
-          SizeAwareDecoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder =
+          Decoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder =
               DirectDecoder<Lz77IntermediateToken<Token>>,
           typename Allocator = std::allocator<Token>>
 class Lz77Decoder
