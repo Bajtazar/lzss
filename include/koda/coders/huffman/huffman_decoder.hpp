@@ -23,8 +23,6 @@ class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
     constexpr HuffmanDecoder& operator=(const HuffmanDecoder& other) noexcept =
         delete;
 
-    constexpr float TokenBitSize(Token token) const;
-
     constexpr auto Decode(BitInputRange auto&& input,
                           std::ranges::output_range<Token> auto&& output);
 
@@ -45,6 +43,7 @@ class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
     using NodeOrLeaf = Node::NodeOrLeaf;
 
     NodeOrLeaf root_;
+    Node* processed_ = nullptr;
 
     class TreeBuilder {
        public:

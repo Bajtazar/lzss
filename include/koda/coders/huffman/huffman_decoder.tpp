@@ -1,5 +1,7 @@
 #pragma once
 
+#include <koda/utils/utils.hpp>
+
 namespace koda {
 
 template <typename Token>
@@ -70,6 +72,11 @@ constexpr void HuffmanDecoder<Token>::InsertUnwindingEntry(
     std::unique_ptr<Node> new_child{new Node{}};
     unwinding_table_.Emplace(new_child.get(), std::move(child_table));
     hook = std::move(new_child);
+}
+
+template <typename Token>
+constexpr auto HuffmanDecoder<Token>::Initialize(BitInputRange auto&& input) {
+    return AsSubrange(std::forward<decltype(input)>(input));
 }
 
 template <typename Token>
