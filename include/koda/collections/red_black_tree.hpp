@@ -166,7 +166,7 @@ class RedBlackTree {
 
     constexpr NodeConstIterator node_end() const noexcept;
 
-    constexpr Node* Clone()
+    constexpr void CloneFrom(const RedBlackTree& source)
         requires std::is_copy_constructible_v<ValueTp>;
 
     constexpr void Destroy();
@@ -234,10 +234,10 @@ class RedBlackTree {
 
     constexpr void RemoveBlackChildlessNode(Node* node);
 
-    constexpr Node* CloneNodeChildren(Node* node, Node* clone)
+    constexpr void CloneNodeChildren(const Node* node, Node* clone)
         requires std::is_copy_constructible_v<ValueTp>;
 
-    constexpr void PopulateClonedRoot(Node* cloned_root)
+    constexpr void PopulateClonedRoot(const Node* root)
         requires std::is_copy_constructible_v<ValueTp>;
 
     // Only runs when checked build is explicitly requested

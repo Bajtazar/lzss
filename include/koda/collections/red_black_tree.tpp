@@ -742,8 +742,8 @@ constexpr void RedBlackTree<ValueTp, AllocatorTp>::Destroy() {
 }
 
 template <typename ValueTp, typename AllocatorTp>
-constexpr RedBlackTree<ValueTp, AllocatorTp>::Node*
-RedBlackTree<ValueTp, AllocatorTp>::CloneNodeChildren(Node* node, Node* clone)
+constexpr void RedBlackTree<ValueTp, AllocatorTp>::CloneNodeChildren(
+    const Node* node, Node* clone)
     requires std::is_copy_constructible_v<ValueTp>
 {
     if (node->left) {
@@ -758,11 +758,11 @@ RedBlackTree<ValueTp, AllocatorTp>::CloneNodeChildren(Node* node, Node* clone)
 
 template <typename ValueTp, typename AllocatorTp>
 constexpr void RedBlackTree<ValueTp, AllocatorTp>::PopulateClonedRoot(
-    Node* cloned_root)
+    const Node* root)
     requires std::is_copy_constructible_v<ValueTp>
 {
-    Node* node = root_;
-    Node* clone = cloned_root;
+    const Node* node = root;
+    Node* clone = root_;
 
     while (node) {
         CloneNodeChildren(node, clone);
@@ -779,7 +779,7 @@ constexpr void RedBlackTree<ValueTp, AllocatorTp>::PopulateClonedRoot(
             continue;
         }
 
-        Node* previous = node;
+        const Node* previous = node;
         do {
             node = node->parent;
             clone = clone->parent;
@@ -793,19 +793,17 @@ constexpr void RedBlackTree<ValueTp, AllocatorTp>::PopulateClonedRoot(
 }
 
 template <typename ValueTp, typename AllocatorTp>
-constexpr RedBlackTree<ValueTp, AllocatorTp>::Node*
-RedBlackTree<ValueTp, AllocatorTp>::Clone()
+constexpr void RedBlackTree<ValueTp, AllocatorTp>::CloneFrom(
+    const RedBlackTree& source)
     requires std::is_copy_constructible_v<ValueTp>
 {
-    if (!root_) {
-        return nullptr;
+    if (!source.root_) {
+        root_ = nullptr;
+        return;
     }
 
-    Node* new_root = pool_.GetNode(root_->value, nullptr, root_->color);
-
-    PopulateClonedRoot(new_root);
-
-    return new_root;
+    root_ = pool_.GetNode(source.root_->value, nullptr, source.root_->color);
+    PopulateClonedRoot(source.root_);
 }
 
 template <typename ValueTp, typename AllocatorTp>

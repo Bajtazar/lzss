@@ -40,7 +40,7 @@ template <typename KeyTp, typename ValueTp,
 constexpr Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Map(const Map& other)
     requires std::is_copy_constructible_v<entry_type>
     : size_{other.size_}, comparator_{other.comparator_} {
-    this->root() = other.Clone();
+    this->CloneFrom(other);
 }
 
 template <typename KeyTp, typename ValueTp,
@@ -53,7 +53,7 @@ Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::operator=(const Map& other)
     this->Destroy();
     size_ = other.size_;
     comparator_ = other.comparator_;
-    this->root() = other.Clone();
+    this->CloneFrom(other);
 
     return *this;
 }
