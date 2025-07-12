@@ -76,24 +76,24 @@ class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
                 }
             }
 
-            auto insert_entry_fn = [&](NodeOrLeaf& hook, auto&& child_table) {
-                if (child_table.size() == 1) {
-                    if (child_table.front().second.empty()) [[unlikely]] {
-                        throw std::runtime_error{
-                            "Invalid huffman table detected!"};
-                    }
-                    hook = std::move(child_table.front().first);
-                } else {
-                    std::unique_ptr<Node> new_child{new Node{}};
-                    unwinding_table_.Emplace(new_child.get(),
-                                             std::move(child_table));
-                    hook = std::move(new_child);
-                }
-            };
-            insert_entry_fn(root_->left, std::move(left));
-            insert_entry_fn(root_->right, std::move(right));
+            InsertWorklistEntry(root_->left, std::move(left));
+            InsertWorklistEntry(root_->right, std::move(right));
         }
     };
+
+    constexpr void InsertWorklistEntry(
+        NodeOrLeaf& hook, std::vector<HuffmanTableEntry>&& child_table) {
+        if (child_table.size() == 1) {
+            if (child_table.front().second.empty()) [[unlikely]] {
+                throw std::runtime_error{"Invalid huffman table detected!"};
+            }
+            hook = std::move(child_table.front().first);
+            return;
+        }
+        std::unique_ptr<Node> new_child{new Node{}};
+        unwinding_table_.Emplace(new_child.get(), std::move(child_table));
+        hook = std::move(new_child);
+    }
 
     static constexpr NodeOrLeaf BuildTree(const HuffmanTable<Token>& table);
 };
