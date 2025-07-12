@@ -64,6 +64,8 @@ class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
             NodeOrLeaf& hook, std::vector<HuffmanTableEntry>&& child_table);
     };
 
+    constexpr void ProcessBit(auto& output_iter, NodeOrLeaf& next);
+
     static constexpr NodeOrLeaf BuildTree(const HuffmanTable<Token>& table);
 };
 

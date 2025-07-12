@@ -10,6 +10,52 @@ constexpr HuffmanDecoder<Token>::HuffmanDecoder(
     : root_{BuildTree(table)} {}
 
 template <typename Token>
+constexpr auto HuffmanDecoder<Token>::Decode(
+    BitInputRange auto&& input,
+    std::ranges::output_range<Token> auto&& output) {
+    auto input_iter = std::ranges::begin(input);
+    const auto input_sent = std::ranges::end(input);
+    auto output_iter = std::ranges::begin(output);
+    const auto output_sent = std::ranges::end(output);
+
+    for (; (input_iter != input_sent) && (output_iter != output_sent);
+         ++input_iter) {
+        if (const Token* token = std::get_if<Token>(&root_)) {
+            *output_iter = *token;
+            continue;
+        }
+
+        [[assume(std::holds_alternative<NodePtr>(root_))]];
+
+        if (!processed_) {
+            processed_ = std::get<NodePtr>(root_).get();
+        }
+
+        if (*input_iter) {
+            ProcessBit(output_iter, processed_->right);
+        } else {
+            ProcessBit(output_iter, processed_->left);
+        }
+    }
+}
+
+template <typename Token>
+constexpr void HuffmanDecoder<Token>::ProcessBit(auto& output_iter,
+                                                 NodeOrLeaf& next) {
+    if (const Token* token = std::get_if<Token>(&next)) {
+        processed_ = nullptr;
+        *output_iter++ = *token;
+        return;
+    }
+    processed_ = std::get<NodePtr>(&next).get();
+}
+
+template <typename Token>
+constexpr auto HuffmanDecoder<Token>::Initialize(BitInputRange auto&& input) {
+    return AsSubrange(std::forward<decltype(input)>(input));
+}
+
+template <typename Token>
 constexpr HuffmanDecoder<Token>::TreeBuilder(const HuffmanTable<Token>& table)
     : root_{new Node{}} {
     // Populate unwinding table with original table
@@ -72,11 +118,6 @@ constexpr void HuffmanDecoder<Token>::InsertUnwindingEntry(
     std::unique_ptr<Node> new_child{new Node{}};
     unwinding_table_.Emplace(new_child.get(), std::move(child_table));
     hook = std::move(new_child);
-}
-
-template <typename Token>
-constexpr auto HuffmanDecoder<Token>::Initialize(BitInputRange auto&& input) {
-    return AsSubrange(std::forward<decltype(input)>(input));
 }
 
 template <typename Token>
