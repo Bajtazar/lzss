@@ -757,19 +757,14 @@ RedBlackTree<ValueTp, AllocatorTp>::CloneNodeChildren(Node* node, Node* clone)
 }
 
 template <typename ValueTp, typename AllocatorTp>
-constexpr RedBlackTree<ValueTp, AllocatorTp>::Node*
-RedBlackTree<ValueTp, AllocatorTp>::Clone()
+constexpr void RedBlackTree<ValueTp, AllocatorTp>::PopulateClonedRoot(
+    Node* cloned_root)
     requires std::is_copy_constructible_v<ValueTp>
 {
-    if (!root_) {
-        return nullptr;
-    }
-
-    Node* new_root = pool_.GetNode(root_->value, nullptr, root_->color);
     Node* node = root_;
-    Node* clone = new_root;
+    Node* clone = cloned_root
 
-    while (node) {
+        while (node) {
         CloneNodeChildren(node, clone);
 
         if (node->left) {
@@ -795,6 +790,20 @@ RedBlackTree<ValueTp, AllocatorTp>::Clone()
             clone = clone->right;
         }
     }
+}
+
+template <typename ValueTp, typename AllocatorTp>
+constexpr RedBlackTree<ValueTp, AllocatorTp>::Node*
+RedBlackTree<ValueTp, AllocatorTp>::Clone()
+    requires std::is_copy_constructible_v<ValueTp>
+{
+    if (!root_) {
+        return nullptr;
+    }
+
+    Node* new_root = pool_.GetNode(root_->value, nullptr, root_->color);
+
+    PopulateClonedRoot(new_root);
 
     return new_root;
 }

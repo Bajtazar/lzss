@@ -237,6 +237,9 @@ class RedBlackTree {
     constexpr Node* CloneNodeChildren(Node* node, Node* clone)
         requires std::is_copy_constructible_v<ValueTp>;
 
+    constexpr void PopulateClonedRoot(Node* cloned_root)
+        requires std::is_copy_constructible_v<ValueTp>;
+
     // Only runs when checked build is explicitly requested
     constexpr void CheckInvariants() const;
 
