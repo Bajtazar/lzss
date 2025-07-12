@@ -7,14 +7,12 @@
 
 namespace koda {
 
-template <typename Token, typename Allocator>
-constexpr HuffmanEncoder<Token, Allocator>::HuffmanEncoder(
-    HuffmanTable<Token, Allocator> table)
+template <typename Token>
+constexpr HuffmanEncoder<Token>::HuffmanEncoder(HuffmanTable<Token> table)
     : table_{std::move(table)} {}
 
-template <typename Token, typename Allocator>
-constexpr float HuffmanEncoder<Token, Allocator>::TokenBitSize(
-    Token token) const {
+template <typename Token>
+constexpr float HuffmanEncoder<Token>::TokenBitSize(Token token) const {
     if (auto iter = table_.Find(token); iter != table_.end()) [[likely]] {
         return iter->second.size();
     }
@@ -22,9 +20,9 @@ constexpr float HuffmanEncoder<Token, Allocator>::TokenBitSize(
         "Token ({}) is not described by the huffman codes table", token)};
 }
 
-template <typename Token, typename Allocator>
-constexpr auto HuffmanEncoder<Token, Allocator>::Encode(
-    InputRange<Token> auto&& input, BitOutputRange auto&& output) {
+template <typename Token>
+constexpr auto HuffmanEncoder<Token>::Encode(InputRange<Token> auto&& input,
+                                             BitOutputRange auto&& output) {
     auto out = Flush(std::forward<decltype(output)>(output));
     if (!state_) {
         auto in_iter = std::ranges::begin(output);
@@ -42,9 +40,8 @@ constexpr auto HuffmanEncoder<Token, Allocator>::Encode(
     return CoderResult{std::forward<decltype(input)>(input), std::move(out)};
 }
 
-template <typename Token, typename Allocator>
-constexpr auto HuffmanEncoder<Token, Allocator>::Flush(
-    BitOutputRange auto&& output) {
+template <typename Token>
+constexpr auto HuffmanEncoder<Token>::Flush(BitOutputRange auto&& output) {
     if (state_) {
         auto& token_iter = state_->first;
         const auto& token_sent = state_->first;
@@ -64,9 +61,10 @@ constexpr auto HuffmanEncoder<Token, Allocator>::Flush(
     return AsSubrange(std::forward<decltype(output)>(output));
 }
 
-template <typename Token, typename Allocator>
-constexpr auto HuffmanEncoder<Token, Allocator>::EncodeToken(
-    const Token& token, auto output_iter, const auto& output_sent) {
+template <typename Token>
+constexpr auto HuffmanEncoder<Token>::EncodeToken(const Token& token,
+                                                  auto output_iter,
+                                                  const auto& output_sent) {
     auto symbol_iter = table_.Find(token);
     if (symbol_iter == table_.end()) [[unlikely]] {
         throw std::runtime_error{std::format(

@@ -7,13 +7,10 @@
 
 namespace koda {
 
-template <typename Token,
-          typename Allocator =
-              std::allocator<typename HuffmanTable<Token>::entry_type>>
-class HuffmanEncoder
-    : public EncoderInterface<Token, HuffmanEncoder<Token, Allocator>> {
+template <typename Token>
+class HuffmanEncoder : public EncoderInterface<Token, HuffmanEncoder<Token>> {
    public:
-    constexpr explicit HuffmanEncoder(HuffmanTable<Token, Allocator> table);
+    constexpr explicit HuffmanEncoder(HuffmanTable<Token> table);
 
     constexpr HuffmanEncoder(HuffmanEncoder&& other) noexcept = default;
     constexpr HuffmanEncoder(const HuffmanEncoder& other) noexcept = delete;
@@ -39,7 +36,7 @@ class HuffmanEncoder
     using BitSentinel = std::ranges::iterator_t<BitSentinel>;
     using BitPair = std::pair<BitIterator, BitSentinel>;
 
-    HuffmanTable<Token, Allocator> table_;
+    HuffmanTable<Token> table_;
     std::optional<std::pair<BitIterator, BitSentinel>> state_;
 
     constexpr auto EncodeToken(const Token& token, auto output_iter,
