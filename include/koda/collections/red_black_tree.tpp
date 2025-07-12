@@ -788,98 +788,99 @@ RedBlackTree<ValueTp, AllocatorTp>::Clone()
         do {
             node = node->parent;
             clone = clone->parent;
-            while (node && previous == node->right)
-                if (node) {
-                    node = node->right;
-                    clone = clone->right;
-                }
-        }
+        } while (node && previous == node->right);
 
-        return new_root;
+        if (node) {
+            node = node->right;
+            clone = clone->right;
+        }
     }
 
-    template <typename ValueTp, typename AllocatorTp>
-    constexpr void RedBlackTree<ValueTp, AllocatorTp>::CheckInvariants() const {
+    return new_root;
+}
+
+template <typename ValueTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, AllocatorTp>::CheckInvariants() const {
 #ifdef KODA_CHECKED_BUILD
-        ValidateRedNodeConstraint();
-        ValidateBlackNodeConstraint();
+    ValidateRedNodeConstraint();
+    ValidateBlackNodeConstraint();
 #endif  // KODA_CHECKED_BUILD
-    }
+}
 
 #ifdef KODA_CHECKED_BUILD
 
-    template <typename ValueTp, typename AllocatorTp>
-    /*static*/ constexpr std::ranges::subrange<
-        typename RedBlackTree<ValueTp, AllocatorTp>::NodeConstIterator,
-        typename RedBlackTree<ValueTp, AllocatorTp>::NodeConstIterator>
-    RedBlackTree<ValueTp, AllocatorTp>::nodes(const Node* root) noexcept {
-        return {NodeConstIterator{root, kIteratorFromBegining},
-                NodeConstIterator{root, kIteratorFromSentinel}};
+template <typename ValueTp, typename AllocatorTp>
+/*static*/ constexpr std::ranges::subrange<
+    typename RedBlackTree<ValueTp, AllocatorTp>::NodeConstIterator,
+    typename RedBlackTree<ValueTp, AllocatorTp>::NodeConstIterator>
+RedBlackTree<ValueTp, AllocatorTp>::nodes(const Node* root) noexcept {
+    return {NodeConstIterator{root, kIteratorFromBegining},
+            NodeConstIterator{root, kIteratorFromSentinel}};
+}
+
+// A red node does not have a red child
+template <typename ValueTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, AllocatorTp>::ValidateRedNodeConstraint()
+    const {
+    for (const Node& node : nodes(root_)) {
+        if (node.color == Node::Color::kRed) {
+            if (node.left && node.left->color == Node::Color::kRed) {
+                throw std::logic_error{"Red node invariant broken!"};
+            }
+
+            if (node.right && node.right->color == Node::Color::kRed) {
+                throw std::logic_error{"Red node invariant broken!"};
+            }
+        }
     }
+}
 
-    // A red node does not have a red child
-    template <typename ValueTp, typename AllocatorTp>
-    constexpr void
-    RedBlackTree<ValueTp, AllocatorTp>::ValidateRedNodeConstraint() const {
-        for (const Node& node : nodes(root_)) {
-            if (node.color == Node::Color::kRed) {
-                if (node.left && node.left->color == Node::Color::kRed) {
-                    throw std::logic_error{"Red node invariant broken!"};
+// Every path from a given node to any of its leaf nodes goes through
+// the same number of black nodes
+template <typename ValueTp, typename AllocatorTp>
+constexpr void RedBlackTree<ValueTp, AllocatorTp>::ValidateBlackNodeConstraint()
+    const {
+    class SubtreeDetacher {
+       public:
+        constexpr SubtreeDetacher(const Node& node) noexcept
+            : node_{node}, parent_{node.parent} {
+            const_cast<Node&>(node_).parent = nullptr;
+        }
+
+        constexpr ~SubtreeDetacher() {
+            const_cast<Node&>(node_).parent = parent_;
+        }
+
+       private:
+        const Node& node_;
+        Node* parent_;
+    };
+
+    for (const Node& node : nodes(root_)) {
+        int64_t total_black_count = -1;
+
+        // temporarly remove parent!
+        // Otherwise it will start seeking higher nodes and will miss
+        // sentinel!
+        SubtreeDetacher detacher{node};
+        for (const Node& child : nodes(&node)) {
+            if (!child.left && !child.right) {
+                int64_t count = 0;
+                for (auto* path_node = &child; path_node != &node;
+                     path_node = path_node->parent) {
+                    if (path_node->color == Node::Color::kBlack) {
+                        ++count;
+                    }
                 }
-
-                if (node.right && node.right->color == Node::Color::kRed) {
-                    throw std::logic_error{"Red node invariant broken!"};
+                if (total_black_count == -1) {
+                    total_black_count = count;
+                } else if (total_black_count != count) {
+                    throw std::logic_error{"Black node invariant broken!"};
                 }
             }
         }
     }
-
-    // Every path from a given node to any of its leaf nodes goes through the
-    // same number of black nodes
-    template <typename ValueTp, typename AllocatorTp>
-    constexpr void
-    RedBlackTree<ValueTp, AllocatorTp>::ValidateBlackNodeConstraint() const {
-        class SubtreeDetacher {
-           public:
-            constexpr SubtreeDetacher(const Node& node) noexcept
-                : node_{node}, parent_{node.parent} {
-                const_cast<Node&>(node_).parent = nullptr;
-            }
-
-            constexpr ~SubtreeDetacher() {
-                const_cast<Node&>(node_).parent = parent_;
-            }
-
-           private:
-            const Node& node_;
-            Node* parent_;
-        };
-
-        for (const Node& node : nodes(root_)) {
-            int64_t total_black_count = -1;
-
-            // temporarly remove parent!
-            // Otherwise it will start seeking higher nodes and will miss
-            // sentinel!
-            SubtreeDetacher detacher{node};
-            for (const Node& child : nodes(&node)) {
-                if (!child.left && !child.right) {
-                    int64_t count = 0;
-                    for (auto* path_node = &child; path_node != &node;
-                         path_node = path_node->parent) {
-                        if (path_node->color == Node::Color::kBlack) {
-                            ++count;
-                        }
-                    }
-                    if (total_black_count == -1) {
-                        total_black_count = count;
-                    } else if (total_black_count != count) {
-                        throw std::logic_error{"Black node invariant broken!"};
-                    }
-                }
-            }
-        }
-    }
+}
 
 #endif  // KODA_CHECKED_BUILD
 
