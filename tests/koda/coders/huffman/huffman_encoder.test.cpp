@@ -136,7 +136,43 @@ BeginConstexprTest(HuffmanEncoderTest, EncodeDiracDistribution) {
 }
 EndConstexprTest;
 
-// BeginConstexprTest(HuffmanEncoderTest, PartialEncoding) {
+BeginConstexprTest(HuffmanEncoderTest, PartialInputEncoding) {
+    using HuffmanEntry = koda::HuffmanTable<uint32_t>::entry_type;
+
+    const koda::HuffmanTable<char> kTable = {
+        HuffmanEntry{'t', std::vector<bool>{1}},
+        HuffmanEntry{'r', std::vector<bool>{0, 1}},
+        HuffmanEntry{'x', std::vector<bool>{0, 0, 1}},
+        HuffmanEntry{'o', std::vector<bool>{0, 0, 0, 1}},
+        HuffmanEntry{'e', std::vector<bool>{0, 0, 0, 0, 1}},
+        HuffmanEntry{'a', std::vector<bool>{0, 0, 0, 0, 0}}};
+
+    std::string tokens = "trxxaxetrorx";
+    const std::vector<bool> kExpected = ConcatenateSymbols(kTable, tokens);
+
+    koda::HuffmanEncoder encoder{kTable};
+
+    std::vector<bool> stream;
+
+    encoder.EncodeN(5, tokens, stream | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(
+        stream, ConcatenateSymbols(kTable, tokens | koda::views::Take(5)));
+
+    encoder.EncodeN(2, tokens | std::views::drop(5),
+                    stream | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(
+        stream, ConcatenateSymbols(kTable, tokens | koda::views::Take(7)));
+
+    encoder(tokens | std::views::drop(7), stream | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(stream.size(), kExpected.size());
+    ConstexprAssertEqual(stream, kExpected);
+}
+EndConstexprTest;
+
+// BeginConstexprTest(HuffmanEncoderTest, PartialOutputEncoding) {
 //     using HuffmanEntry = koda::HuffmanTable<uint32_t>::entry_type;
 
 //     const koda::HuffmanTable<char> kTable = {
