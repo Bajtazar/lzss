@@ -17,12 +17,6 @@ class RedBlackTree {
     constexpr RedBlackTree(
         const AllocatorTp& allocator = AllocatorTp{}) noexcept;
 
-    constexpr explicit RedBlackTree(RedBlackTree&& other) noexcept;
-    constexpr explicit RedBlackTree(const RedBlackTree& other) = delete;
-
-    constexpr RedBlackTree& operator=(RedBlackTree&& other) noexcept;
-    constexpr RedBlackTree& operator=(const RedBlackTree& other) = delete;
-
     [[nodiscard]] constexpr AllocatorTp get_allocator() const;
 
     constexpr virtual ~RedBlackTree();
@@ -146,6 +140,12 @@ class RedBlackTree {
 
     using NodePtr = Node*;
     using NodeInsertionLocation = std::optional<std::pair<Node*&, Node*>>;
+
+    constexpr explicit RedBlackTree(RedBlackTree&& other) noexcept;
+    constexpr explicit RedBlackTree(const RedBlackTree& other) = delete;
+
+    constexpr RedBlackTree& operator=(RedBlackTree&& other) noexcept;
+    constexpr RedBlackTree& operator=(const RedBlackTree& other) = delete;
 
     constexpr virtual NodeInsertionLocation FindInsertionLocation(
         const ValueTp& value) = 0;
