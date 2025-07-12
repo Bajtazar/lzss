@@ -384,8 +384,7 @@ constexpr Map<KeyTp, ValueTp, ComparatorTp,
               AllocatorTp>::Iterator<std::is_const_v<Self>>
 Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::FindHelper(Self& self,
                                                            KeyLookupTp&& key) {
-    using NodeTp =
-        std::conditional_t<std::is_const_v<Self>, const Node*, Node*>;
+    using NodeTp = std::conditional_t<std::is_const_v<Self>, const Node, Node>*;
 
     for (NodeTp node = self.root(); node;) {
         switch (OrderCast(self.comparator_(key, node->value.first))) {
