@@ -81,7 +81,7 @@ constexpr HuffmanDecoder<Token>::TreeBuilder::TreeBuilder(
     const HuffmanTable<Token>& table)
     : root_{new Node{}} {
     // Populate unwinding table with original table
-    ProcessUnwindingTableEntry(std::get<NodePtr>(root_).get(), table);
+    ProcessUnwindingTableEntry(root_.get(), table);
     ProcessUnwindingTable();
 }
 
@@ -118,7 +118,7 @@ template <typename Token>
 constexpr void HuffmanDecoder<Token>::TreeBuilder::ProcessUnwindingTable() {
     while (!unwinding_table_.empty()) {
         auto entry_iter = unwinding_table_.begin();
-        auto [parent, entry_table] = std::move(*entry_iter);
+        auto [parent, entry_table] = std::move(entry_iter->second);
         unwinding_table_.Remove(entry_iter);
 
         ProcessUnwindingTableEntry(parent, entry_table);
@@ -139,7 +139,9 @@ constexpr void HuffmanDecoder<Token>::TreeBuilder::InsertUnwindingEntry(
         return;
     }
     std::unique_ptr<Node> new_child{new Node{}};
-    unwinding_table_.Emplace(new_child.get(), std::move(child_table));
+    unwinding_table_.Emplace(
+        std::piecewise_construct, std::forward_as_tuple(counter_++),
+        std::forward_as_tuple(new_child.get(), std::move(child_table)));
     hook = std::move(new_child);
 }
 

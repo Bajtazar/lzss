@@ -53,7 +53,11 @@ class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
 
        private:
         NodePtr root_;
-        Map<Node*, std::vector<HuffmanTableEntry>> unwinding_table_;
+        // Could be Map<Node*, std::vector<HuffmanTableEntry>> but pointer
+        // comparation is not a constexpr currently... - hack it with counter
+        Map<size_t, std::pair<Node*, std::vector<HuffmanTableEntry>>>
+            unwinding_table_;
+        size_t counter_ = 0;
 
         constexpr void ProcessUnwindingTableEntry(Node* entry_node,
                                                   const auto& entry_table);
