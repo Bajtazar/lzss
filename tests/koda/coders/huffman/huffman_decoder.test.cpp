@@ -58,3 +58,30 @@ BeginConstexprTest(HuffmanDecoderTest, DecodeGeometricDistribution) {
     ConstexprAssertEqual(decoded, kExpected);
 }
 EndConstexprTest;
+
+BeginConstexprTest(HuffmanDecoderTest, DecodeUniformDistribution) {
+    using HuffmanEntry = koda::HuffmanTable<uint32_t>::entry_type;
+
+    const koda::HuffmanTable<char> kTable = {
+        HuffmanEntry{'a', std::vector<bool>{1, 0, 1}},
+        HuffmanEntry{'b', std::vector<bool>{1, 0, 0}},
+        HuffmanEntry{'c', std::vector<bool>{1, 1, 1}},
+        HuffmanEntry{'d', std::vector<bool>{1, 1, 0}},
+        HuffmanEntry{'e', std::vector<bool>{0, 0, 1}},
+        HuffmanEntry{'f', std::vector<bool>{0, 0, 0}},
+        HuffmanEntry{'g', std::vector<bool>{0, 1, 1}},
+        HuffmanEntry{'h', std::vector<bool>{0, 1, 0}}};
+
+    const std::string kExpected = "aghbcdefacbdfgghfead";
+
+    std::vector<bool> stream = ConcatenateSymbols(kTable, kExpected);
+
+    koda::HuffmanDecoder decoder{kTable};
+
+    std::string decoded;
+
+    decoder(stream, decoded | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(decoded, kExpected);
+}
+EndConstexprTest;
