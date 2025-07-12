@@ -20,7 +20,7 @@ static constexpr std::vector<bool> ConcatenateSymbols(
     return result;
 }
 
-BeginConstexprTest(HuffmanEncoderTest, EncodeFirstScenario) {
+BeginConstexprTest(HuffmanEncoderTest, EncodeRandomDistribution) {
     using HuffmanEntry = koda::HuffmanTable<uint32_t>::entry_type;
 
     const koda::HuffmanTable<uint32_t> kTable = {
@@ -46,7 +46,7 @@ BeginConstexprTest(HuffmanEncoderTest, EncodeFirstScenario) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(HuffmanEncoderTest, EncodeSecondScenario) {
+BeginConstexprTest(HuffmanEncoderTest, EncodeGeometricDistribution) {
     using HuffmanEntry = koda::HuffmanTable<uint32_t>::entry_type;
 
     const koda::HuffmanTable<char> kTable = {
@@ -76,7 +76,7 @@ BeginConstexprTest(HuffmanEncoderTest, EncodeSecondScenario) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(HuffmanEncoderTest, EncodeThirdScenario) {
+BeginConstexprTest(HuffmanEncoderTest, EncodeUniformDistribution) {
     using HuffmanEntry = koda::HuffmanTable<uint32_t>::entry_type;
 
     const koda::HuffmanTable<char> kTable = {
@@ -105,5 +105,25 @@ BeginConstexprTest(HuffmanEncoderTest, EncodeThirdScenario) {
     ConstexprAssertEqual(stream | koda::views::LittleEndianInput |
                              koda::views::Take(kExpected.size()),
                          kExpected);
+}
+EndConstexprTest;
+
+BeginConstexprTest(HuffmanEncoderTest, EncodeDiracDistribution) {
+    using HuffmanEntry = koda::HuffmanTable<uint32_t>::entry_type;
+
+    const koda::HuffmanTable<char> kTable = {
+        HuffmanEntry{'a', std::vector<bool>{}}};
+
+    std::string tokens = "aaaaaaaaaaaaaaaaa";
+    const std::vector<bool> kExpected{};
+
+    koda::HuffmanEncoder encoder{kTable};
+
+    std::vector<char> stream;
+
+    encoder(tokens, stream | koda::views::InsertFromBack |
+                        koda::views::LittleEndianOutput);
+
+    ConstexprAssertTrue(stream.empty());
 }
 EndConstexprTest;
