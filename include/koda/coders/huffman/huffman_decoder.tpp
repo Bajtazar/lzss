@@ -2,6 +2,8 @@
 
 #include <koda/utils/utils.hpp>
 
+#include <ranges>
+
 namespace koda {
 
 template <typename Token>
