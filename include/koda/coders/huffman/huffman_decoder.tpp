@@ -25,8 +25,6 @@ constexpr auto HuffmanDecoder<Token>::Decode(
             continue;
         }
 
-        [[assume(std::holds_alternative<NodePtr>(root_))]];
-
         if (*input_iter) {
             ProcessBit(output_iter, processed_->right);
         } else {
@@ -38,6 +36,8 @@ constexpr auto HuffmanDecoder<Token>::Decode(
 template <typename Token>
 constexpr void HuffmanDecoder<Token>::ProcessBit(auto& output_iter,
                                                  NodeOrLeaf& next) {
+    [[assume(std::holds_alternative<NodePtr>(root_))]];
+
     if (const Token* token = std::get_if<Token>(&next)) {
         processed_ = std::get<NodePtr>(root_).get();
         *output_iter++ = *token;
