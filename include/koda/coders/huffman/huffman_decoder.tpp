@@ -31,14 +31,14 @@ constexpr auto HuffmanDecoder<Token>::HandleDiracDistribution(
     std::ranges::output_range<Token> auto&& output) {
     auto out_sent = std::ranges::end(output);
     auto out_iter =
-        std::ranges::fill(std::forward<decltype(output)>(output), token);
+        std::ranges::fill(std::ranges::begin(output), out_sent, token);
     return CoderResult{std::forward<decltype(input)>(input),
                        std::move(out_iter), std::move(out_sent)};
 }
 
 template <typename Token>
 constexpr auto HuffmanDecoder<Token>::DecodeNonDirac(
-    const Token& token, BitInputRange auto&& input,
+    BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
     auto input_iter = std::ranges::begin(input);
     const auto input_sent = std::ranges::end(input);
@@ -68,7 +68,7 @@ constexpr void HuffmanDecoder<Token>::ProcessBit(auto& output_iter,
         *output_iter++ = *token;
         return;
     }
-    processed_ = std::get<NodePtr>(&next).get();
+    processed_ = std::get<NodePtr>(next).get();
 }
 
 template <typename Token>
@@ -77,7 +77,8 @@ constexpr auto HuffmanDecoder<Token>::Initialize(BitInputRange auto&& input) {
 }
 
 template <typename Token>
-constexpr HuffmanDecoder<Token>::TreeBuilder(const HuffmanTable<Token>& table)
+constexpr HuffmanDecoder<Token>::TreeBuilder::TreeBuilder(
+    const HuffmanTable<Token>& table)
     : root_{new Node{}} {
     // Populate unwinding table with original table
     ProcessUnwindingTableEntry(std::get<NodePtr>(root_).get(), table);
@@ -85,12 +86,13 @@ constexpr HuffmanDecoder<Token>::TreeBuilder(const HuffmanTable<Token>& table)
 }
 
 template <typename Token>
-constexpr HuffmanDecoder<Token>::NodePtr HuffmanDecoder<Token>::root() && {
+constexpr HuffmanDecoder<Token>::NodePtr
+HuffmanDecoder<Token>::TreeBuilder::root() && {
     return std::move(root_);
 }
 
 template <typename Token>
-constexpr void HuffmanDecoder<Token>::ProcessUnwindingTableEntry(
+constexpr void HuffmanDecoder<Token>::TreeBuilder::ProcessUnwindingTableEntry(
     Node* entry_node, const auto& entry_table) {
     std::vector<HuffmanTableEntry> left;
     std::vector<HuffmanTableEntry> right;
@@ -113,7 +115,7 @@ constexpr void HuffmanDecoder<Token>::ProcessUnwindingTableEntry(
 }
 
 template <typename Token>
-constexpr void HuffmanDecoder<Token>::ProcessUnwindingTable() {
+constexpr void HuffmanDecoder<Token>::TreeBuilder::ProcessUnwindingTable() {
     while (!unwinding_table_.empty()) {
         auto entry_iter = unwinding_table_.begin();
         auto [parent, entry_table] = std::move(*entry_iter);
@@ -124,7 +126,7 @@ constexpr void HuffmanDecoder<Token>::ProcessUnwindingTable() {
 }
 
 template <typename Token>
-constexpr void HuffmanDecoder<Token>::InsertUnwindingEntry(
+constexpr void HuffmanDecoder<Token>::TreeBuilder::InsertUnwindingEntry(
     NodeOrLeaf& hook, std::vector<HuffmanTableEntry>&& child_table) {
     if (child_table.empty()) {
         return;

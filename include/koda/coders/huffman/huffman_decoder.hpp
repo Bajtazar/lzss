@@ -69,7 +69,7 @@ class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
         std::ranges::output_range<Token> auto&& output);
 
     constexpr auto DecodeNonDirac(
-        const Token& token, BitInputRange auto&& input,
+        BitInputRange auto&& input,
         std::ranges::output_range<Token> auto&& output);
 
     constexpr void ProcessBit(auto& output_iter, NodeOrLeaf& next);
