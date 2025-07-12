@@ -83,10 +83,7 @@ class EncoderInterface {
             self().Encode(std::forward<decltype(input)>(input),
                           std::forward<decltype(output)>(output));
         auto updated_output = self().Flush(std::move(orange));
-        auto iter = std::ranges::begin(updated_output);
-        iter.Flush();
-        return CoderResult{std::move(irange), std::move(iter),
-                           std::ranges::end(updated_output)};
+        return CoderResult{std::move(irange), std::move(updated_output)};
     }
 
     constexpr auto operator()(size_t stream_length,

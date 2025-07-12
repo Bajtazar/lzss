@@ -24,7 +24,7 @@ struct DummyInputIterator {
 
 struct DummyBitInputIterator {
     using difference_type = std::ptrdiff_t;
-    using value_type = uint8_t;
+    using value_type = bool;
 
     DummyBitInputIterator();
 
@@ -32,7 +32,9 @@ struct DummyBitInputIterator {
 
     DummyBitInputIterator& operator++();
 
-    size_t Position();
+    size_t Position() const;
+
+    void Flush();
 
     DummyBitInputIterator operator++(int);
 
@@ -59,13 +61,13 @@ struct DummyOutputIterator {
 
 struct DummyBitOutputIterator {
     using difference_type = std::ptrdiff_t;
-    using value_type = uint8_t;
+    using value_type = bool;
 
     DummyBitOutputIterator();
 
     value_type& operator*() const;
 
-    size_t Position();
+    size_t Position() const;
 
     void Flush();
 

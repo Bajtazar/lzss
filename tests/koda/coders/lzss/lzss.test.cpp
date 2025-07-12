@@ -22,7 +22,9 @@ BeginConstexprTest(LzssTest, NormalTest) {
     std::vector<uint8_t> encoded;
 
     encoder(sequence, encoded | koda::views::InsertFromBack |
-                          koda::views::LittleEndianOutput);
+                          koda::views::LittleEndianOutput)
+        .output_range.begin()
+        .Flush();
 
     std::string decoded;
 
@@ -43,7 +45,9 @@ BeginConstexprTest(LzssTest, SmallBufferTest) {
     std::vector<uint8_t> encoded;
 
     encoder(sequence, encoded | koda::views::InsertFromBack |
-                          koda::views::LittleEndianOutput);
+                          koda::views::LittleEndianOutput)
+        .output_range.begin()
+        .Flush();
 
     std::string decoded;
 
@@ -64,7 +68,9 @@ BeginConstexprTest(LzssTest, SmallDictionaryTest) {
     std::vector<uint8_t> encoded;
 
     encoder(sequence, encoded | koda::views::InsertFromBack |
-                          koda::views::LittleEndianOutput);
+                          koda::views::LittleEndianOutput)
+        .output_range.begin()
+        .Flush();
 
     std::string decoded;
 

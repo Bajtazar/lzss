@@ -14,15 +14,11 @@ concept WeaklyEqualityComparable = requires(Tp& tp, Up& up) {
 };
 
 template <class Iter>
-concept BitInputIterator = std::input_iterator<Iter> && requires(Iter iter) {
-    { iter.Position() } -> std::same_as<size_t>;
-};
+concept BitInputIterator =
+    std::input_iterator<Iter> && std::same_as<std::iter_value_t<Iter>, bool>;
 
 template <class Iter>
-concept BitOutputIterator =
-    std::output_iterator<Iter, bool> && requires(Iter iter) {
-        { iter.Position() } -> std::same_as<size_t>;
-    };
+concept BitOutputIterator = std::output_iterator<Iter, bool>;
 
 template <class Range>
 concept BitInputRange = std::ranges::input_range<Range> &&
