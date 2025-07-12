@@ -779,8 +779,9 @@ constexpr void RedBlackTree<ValueTp, AllocatorTp>::PopulateClonedRoot(
             continue;
         }
 
-        const Node* previous = node;
+        const Node* previous;
         do {
+            previous = node;
             node = node->parent;
             clone = clone->parent;
         } while (node && previous == node->right);
