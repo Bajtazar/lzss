@@ -75,3 +75,35 @@ BeginConstexprTest(HuffmanEncoderTest, EncodeSecondScenario) {
                          kExpected);
 }
 EndConstexprTest;
+
+BeginConstexprTest(HuffmanEncoderTest, EncodeThirdScenario) {
+    using HuffmanEntry = koda::HuffmanTable<uint32_t>::entry_type;
+
+    const koda::HuffmanTable<char> kTable = {
+        HuffmanEntry{'a', std::vector<bool>{1, 0, 1}},
+        HuffmanEntry{'b', std::vector<bool>{1, 0, 0}},
+        HuffmanEntry{'c', std::vector<bool>{1, 1, 1}},
+        HuffmanEntry{'d', std::vector<bool>{1, 1, 0}},
+        HuffmanEntry{'e', std::vector<bool>{0, 0, 1}},
+        HuffmanEntry{'f', std::vector<bool>{0, 0, 0}},
+        HuffmanEntry{'g', std::vector<bool>{0, 1, 1}},
+        HuffmanEntry{'h', std::vector<bool>{0, 1, 0}}};
+
+    std::string tokens = "aghbcdefacbdfgghfead";
+    const std::vector<bool> kExpected = ConcatenateSymbols(kTable, tokens);
+
+    koda::HuffmanEncoder encoder{kTable};
+
+    std::vector<char> stream;
+
+    encoder(tokens, stream | koda::views::InsertFromBack |
+                        koda::views::LittleEndianOutput);
+
+    // call operator automatically flushes iter so check whether the flushed
+    // size is valid
+    ConstexprAssertEqual(stream.size(), std::ceil(kExpected.size() / 8.f));
+    ConstexprAssertEqual(stream | koda::views::LittleEndianInput |
+                             koda::views::Take(kExpected.size()),
+                         kExpected);
+}
+EndConstexprTest;
