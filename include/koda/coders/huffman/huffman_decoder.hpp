@@ -4,6 +4,7 @@
 #include <koda/coders/huffman/huffman_table.hpp>
 
 #include <memory>
+#include <stdexcept>
 #include <variant>
 #include <vector>
 
@@ -35,18 +36,85 @@ class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
     struct Node {
         using NodeOrLeaf = std::variant<std::unique_ptr<Node>, Token>;
 
-        std::unique_ptr<Node> left;
-        std::unique_ptr<Node> right;
+        NodeOrLeaf left = nullptr;
+        NodeOrLeaf right = nullptr;
     };
 
-    using UnwindEntry = std::pair<Node*, std::vector<Token>>;
+    using HuffmanTableEntry = typename HuffmanTable<Token>::entry_type;
     using NodeOrLeaf = Node::NodeOrLeaf;
 
     NodeOrLeaf root_;
 
-    class TreeBuilder;
+    class TreeBuilder {
+       public:
+        constexpr TreeBuilder(const HuffmanTable<Token>& table)
+            : root_{new Node{}} {
+            InitializeUnwindingTable(table);
+        }
+
+        constexpr std::unique_ptr<Node> root() && { return std::move(root_); }
+
+       private:
+        std::unique_ptr<Node> root_;
+        Map<Node*, std::vector<HuffmanTableEntry>> unwinding_table_;
+
+        constexpr void InitializeUnwindingTable(
+            const HuffmanTable<Token>& table) {
+            std::vector<HuffmanTableEntry> left;
+            std::vector<HuffmanTableEntry> right;
+
+            for (auto [token, symbol] : table) {
+                if (symbol.empty()) [[unlikely]] {
+                    throw std::runtime_error{"Invalid huffman table detected!"};
+                }
+                auto bit = symbol.front();
+                symbol.erase(symbol.begin());
+                if (bit) {
+                    right.emplace_back(token, std::move(symbol));
+                } else {
+                    left.emplace_back(token, std::move(symbol));
+                }
+            }
+
+            auto insert_entry_fn = [&](NodeOrLeaf& hook, auto&& child_table) {
+                if (child_table.size() == 1) {
+                    if (child_table.front().second.empty()) [[unlikely]] {
+                        throw std::runtime_error{
+                            "Invalid huffman table detected!"};
+                    }
+                    hook = std::move(child_table.front().first);
+                } else {
+                    std::unique_ptr<Node> new_child{new Node{}};
+                    unwinding_table_.Emplace(new_child.get(),
+                                             std::move(child_table));
+                    hook = std::move(new_child);
+                }
+            };
+            insert_entry_fn(root_->left, std::move(left));
+            insert_entry_fn(root_->right, std::move(right));
+        }
+    };
 
     static constexpr NodeOrLeaf BuildTree(const HuffmanTable<Token>& table);
 };
+
+template <typename Token>
+constexpr HuffmanDecoder<Token>::HuffmanDecoder(
+    const HuffmanTable<Token>& table)
+    : root_{BuildTree(table)} {}
+
+template <typename Token>
+/*static*/ constexpr HuffmanDecoder<Token>::NodeOrLeaf
+HuffmanDecoder<Token>::BuildTree(const HuffmanTable<Token>& table) {
+    if (table.size() == 1) {
+        if (!table.begin()->second.empty()) [[unlikely]] {
+            throw std::runtime_error{
+                "For a distribution with only one element symbol should not "
+                "exist"};
+        }
+        return table.begin()->first;
+    }
+    return TreeBuilder{table}.root();
+}
 
 }  // namespace koda
