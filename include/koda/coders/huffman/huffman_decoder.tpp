@@ -14,13 +14,30 @@ constexpr auto HuffmanDecoder<Token>::Decode(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
     if (const Token* token = std::get_if<Token>(&root_)) {
-        auto out_sent = std::ranges::end(output);
-        auto out_iter =
-            std::ranges::fill(std::forward<decltype(output)>(output), *token);
-        return CoderResult{std::forward<decltype(input)>(input),
-                           std::move(out_iter), std::move(out_sent)};
+        return HandleDiracDistribution(*token,
+                                       std::forward<decltype(input)>(input),
+                                       std::forward<decltype(output)>(output));
     }
 
+    return DecodeNonDirac(std::forward<decltype(input)>(input),
+                          std::forward<decltype(output)>(output));
+}
+
+template <typename Token>
+constexpr auto HuffmanDecoder<Token>::HandleDiracDistribution(
+    const Token& token, BitInputRange auto&& input,
+    std::ranges::output_range<Token> auto&& output) {
+    auto out_sent = std::ranges::end(output);
+    auto out_iter =
+        std::ranges::fill(std::forward<decltype(output)>(output), token);
+    return CoderResult{std::forward<decltype(input)>(input),
+                       std::move(out_iter), std::move(out_sent)};
+}
+
+template <typename Token>
+constexpr auto HuffmanDecoder<Token>::DecodeNonDirac(
+    const Token& token, BitInputRange auto&& input,
+    std::ranges::output_range<Token> auto&& output) {
     auto input_iter = std::ranges::begin(input);
     const auto input_sent = std::ranges::end(input);
     auto output_iter = std::ranges::begin(output);

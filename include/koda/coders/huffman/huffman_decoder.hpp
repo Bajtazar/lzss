@@ -64,6 +64,14 @@ class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
             NodeOrLeaf& hook, std::vector<HuffmanTableEntry>&& child_table);
     };
 
+    constexpr auto HandleDiracDistribution(
+        const Token& token, BitInputRange auto&& input,
+        std::ranges::output_range<Token> auto&& output);
+
+    constexpr auto DecodeNonDirac(
+        const Token& token, BitInputRange auto&& input,
+        std::ranges::output_range<Token> auto&& output);
+
     constexpr void ProcessBit(auto& output_iter, NodeOrLeaf& next);
 
     static constexpr NodeOrLeaf BuildTree(const HuffmanTable<Token>& table);
