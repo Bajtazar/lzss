@@ -43,7 +43,7 @@ class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
     using NodeOrLeaf = Node::NodeOrLeaf;
 
     NodeOrLeaf root_;
-    Node* processed_ = nullptr;
+    const Node* processed_;
 
     class TreeBuilder {
        public:
@@ -76,7 +76,7 @@ class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
         BitInputRange auto&& input,
         std::ranges::output_range<Token> auto&& output);
 
-    constexpr void ProcessBit(auto& output_iter, NodeOrLeaf& next);
+    constexpr void ProcessBit(auto& output_iter, const NodeOrLeaf& next);
 
     static constexpr NodeOrLeaf BuildTree(const HuffmanTable<Token>& table);
 };

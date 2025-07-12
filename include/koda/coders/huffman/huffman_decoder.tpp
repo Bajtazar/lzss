@@ -9,7 +9,12 @@ namespace koda {
 template <typename Token>
 constexpr HuffmanDecoder<Token>::HuffmanDecoder(
     const HuffmanTable<Token>& table)
-    : root_{BuildTree(table)} {}
+    : root_{BuildTree(table)}, processed_{[](NodeOrLeaf& root) -> const Node* {
+          if (NodePtr* node = std::get_if<NodePtr>(&root)) {
+              return node->get();
+          }
+          return nullptr;
+      }(root_)} {}
 
 template <typename Token>
 constexpr auto HuffmanDecoder<Token>::Decode(
@@ -60,7 +65,7 @@ constexpr auto HuffmanDecoder<Token>::DecodeNonDirac(
 
 template <typename Token>
 constexpr void HuffmanDecoder<Token>::ProcessBit(auto& output_iter,
-                                                 NodeOrLeaf& next) {
+                                                 const NodeOrLeaf& next) {
     [[assume(std::holds_alternative<NodePtr>(root_))]];
 
     if (const Token* token = std::get_if<Token>(&next)) {
@@ -101,7 +106,8 @@ constexpr void HuffmanDecoder<Token>::TreeBuilder::ProcessUnwindingTableEntry(
         if (symbol.empty()) [[unlikely]] {
             throw std::runtime_error{"Invalid huffman table detected!"};
         }
-        auto bit = symbol.front();
+
+        const bool bit = symbol.front();
         symbol.erase(symbol.begin());
         if (bit) {
             right.emplace_back(token, std::move(symbol));
@@ -120,7 +126,6 @@ constexpr void HuffmanDecoder<Token>::TreeBuilder::ProcessUnwindingTable() {
         auto entry_iter = unwinding_table_.begin();
         auto [parent, entry_table] = std::move(entry_iter->second);
         unwinding_table_.Remove(entry_iter);
-
         ProcessUnwindingTableEntry(parent, entry_table);
     }
 }
@@ -132,7 +137,7 @@ constexpr void HuffmanDecoder<Token>::TreeBuilder::InsertUnwindingEntry(
         return;
     }
     if (child_table.size() == 1) {
-        if (child_table.front().second.empty()) [[unlikely]] {
+        if (!child_table.front().second.empty()) [[unlikely]] {
             throw std::runtime_error{"Invalid huffman table detected!"};
         }
         hook = std::move(child_table.front().first);
