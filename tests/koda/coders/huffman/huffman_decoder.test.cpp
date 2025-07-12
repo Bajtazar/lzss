@@ -85,3 +85,25 @@ BeginConstexprTest(HuffmanDecoderTest, DecodeUniformDistribution) {
     ConstexprAssertEqual(decoded, kExpected);
 }
 EndConstexprTest;
+
+BeginConstexprTest(HuffmanDecoderTest, DecodeDiracDistribution) {
+    using HuffmanEntry = koda::HuffmanTable<uint32_t>::entry_type;
+
+    const koda::HuffmanTable<char> kTable = {
+        HuffmanEntry{'a', std::vector<bool>{}}};
+
+    const std::string kExpected = "aaaaaaaaaaaaaaaaa";
+
+    std::vector<bool> stream = ConcatenateSymbols(kTable, kExpected);
+
+    koda::HuffmanDecoder decoder{kTable};
+
+    std::string decoded;
+
+    // It will yield infinitly otherwise!
+    decoder(stream, decoded | koda::views::InsertFromBack |
+                        koda::views::Take(kExpected.size()));
+
+    ConstexprAssertEqual(decoded, kExpected);
+}
+EndConstexprTest;
