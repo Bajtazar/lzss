@@ -16,8 +16,7 @@ constexpr float HuffmanEncoder<Token>::TokenBitSize(Token token) const {
     if (auto iter = table_.Find(token); iter != table_.end()) [[likely]] {
         return iter->second.size();
     }
-    throw std::runtime_error{std::format(
-        "Token ({}) is not described by the huffman codes table", token)};
+    ThrowException(token);
 }
 
 template <typename Token>
@@ -67,14 +66,19 @@ constexpr auto HuffmanEncoder<Token>::EncodeToken(const Token& token,
                                                   const auto& output_sent) {
     auto symbol_iter = table_.Find(token);
     if (symbol_iter == table_.end()) [[unlikely]] {
-        throw std::runtime_error{std::format(
-            "Token ({}) is not described by the huffman codes table", token)};
+        ThrowException(token);
     }
     state_ = std::pair{symbol_iter->second.begin(), symbol_iter->second.end()};
 
     auto [res_iter, _] =
         Flush(std::ranges::subrange{std::move(output_iter), output_sent});
     return res_iter;
+}
+
+template <typename Token>
+[[noreturn]] constexpr void HuffmanEncoder<Token>::ThrowException(Token token) {
+    throw std::runtime_error{std::format(
+        "Token ({}) is not described by the huffman codes table", token)};
 }
 
 }  // namespace koda

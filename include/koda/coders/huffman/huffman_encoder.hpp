@@ -39,6 +39,8 @@ class HuffmanEncoder : public EncoderInterface<Token, HuffmanEncoder<Token>> {
 
     constexpr auto EncodeToken(const Token& token, auto output_iter,
                                const auto& output_sent);
+
+    [[noreturn]] constexpr void ThrowException(Token token);
 };
 
 }  // namespace koda
