@@ -49,7 +49,9 @@ class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
        public:
         constexpr TreeBuilder(const HuffmanTable<Token>& table)
             : root_{new Node{}} {
-            InitializeUnwindingTable(table);
+            // Populate unwinding table with original table
+            ProcessUnwindingTableEntry(std::get<NodePtr>(root_).get(), table);
+            ProcessUnwindingTable();
         }
 
         constexpr std::unique_ptr<Node> root() && { return std::move(root_); }
@@ -58,12 +60,12 @@ class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
         std::unique_ptr<Node> root_;
         Map<Node*, std::vector<HuffmanTableEntry>> unwinding_table_;
 
-        constexpr void InitializeUnwindingTable(
-            const HuffmanTable<Token>& table) {
+        constexpr void ProcessUnwindingTableEntry(Node* entry_node,
+                                                  const auto& entry_table) {
             std::vector<HuffmanTableEntry> left;
             std::vector<HuffmanTableEntry> right;
 
-            for (auto [token, symbol] : table) {
+            for (auto [token, symbol] : entry_table) {
                 if (symbol.empty()) [[unlikely]] {
                     throw std::runtime_error{"Invalid huffman table detected!"};
                 }
@@ -76,24 +78,37 @@ class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
                 }
             }
 
-            InsertWorklistEntry(root_->left, std::move(left));
-            InsertWorklistEntry(root_->right, std::move(right));
+            InsertUnwindingEntry(entry_node->left, std::move(left));
+            InsertUnwindingEntry(entry_node->right, std::move(right));
+        }
+
+        constexpr void ProcessUnwindingTable() {
+            while (!unwinding_table_.empty()) {
+                auto entry_iter = unwinding_table_.begin();
+                auto [parent, entry_table] = std::move(*entry_iter);
+                unwinding_table_.Remove(entry_iter);
+
+                ProcessUnwindingTableEntry(parent, entry_table);
+            }
+        }
+
+        constexpr void InsertUnwindingEntry(
+            NodeOrLeaf& hook, std::vector<HuffmanTableEntry>&& child_table) {
+            if (child_table.empty()) {
+                return;
+            }
+            if (child_table.size() == 1) {
+                if (child_table.front().second.empty()) [[unlikely]] {
+                    throw std::runtime_error{"Invalid huffman table detected!"};
+                }
+                hook = std::move(child_table.front().first);
+                return;
+            }
+            std::unique_ptr<Node> new_child{new Node{}};
+            unwinding_table_.Emplace(new_child.get(), std::move(child_table));
+            hook = std::move(new_child);
         }
     };
-
-    constexpr void InsertWorklistEntry(
-        NodeOrLeaf& hook, std::vector<HuffmanTableEntry>&& child_table) {
-        if (child_table.size() == 1) {
-            if (child_table.front().second.empty()) [[unlikely]] {
-                throw std::runtime_error{"Invalid huffman table detected!"};
-            }
-            hook = std::move(child_table.front().first);
-            return;
-        }
-        std::unique_ptr<Node> new_child{new Node{}};
-        unwinding_table_.Emplace(new_child.get(), std::move(child_table));
-        hook = std::move(new_child);
-    }
 
     static constexpr NodeOrLeaf BuildTree(const HuffmanTable<Token>& table);
 };
