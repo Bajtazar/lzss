@@ -40,6 +40,7 @@ class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
         NodeOrLeaf right = nullptr;
     };
 
+    using NodePtr = std::unique_ptr<Node>;
     using HuffmanTableEntry = typename HuffmanTable<Token>::entry_type;
     using NodeOrLeaf = Node::NodeOrLeaf;
 
@@ -47,89 +48,26 @@ class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
 
     class TreeBuilder {
        public:
-        constexpr TreeBuilder(const HuffmanTable<Token>& table)
-            : root_{new Node{}} {
-            // Populate unwinding table with original table
-            ProcessUnwindingTableEntry(std::get<NodePtr>(root_).get(), table);
-            ProcessUnwindingTable();
-        }
+        constexpr TreeBuilder(const HuffmanTable<Token>& table);
 
-        constexpr std::unique_ptr<Node> root() && { return std::move(root_); }
+        constexpr NodePtr root() &&;
 
        private:
-        std::unique_ptr<Node> root_;
+        NodePtr root_;
         Map<Node*, std::vector<HuffmanTableEntry>> unwinding_table_;
 
         constexpr void ProcessUnwindingTableEntry(Node* entry_node,
-                                                  const auto& entry_table) {
-            std::vector<HuffmanTableEntry> left;
-            std::vector<HuffmanTableEntry> right;
+                                                  const auto& entry_table);
 
-            for (auto [token, symbol] : entry_table) {
-                if (symbol.empty()) [[unlikely]] {
-                    throw std::runtime_error{"Invalid huffman table detected!"};
-                }
-                auto bit = symbol.front();
-                symbol.erase(symbol.begin());
-                if (bit) {
-                    right.emplace_back(token, std::move(symbol));
-                } else {
-                    left.emplace_back(token, std::move(symbol));
-                }
-            }
-
-            InsertUnwindingEntry(entry_node->left, std::move(left));
-            InsertUnwindingEntry(entry_node->right, std::move(right));
-        }
-
-        constexpr void ProcessUnwindingTable() {
-            while (!unwinding_table_.empty()) {
-                auto entry_iter = unwinding_table_.begin();
-                auto [parent, entry_table] = std::move(*entry_iter);
-                unwinding_table_.Remove(entry_iter);
-
-                ProcessUnwindingTableEntry(parent, entry_table);
-            }
-        }
+        constexpr void ProcessUnwindingTable();
 
         constexpr void InsertUnwindingEntry(
-            NodeOrLeaf& hook, std::vector<HuffmanTableEntry>&& child_table) {
-            if (child_table.empty()) {
-                return;
-            }
-            if (child_table.size() == 1) {
-                if (child_table.front().second.empty()) [[unlikely]] {
-                    throw std::runtime_error{"Invalid huffman table detected!"};
-                }
-                hook = std::move(child_table.front().first);
-                return;
-            }
-            std::unique_ptr<Node> new_child{new Node{}};
-            unwinding_table_.Emplace(new_child.get(), std::move(child_table));
-            hook = std::move(new_child);
-        }
+            NodeOrLeaf& hook, std::vector<HuffmanTableEntry>&& child_table);
     };
 
     static constexpr NodeOrLeaf BuildTree(const HuffmanTable<Token>& table);
 };
 
-template <typename Token>
-constexpr HuffmanDecoder<Token>::HuffmanDecoder(
-    const HuffmanTable<Token>& table)
-    : root_{BuildTree(table)} {}
-
-template <typename Token>
-/*static*/ constexpr HuffmanDecoder<Token>::NodeOrLeaf
-HuffmanDecoder<Token>::BuildTree(const HuffmanTable<Token>& table) {
-    if (table.size() == 1) {
-        if (!table.begin()->second.empty()) [[unlikely]] {
-            throw std::runtime_error{
-                "For a distribution with only one element symbol should not "
-                "exist"};
-        }
-        return table.begin()->first;
-    }
-    return TreeBuilder{table}.root();
-}
-
 }  // namespace koda
+
+#include <koda/coders/huffman/huffman_decoder.tpp>
