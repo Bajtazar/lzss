@@ -142,3 +142,40 @@ BeginConstexprTest(HuffmanDecoderTest, PartialInputDecoding) {
     ConstexprAssertEqual(result, kExpected);
 }
 EndConstexprTest;
+
+BeginConstexprTest(HuffmanDecoderTest, PartialOutputDecoding) {
+    using HuffmanEntry = koda::HuffmanTable<uint32_t>::entry_type;
+
+    const koda::HuffmanTable<char> kTable = {
+        HuffmanEntry{'t', std::vector<bool>{1}},
+        HuffmanEntry{'r', std::vector<bool>{0, 1}},
+        HuffmanEntry{'x', std::vector<bool>{0, 0, 1}},
+        HuffmanEntry{'o', std::vector<bool>{0, 0, 0, 1}},
+        HuffmanEntry{'e', std::vector<bool>{0, 0, 0, 0, 1}},
+        HuffmanEntry{'a', std::vector<bool>{0, 0, 0, 0, 0}}};
+
+    const std::string kExpected = "trxxaxetrorx";
+    std::vector<bool> stream = ConcatenateSymbols(kTable, kExpected);
+
+    koda::HuffmanDecoder decoder{kTable};
+
+    std::string result;
+
+    decoder.Decode(stream | koda::views::Take(5),
+                   result | koda::views::InsertFromBack);
+
+    // "10100 1" -> tr + partialy x
+    ConstexprAssertEqual(result, kExpected | koda::views::Take(2));
+
+    decoder.Decode(stream | std::views::drop(5) | koda::views::Take(2),
+                   result | koda::views::InsertFromBack);
+
+    // "10 0" -> finish x + partialy encode next x
+    ConstexprAssertEqual(result, kExpected | koda::views::Take(3));
+
+    decoder(stream | std::views::drop(7), result | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(result.size(), kExpected.size());
+    ConstexprAssertEqual(result, kExpected);
+}
+EndConstexprTest;
