@@ -13,6 +13,14 @@ template <typename Token>
 constexpr auto HuffmanDecoder<Token>::Decode(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
+    if (const Token* token = std::get_if<Token>(&root_)) {
+        auto out_sent = std::ranges::end(output);
+        auto out_iter =
+            std::ranges::fill(std::forward<decltype(output)>(output), *token);
+        return CoderResult{std::forward<decltype(input)>(input),
+                           std::move(out_iter), std::move(out_sent)};
+    }
+
     auto input_iter = std::ranges::begin(input);
     const auto input_sent = std::ranges::end(input);
     auto output_iter = std::ranges::begin(output);
@@ -20,17 +28,15 @@ constexpr auto HuffmanDecoder<Token>::Decode(
 
     for (; (input_iter != input_sent) && (output_iter != output_sent);
          ++input_iter) {
-        if (const Token* token = std::get_if<Token>(&root_)) {
-            *output_iter = *token;
-            continue;
-        }
-
         if (*input_iter) {
             ProcessBit(output_iter, processed_->right);
         } else {
             ProcessBit(output_iter, processed_->left);
         }
     }
+
+    return CoderResult{std::move(input_iter), std::move(input_sent),
+                       std::move(output_iter), std::move(output_sent)};
 }
 
 template <typename Token>
