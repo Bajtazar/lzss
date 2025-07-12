@@ -6,7 +6,7 @@
 #include <cassert>
 #include <cmath>
 
-static_assert(koda::Encoder<koda::HuffmanEncoder<uint8_t>, uint8_t>);
+static_assert(koda::SizeAwareEncoder<koda::HuffmanEncoder<uint8_t>, uint8_t>);
 
 template <typename Token>
 static constexpr std::vector<bool> ConcatenateSymbols(
