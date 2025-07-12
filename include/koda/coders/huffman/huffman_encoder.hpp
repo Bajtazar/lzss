@@ -30,14 +30,12 @@ class HuffmanEncoder : public EncoderInterface<Token, HuffmanEncoder<Token>> {
     constexpr ~HuffmanEncoder() = default;
 
    private:
-    using BitRange =
-        decltype(std::declval<std::vector<bool>>() | views::LittleEndianInput);
-    using BitIterator = std::ranges::iterator_t<BitRange>;
-    using BitSentinel = std::ranges::iterator_t<BitSentinel>;
-    using BitPair = std::pair<BitIterator, BitSentinel>;
+    using BitIterator = std::ranges::iterator_t<std::vector<bool>>;
+    using BitSentinel = std::ranges::sentinel_t<std::vector<bool>>;
+    using BitRange = std::pair<BitIterator, BitSentinel>;
 
     HuffmanTable<Token> table_;
-    std::optional<std::pair<BitIterator, BitSentinel>> state_;
+    std::optional<BitRange> state_;
 
     constexpr auto EncodeToken(const Token& token, auto output_iter,
                                const auto& output_sent);

@@ -25,10 +25,10 @@ constexpr auto HuffmanEncoder<Token>::Encode(InputRange<Token> auto&& input,
                                              BitOutputRange auto&& output) {
     auto out = Flush(std::forward<decltype(output)>(output));
     if (!state_) {
-        auto in_iter = std::ranges::begin(output);
-        auto in_sent = std::ranges::end(output);
-        auto out_iter = std::ranges::begin(output);
-        auto out_sent = std::ranges::end(output);
+        auto in_iter = std::ranges::begin(input);
+        auto in_sent = std::ranges::end(input);
+        auto out_iter = std::ranges::begin(out);
+        auto out_sent = std::ranges::end(out);
 
         for (; (in_iter != in_sent) && (out_iter != out_sent); ++in_iter) {
             out_iter = EncodeToken(*in_iter, out_iter, out_sent);
@@ -44,7 +44,7 @@ template <typename Token>
 constexpr auto HuffmanEncoder<Token>::Flush(BitOutputRange auto&& output) {
     if (state_) {
         auto& token_iter = state_->first;
-        const auto& token_sent = state_->first;
+        const auto& token_sent = state_->second;
 
         auto out_iter = std::ranges::begin(output);
         auto out_sent = std::ranges::end(output);
@@ -70,8 +70,7 @@ constexpr auto HuffmanEncoder<Token>::EncodeToken(const Token& token,
         throw std::runtime_error{std::format(
             "Token ({}) is not described by the huffman codes table", token)};
     }
-    auto range = symbol_iter->second | views::LittleEndianInput;
-    state_ = BitPair{std::ranges::begin(range), std::ranges::end(range)};
+    state_ = std::pair{symbol_iter->second.begin(), symbol_iter->second.end()};
 
     auto [res_iter, _] =
         Flush(std::ranges::subrange{std::move(output_iter), output_sent});
