@@ -8,10 +8,10 @@
 
 namespace koda {
 
-template <std::integral Token>
+template <typename Token>
 using HuffmanTable = Map<Token, std::vector<bool>>;
 
-template <std::integral Token, std::integral CountTp>
+template <typename Token, std::integral CountTp>
 [[nodiscard]] constexpr HuffmanTable<Token> MakeHuffmanTable(
     const Map<Token, CountTp>& count);
 

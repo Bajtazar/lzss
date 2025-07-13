@@ -28,7 +28,7 @@ namespace details {
 /// to be used only once so it doesn't have to be the fastest one and this is
 /// why there is no explicit allocation control given to the user
 
-template <std::integral Token, std::integral CountTp>
+template <typename Token, std::integral CountTp>
 class MakeHuffmanTableFn {
    public:
     explicit constexpr MakeHuffmanTableFn(const Map<Token, CountTp>& count) {
@@ -219,7 +219,7 @@ class MakeHuffmanTableFn {
 
 }  // namespace details
 
-template <std::integral Token, std::integral CountTp>
+template <typename, std::integral CountTp>
 [[nodiscard]] constexpr HuffmanTable<Token> MakeHuffmanTable(
     const Map<Token, CountTp>& count) {
     if (count.empty()) [[unlikely]] {
