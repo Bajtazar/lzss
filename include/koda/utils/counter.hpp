@@ -25,3 +25,5 @@ template <std::ranges::input_range Range>
 Counter(Range&&) -> Counter<std::ranges::range_value_t<Range>>;
 
 }  // namespace koda
+
+#include <koda/utils/counter.tpp>
