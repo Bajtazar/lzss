@@ -18,11 +18,12 @@ class Counter {
     [[nodiscard]] constexpr auto&& counted(this auto&& self) noexcept;
 
    private:
-    Map<Token, Counter> counter_;
+    Map<Token, CountTp> counter_;
 };
 
 template <std::ranges::input_range Range>
-Counter(Range&&) -> Counter<std::ranges::range_value_t<Range>>;
+Counter(Range&&)
+    -> Counter<std::remove_cvref_t<std::ranges::range_value_t<Range>>>;
 
 }  // namespace koda
 

@@ -4,10 +4,6 @@
 #include <koda/utils/back_inserter_iterator.hpp>
 #include <koda/utils/bit_iterator.hpp>
 
-#include <gtest/gtest.h>
-
-#include <print>
-
 static constexpr const char* kTestString =
     "The number theoretic transform is based on generalizing the $ N$ th "
     "primitive root of unity (see §3.12) to a ``quotient ring'' instead of "
