@@ -74,6 +74,11 @@ CoderResult(InputIterTp, InputSentTp, OutputIter, OutputSentTp)
 
 template <typename InputToken, typename Derived>
 class EncoderInterface {
+    static constexpr bool IsSizeAware =
+        requires(Derived derived, InputToken token) {
+            { derived.TokenBitSize(token) } -> std::same_as<float>;
+        };
+
    public:
     constexpr EncoderInterface() noexcept = default;
 
@@ -100,6 +105,31 @@ class EncoderInterface {
         return RemoveCountedIters(
             self().Encode(input | views::Take(stream_length),
                           std::forward<decltype(output)>(output)));
+    }
+
+    // calculates information
+    constexpr float EstimateEncodedSize(InputRange<InputToken> auto&& input)
+        requires IsSizeAware
+    {
+        float est_size = 0;
+        for (auto&& token : input) {
+            est_size += self().TokenBitSize(token);
+        }
+        return est_size;
+    }
+
+    // calculates information
+    constexpr float EstimateAverageTokenSize(
+        InputRange<InputToken> auto&& input)
+        requires IsSizeAware
+    {
+        float est_size = 0;
+        size_t counter = 0;
+        for (auto&& token : input) {
+            est_size += self().TokenBitSize(token);
+            ++counter;
+        }
+        return est_size / counter;
     }
 
    private:
@@ -179,8 +209,11 @@ concept Encoder =
 
 template <typename EncoderTp, typename Tp>
 concept SizeAwareEncoder =
-    Encoder<EncoderTp, Tp> && requires(EncoderTp encoder, Tp token) {
+    Encoder<EncoderTp, Tp> &&
+    requires(EncoderTp encoder, Tp token, DummyInputRange<Tp> input) {
         { encoder.TokenBitSize(token) } -> std::same_as<float>;
+        { encoder.EstimateEncodedSize(input) } -> std::same_as<float>;
+        { encoder.EstimateAverageTokenSize(input) } -> std::same_as<float>;
     };
 
 template <typename DecoderTp, typename Tp>

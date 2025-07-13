@@ -219,7 +219,7 @@ class MakeHuffmanTableFn {
 
 }  // namespace details
 
-template <typename, std::integral CountTp>
+template <typename Token, std::integral CountTp>
 [[nodiscard]] constexpr HuffmanTable<Token> MakeHuffmanTable(
     const Map<Token, CountTp>& count) {
     if (count.empty()) [[unlikely]] {
