@@ -18,7 +18,7 @@ static constexpr std::string_view kTestString =
     "visits all of the ``DFT frequency points'' on the unit circle in the "
     "$ z$ plane, as $ k$ goes from 0 to $ N-1$";
 
-BeginConstexprTest(HuffmanTest, NormalTest) {
+BeginConstexprTest(HuffmanTest, Test) {
     const auto kCount = koda::Counter{kTestString}.counted();
     const auto kTable = koda::MakeHuffmanTable(kCount);
 
