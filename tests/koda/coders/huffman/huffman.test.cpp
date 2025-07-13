@@ -33,5 +33,6 @@ BeginConstexprTest(HuffmanTest, Test) {
     decoder(stream, result | koda::views::InsertFromBack);
 
     ConstexprAssertEqual(result, kTestString);
+    ConstexprAssertTrue(result.size() * CHAR_BIT > stream.size());
 }
 EndConstexprTest;
