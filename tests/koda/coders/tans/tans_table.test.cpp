@@ -76,12 +76,45 @@ BeginConstexprTest(TansTableTest, UniformDistributionStrided) {
                                         {'g', 2},
                                         {'h', 2}}};
 
-    const std::vector<char> kExpectedStateTable = {'b', 'e', 'a', 'd', 'h', 'c', 'g', 'b', 'f', 'a', 'e', 'h', 'd', 'g', 'c', 'f'};
+    const std::vector<char> kExpectedStateTable = {'b', 'e', 'a', 'd', 'h', 'c',
+                                                   'g', 'b', 'f', 'a', 'e', 'h',
+                                                   'd', 'g', 'c', 'f'};
 
     koda::Map<char, size_t> kExpectedStatesPerToken = counter;
     const size_t kNumberOfStates = 16;
 
     koda::TansInitTable table{counter, 2, 7};
+
+    ConstexprAssertEqual(table.state_table(), kExpectedStateTable);
+    ConstexprAssertEqual(table.states_per_token(), kExpectedStatesPerToken);
+    ConstexprAssertEqual(table.number_of_states(), kNumberOfStates);
+}
+EndConstexprTest;
+
+BeginConstexprTest(TansTableTest, UniformDistributionStridedAndScaled) {
+    koda::Map<char, size_t> counter = {{{'a', 2},
+                                        {'b', 2},
+                                        {'c', 2},
+                                        {'d', 2},
+                                        {'e', 2},
+                                        {'f', 2},
+                                        {'g', 2},
+                                        {'h', 2}}};
+
+    const std::vector<char> kExpectedStateTable = {
+        'g', 'h', 'a', 'b', 'd', 'e', 'f', 'g', 'h', 'b', 'c', 'd', 'e'};
+
+    koda::Map<char, size_t> kExpectedStatesPerToken = {{{'a', 1},
+                                                        {'b', 2},
+                                                        {'c', 1},
+                                                        {'d', 2},
+                                                        {'e', 2},
+                                                        {'f', 1},
+                                                        {'g', 2},
+                                                        {'h', 2}}};
+    const size_t kNumberOfStates = 13;
+
+    koda::TansInitTable table{counter, 2, 7, 13};
 
     ConstexprAssertEqual(table.state_table(), kExpectedStateTable);
     ConstexprAssertEqual(table.states_per_token(), kExpectedStatesPerToken);
