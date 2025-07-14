@@ -44,6 +44,19 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
                                 count_iter->second * (1uz << saturation)};
                 })};
     }
+
+    static constexpr Map<Token, size_t> MakeStartOffsetMap(
+        const TansInitTable<Token, Count>& init_table) {
+        TansInitTable<Token, Count> offset_map;
+
+        size_t accumulator = init_table.state_sentinel();
+        for (const auto& [token, count] : init_table.counts()) {
+            offset_map.Emplace(token, accumulator);
+            accumulator -= count;
+        }
+
+        return offset_map;
+    }
 };
 
 }  // namespace koda
