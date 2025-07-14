@@ -85,8 +85,12 @@ class ForwardList {
 
    private:
     struct Node {
+        template <typename... Args>
+            requires std::constructible_from<ValueTp, Args...>
+        explicit constexpr Node(Args&&... args);
+
         ValueTp value;
-        Node* next;
+        Node* next = nullptr;
     };
 
     using ValueTraits = std::allocator_traits<AllocatorTp>;

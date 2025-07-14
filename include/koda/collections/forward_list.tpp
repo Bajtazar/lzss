@@ -167,6 +167,12 @@ ForwardList<ValueTp, AllocatorTp>::cend() const noexcept {
 }
 
 template <typename ValueTp, typename AllocatorTp>
+template <typename... Args>
+    requires std::constructible_from<ValueTp, Args...>
+constexpr ForwardList<ValueTp, AllocatorTp>::Node::Node(Args&&... args)
+    : value{std::forward<Args>(args)...} {}
+
+template <typename ValueTp, typename AllocatorTp>
 constexpr ForwardList<ValueTp, AllocatorTp>::NodePool::NodePool(
     const AllocatorTp& allocator)
     : allocator_{allocator} {}

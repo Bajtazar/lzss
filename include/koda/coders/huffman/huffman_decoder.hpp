@@ -2,6 +2,7 @@
 
 #include <koda/coders/coder.hpp>
 #include <koda/coders/huffman/huffman_table.hpp>
+#include <koda/collections/forward_list.hpp>
 
 #include <memory>
 #include <stdexcept>
@@ -53,9 +54,7 @@ class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
 
        private:
         NodePtr root_;
-        // Could be Map<Node*, std::vector<HuffmanTableEntry>> but pointer
-        // comparation is not a constexpr currently... - hack it with counter
-        Map<size_t, std::pair<Node*, std::vector<HuffmanTableEntry>>>
+        ForwardList<std::pair<Node*, std::vector<HuffmanTableEntry>>>
             unwinding_table_;
         size_t counter_ = 0;
 
