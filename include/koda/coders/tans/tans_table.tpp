@@ -65,6 +65,11 @@ constexpr void TansInitTable<Token, CountTp>::ValidateStepSize(
             std::format("Invalid step size, got: {}, expected 1 <= step < {}",
                         step, state_sentinel_)};
     }
+    if (state_sentinel_ % step == 0) [[unlikely]] {
+        throw std::logic_error{
+            std::format("Step size ({}) cannot be a multiple of the state sentinel ({})",
+                        step, state_sentinel_)};
+    }
 }
 
 template <typename Token, std::integral CountTp>
