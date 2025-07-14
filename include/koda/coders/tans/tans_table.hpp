@@ -10,15 +10,27 @@
 namespace koda {
 
 template <typename Token, std::integral CountTp>
-struct TansInitTable {
+class TansInitTable {
+   public:
     explicit constexpr TansInitTable(
         const Map<Token, CountTp>& count, size_t init_state = 0,
         const size_t step = 1,
         std::optional<size_t> normalize_to = std::nullopt);
 
-    std::vector<Token> symbols;
-    Map<Token, CountTp> counts;
-    size_t state_sentinel;
+    [[nodiscard]] constexpr const std::vector<Token>& symbols() const noexcept;
+
+    [[nodiscard]] constexpr const Map<Token, CountTp>& counts() const noexcept;
+
+    [[nodiscard]] constexpr size_t state_sentinel() const noexcept;
+
+   private:
+    std::vector<Token> symbols_;
+    Map<Token, CountTp> counts_;
+    size_t state_sentinel_;
+
+    constexpr void ValidateStepSize(size_t step) const;
+
+    constexpr void ValidateSentinelSize() const;
 };
 
 }  // namespace koda
