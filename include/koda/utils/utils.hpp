@@ -39,7 +39,10 @@ template <std::contiguous_iterator TargetIter,
 constexpr void MemoryMove(TargetIter target, SourceRange&& source);
 
 template <std::ranges::range RangeTp>
-constexpr auto AsSubrange(RangeTp&& range);
+[[nodiscard]] constexpr auto AsSubrange(RangeTp&& range);
+
+template <std::integral Tp>
+[[nodiscard]] constexpr Tp IntFloorLog2(Tp value) noexcept;
 
 }  // namespace koda
 

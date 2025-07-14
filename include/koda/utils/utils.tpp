@@ -1,6 +1,8 @@
 #pragma once
 
 #include <algorithm>
+#include <bit>
+#include <climits>
 #include <cstring>
 #include <memory>
 
@@ -59,9 +61,14 @@ constexpr void MemoryMove(TargetIter target, SourceRange&& source) {
 }
 
 template <std::ranges::range RangeTp>
-constexpr auto AsSubrange(RangeTp&& range) {
+[[nodiscard]] constexpr auto AsSubrange(RangeTp&& range) {
     return std::ranges::subrange{std::ranges::begin(range),
                                  std::ranges::end(range)};
+}
+
+template <std::integral Tp>
+[[nodiscard]] constexpr Tp IntFloorLog2(Tp value) noexcept {
+    return sizeof(Tp) * CHAR_BIT - std::countl_zero(value) - 1;
 }
 
 }  // namespace koda
