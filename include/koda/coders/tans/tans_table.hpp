@@ -33,6 +33,20 @@ class TansInitTable {
     constexpr void ValidateSentinelSize() const;
 };
 
+template <typename Token, std::integral CountTp, typename InitTp>
+TansInitTable(const Map<Token, CountTp>&, InitTp&&)
+    -> TansInitTable<Token, CountTp>;
+
+template <typename Token, std::integral CountTp, typename InitTp,
+          typename StepTp>
+TansInitTable(const Map<Token, CountTp>&, InitTp&&, StepTp&&)
+    -> TansInitTable<Token, CountTp>;
+
+template <typename Token, std::integral CountTp, typename InitTp,
+          typename StepTp, typename NormTp>
+TansInitTable(const Map<Token, CountTp>&, InitTp&&, StepTp&&, NormTp&&)
+    -> TansInitTable<Token, CountTp>;
+
 }  // namespace koda
 
 #include <koda/coders/tans/tans_table.tpp>

@@ -2,12 +2,14 @@
 
 #include <algorithm>
 #include <bit>
+#include <format>
 #include <ranges>
+#include <stdexcept>
 
 namespace koda {
 
 template <typename Token, std::integral CountTp>
-[[nodiscard]] TansInitTable<Token, CountTp>::TansInitTable(
+constexpr TansInitTable<Token, CountTp>::TansInitTable(
     const Map<Token, CountTp>& count, CountTp init_state, const CountTp step,
     std::optional<CountTp> normalize_to) {
     const CountTp total_size =
@@ -20,14 +22,20 @@ template <typename Token, std::integral CountTp>
 
     symbols_.resize(state_sentinel_);
 
+    CountTp occ_accumulator = 0;
+    CountTp norm_accumulator = 0;
     for (const auto& [token, occurences] : count) {
         const CountTp limit =
-            static_cast<double>(occurences) * state_sentinel_ / total_size;
+            static_cast<double>(occ_accumulator + occurences) *
+                state_sentinel_ / total_size -
+            norm_accumulator;
         for (CountTp i = 0; i < limit; ++i) {
-            symbols_[step] = token;
+            symbols_[state] = token;
             state = (state + step) % state_sentinel_;
         }
         counts_.Emplace(token, limit);
+        occ_accumulator += occurences;
+        norm_accumulator += limit;
     }
 }
 
@@ -54,8 +62,8 @@ constexpr void TansInitTable<Token, CountTp>::ValidateStepSize(
     CountTp step) const {
     if (!step || step >= state_sentinel_) [[unlikely]] {
         throw std::logic_error{
-            std::format("Invalid step size, got: {}, expected 1 <= step < {}"),
-            step, state_sentinel_};
+            std::format("Invalid step size, got: {}, expected 1 <= step < {}",
+                        step, state_sentinel_)};
     }
 }
 
