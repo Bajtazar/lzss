@@ -59,6 +59,26 @@ constexpr ForwardList<ValueTp, AllocatorTp>::ForwardList(
     : pool_{allocator} {}
 
 template <typename ValueTp, typename AllocatorTp>
+template <std::ranges::input_range Range>
+    requires std::convertible_to<std::ranges::range_value_t<Range>, ValueTp>
+constexpr ForwardList<ValueTp, AllocatorTp>::ForwardList(
+    Range&& range, const AllocatorTp& allocator)
+    : ForwardList{allocator} {
+    for (auto&& element : range) {
+        PushFront(std::forward_like<Range>(element));
+    }
+}
+
+template <typename ValueTp, typename AllocatorTp>
+constexpr ForwardList<ValueTp, AllocatorTp>::ForwardList(
+    std::initializer_list<ValueTp> init, const AllocatorTp& allocator)
+    : ForwardList{allocator} {
+    for (const auto& element : init) {
+        PushFront(element);
+    }
+}
+
+template <typename ValueTp, typename AllocatorTp>
 constexpr ForwardList<ValueTp, AllocatorTp>::ForwardList(
     ForwardList&& other) noexcept
     : pool_{std::move(other.pool_)},

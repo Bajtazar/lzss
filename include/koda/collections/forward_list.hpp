@@ -46,6 +46,14 @@ class ForwardList {
     constexpr explicit ForwardList(
         const AllocatorTp& allocator = AllocatorTp{});
 
+    template <std::ranges::input_range Range>
+        requires std::convertible_to<std::ranges::range_value_t<Range>, ValueTp>
+    constexpr explicit ForwardList(
+        Range&& range, const AllocatorTp& allocator = AllocatorTp{});
+
+    constexpr ForwardList(std::initializer_list<ValueTp> init,
+                          const AllocatorTp& allocator = AllocatorTp{});
+
     constexpr ForwardList(const ForwardList& other) noexcept = delete;
     constexpr ForwardList(ForwardList&& other) noexcept;
 
