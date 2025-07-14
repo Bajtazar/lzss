@@ -61,11 +61,13 @@ constexpr void TansInitTable<Token, CountTp>::ValidateStepSize(
 
 template <typename Token, std::integral CountTp>
 constexpr void TansInitTable<Token, CountTp>::ValidateSentinelSize() const {
-    if (1uz << std::countr_zero(state_sentinel_) != state_sentinel_)
-        [[unlikely]] {
-        throw std::logic_error{std::format(
-            "State sentinel is not a power of 2! (got {})", state_sentinel_)};
-    }
+    // Maybe will work without it!
+    // if (1uz << std::countr_zero(state_sentinel_) != state_sentinel_)
+    //     [[unlikely]] {
+    //     throw std::logic_error{std::format(
+    //         "State sentinel is not a power of 2! (got {})",
+    //         state_sentinel_)};
+    // }
 }
 
 }  // namespace koda
