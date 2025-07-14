@@ -1,5 +1,8 @@
 #pragma once
 
+#include <algorithm>
+#include <ranges>
+
 namespace koda {
 
 template <typename Token, std::integral CountTp>
@@ -17,7 +20,7 @@ template <typename Token, std::integral CountTp>
             step, total_size};
     }
 
-    TansInitTable table(state_sentinel);
+    TansInitTable<Token> table(state_sentinel);
 
     for (const auto& [token, occurences] : count) {
         const size_t limit =
