@@ -70,7 +70,6 @@ class MakeHuffmanTableFn {
     constexpr void Emplace(CountTp occurences, NodeOrLeaf token) {
         if (auto iter = work_table_.Find(occurences);
             iter != work_table_.end()) {
-            assert(iter->first == occurences);
             iter->second.PushFront(std::move(token));
         } else {
             // std::initializer_list contains only constant elements so if they
