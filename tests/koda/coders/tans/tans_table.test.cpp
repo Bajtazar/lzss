@@ -1,10 +1,6 @@
 #include <koda/coders/tans/tans_table.hpp>
 #include <koda/tests/tests.hpp>
 
-#include <gtest/gtest.h>
-
-#include <print>
-
 namespace koda {
 
 BeginConstexprTest(TansTableTest, UniformDistribution) {
