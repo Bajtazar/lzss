@@ -47,7 +47,7 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
 
     static constexpr Map<Token, size_t> MakeStartOffsetMap(
         const TansInitTable<Token, Count>& init_table) {
-        TansInitTable<Token, Count> offset_map;
+        Map<Token, Count> offset_map;
 
         size_t accumulator = init_table.state_sentinel();
         for (const auto& [token, count] : init_table.counts()) {
@@ -56,6 +56,26 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
         }
 
         return offset_map;
+    }
+
+    static constexpr std::vector<size_t> MakeEncodingTable(
+        const TansInitTable<Token, Count>& init_table,
+        const Map<Token, size_t>& start_offset_map) {
+        const auto sentinel = init_table.state_sentinel();
+        std::vector<size_t> encoding_table(sentinel);
+        Map<Token, Count> next = init_table.counts();
+
+        for (size_t i = sentinel; i < 2 * sentinel; ++i) {
+            const auto& token = init_table.symbols()[i - sentinel];
+            auto offset_iter = start_offset_map.Find(token);
+            auto next_iter = next.Find(token);
+            assert(offset_iter != start_offset_map.end());
+            assert(next_iter != next.end());
+
+            encoding_table[(next->second)++ - offset_iter->second] = i;
+        }
+
+        return encoding_table;
     }
 };
 
