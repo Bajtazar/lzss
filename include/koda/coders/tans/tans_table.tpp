@@ -6,12 +6,12 @@
 namespace koda {
 
 template <typename Token, std::integral CountTp>
-[[nodiscard]] TansInitTable<Token> MakeTansInitTable(
+[[nodiscard]] TansInitTable<Token, CountTp>::TansInitTable(
     const Map<Token, CountTp>& count, size_t init_state = 0,
     const size_t step = 1, std::optional<size_t> normalize_to = std::nullopt) {
     const size_t total_size =
         std::ranges::fold_left(count | std::views::values, 0, std::plus<>{});
-    const size_t state_sentinel = normalize_to.value_or(total_size);
+    state_sentinel = normalize_to.value_or(total_size);
     size_t state = init_state % state_sentinel;
 
     if (!step || step >= total_size) {
@@ -20,7 +20,7 @@ template <typename Token, std::integral CountTp>
             step, total_size};
     }
 
-    TansInitTable<Token> table(state_sentinel);
+    symbols.resize(state_sentinel);
 
     for (const auto& [token, occurences] : count) {
         const size_t limit =
@@ -29,9 +29,8 @@ template <typename Token, std::integral CountTp>
             table[step] = token;
             state = (state + step) % state_sentinel;
         }
+        counts.Emplace(token, limit);
     }
-
-    return table;
 }
 
 }  // namespace koda
