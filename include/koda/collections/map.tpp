@@ -203,6 +203,21 @@ Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Find(KeyLookupTp&& key) {
 template <typename KeyTp, typename ValueTp,
           Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
           typename AllocatorTp>
+template <typename KeyLookupTp, typename Self>
+    requires Invocable<ComparatorTp, std::weak_ordering, KeyTp, KeyLookupTp>
+[[nodiscard]] constexpr auto&&
+Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::At(this Self&& self,
+                                                   KeyLookupTp&& key) {
+    auto iter = self.Find(std::forward<KeyLookupTp>(key));
+    if (iter == self.end()) {
+        throw std::runtime_error{"Element is not a part of the map!"};
+    }
+    return std::forward_like<Self>(iter->second);
+}
+
+template <typename KeyTp, typename ValueTp,
+          Invocable<std::weak_ordering, KeyTp, KeyTp> ComparatorTp,
+          typename AllocatorTp>
 template <typename KeyLookupTp>
     requires Invocable<ComparatorTp, std::weak_ordering, KeyTp, KeyLookupTp>
 constexpr bool Map<KeyTp, ValueTp, ComparatorTp, AllocatorTp>::Remove(

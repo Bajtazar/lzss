@@ -44,19 +44,14 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
         const TansInitTable<Token, Count>& init_table) {
         auto saturation_map = BuildSaturationMap(init_table);
 
-        std::println("Saturation map: {}", saturation_map);
-
         return Map<Token, uint8_t>{
             BuildSaturationMap(init_table) |
             std::views::transform([&](const auto& saturation_tuple) {
                 const auto& [token, saturation] = saturation_tuple;
 
-                auto count_iter = init_table.states_per_token().Find(token);
-                assert(count_iter != init_table.states_per_token().end());
-
                 return std::pair{
                     token, 2 * init_table.number_of_states() * saturation -
-                                   count_iter->second
+                                   init_table.states_per_token().At(token)
                                << saturation};
             })};
     }
@@ -83,12 +78,8 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
 
         for (Count i = 0; i < sentinel; ++i) {
             const auto& token = init_table.state_table()[i];
-            auto offset_iter = start_offset_map.Find(token);
-            auto next_iter = next.Find(token);
-            assert(offset_iter != start_offset_map.end());
-            assert(next_iter != next.end());
 
-            encoding_table[(next_iter->second)++ + offset_iter->second] =
+            encoding_table[next.At(token)++ + start_offset_map.At(token)] =
                 i + sentinel;
         }
 
