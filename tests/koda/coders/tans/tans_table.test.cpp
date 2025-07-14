@@ -32,4 +32,21 @@ BeginConstexprTest(TansTableTest, UniformDistribution) {
 }
 EndConstexprTest;
 
+BeginConstexprTest(TansTableTest, GeometricDistribution) {
+    koda::Map<char, size_t> counter = {{{'a', 2}, {'b', 4}, {'c', 8}}};
+
+    const std::vector<char> kExpectedStateTable = {
+        'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c'};
+
+    koda::Map<char, size_t> kExpectedStatesPerToken = counter;
+    const size_t kNumberOfStates = 14;
+
+    koda::TansInitTable table{counter};
+
+    ConstexprAssertEqual(table.state_table(), kExpectedStateTable);
+    ConstexprAssertEqual(table.states_per_token(), kExpectedStatesPerToken);
+    ConstexprAssertEqual(table.number_of_states(), kNumberOfStates);
+}
+EndConstexprTest;
+
 }  // namespace koda
