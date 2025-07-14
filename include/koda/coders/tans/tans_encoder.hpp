@@ -17,7 +17,8 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
         const TansInitTable<Token, Count>& init_table)
         : offset_map_{BuildStartOffsetMap(init_table)},
           renorm_map_{BuildRenormalizationOffsetMap(init_table)},
-          encoding_table_{BuildEncodingTable(init_table, offset_map_)} {}
+          encoding_table_{BuildEncodingTable(init_table, offset_map_)},
+          state_{init_table.number_of_states()} {}
 
    private:
     using SCount = std::make_signed_t<Count>;
@@ -25,6 +26,7 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
     Map<Token, SCount> offset_map_;
     Map<Token, uint8_t> renorm_map_;
     std::vector<Count> encoding_table_;
+    Count state_[1];
 
     static constexpr Map<Token, Count> BuildSaturationMap(
         const TansInitTable<Token, Count>& init_table) {
@@ -72,15 +74,15 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
     static constexpr std::vector<Count> BuildEncodingTable(
         const TansInitTable<Token, Count>& init_table,
         const Map<Token, SCount>& start_offset_map) {
-        const auto sentinel = init_table.number_of_states();
-        std::vector<Count> encoding_table(sentinel);
+        const auto number_of_states = init_table.number_of_states();
+        std::vector<Count> encoding_table(number_of_states);
         Map<Token, Count> next = init_table.states_per_token();
 
-        for (Count i = 0; i < sentinel; ++i) {
+        for (Count i = 0; i < number_of_states; ++i) {
             const auto& token = init_table.state_table()[i];
 
             encoding_table[next.At(token)++ + start_offset_map.At(token)] =
-                i + sentinel;
+                i + number_of_states;
         }
 
         return encoding_table;
