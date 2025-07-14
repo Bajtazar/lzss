@@ -17,16 +17,18 @@ class TansInitTable {
         const CountTp step = 1,
         std::optional<CountTp> normalize_to = std::nullopt);
 
-    [[nodiscard]] constexpr const std::vector<Token>& symbols() const noexcept;
+    [[nodiscard]] constexpr const std::vector<Token>& state_table()
+        const noexcept;
 
-    [[nodiscard]] constexpr const Map<Token, CountTp>& counts() const noexcept;
+    [[nodiscard]] constexpr const Map<Token, CountTp>& states_per_token()
+        const noexcept;
 
-    [[nodiscard]] constexpr CountTp state_sentinel() const noexcept;
+    [[nodiscard]] constexpr CountTp number_of_states() const noexcept;
 
    private:
-    std::vector<Token> symbols_;
-    Map<Token, CountTp> counts_;
-    CountTp state_sentinel_;
+    std::vector<Token> state_table_;
+    Map<Token, CountTp> states_per_token_;
+    CountTp number_of_states_;
 
     constexpr void ValidateStepSize(CountTp step) const;
 
