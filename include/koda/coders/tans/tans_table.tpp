@@ -8,22 +8,22 @@ namespace koda {
 
 template <typename Token, std::integral CountTp>
 [[nodiscard]] TansInitTable<Token, CountTp>::TansInitTable(
-    const Map<Token, CountTp>& count, size_t init_state, const size_t step,
-    std::optional<size_t> normalize_to) {
-    const size_t total_size =
+    const Map<Token, CountTp>& count, CountTp init_state, const CountTp step,
+    std::optional<CountTp> normalize_to) {
+    const CountTp total_size =
         std::ranges::fold_left(count | std::views::values, 0, std::plus<>{});
     state_sentinel_ = normalize_to.value_or(total_size);
     ValidateSentinelSize();
     ValidateStepSize(step);
 
-    size_t state = init_state % state_sentinel_;
+    CountTp state = init_state % state_sentinel_;
 
     symbols_.resize(state_sentinel_);
 
     for (const auto& [token, occurences] : count) {
-        const size_t limit =
+        const CountTp limit =
             static_cast<double>(occurences) * state_sentinel_ / total_size;
-        for (size_t i = 0; i < limit; ++i) {
+        for (CountTp i = 0; i < limit; ++i) {
             symbols_[step] = token;
             state = (state + step) % state_sentinel_;
         }
@@ -44,14 +44,14 @@ TansInitTable<Token, CountTp>::counts() const noexcept {
 }
 
 template <typename Token, std::integral CountTp>
-[[nodiscard]] constexpr size_t TansInitTable<Token, CountTp>::state_sentinel()
+[[nodiscard]] constexpr CountTp TansInitTable<Token, CountTp>::state_sentinel()
     const noexcept {
     return state_sentinel_;
 }
 
 template <typename Token, std::integral CountTp>
 constexpr void TansInitTable<Token, CountTp>::ValidateStepSize(
-    size_t step) const {
+    CountTp step) const {
     if (!step || step >= state_sentinel_) [[unlikely]] {
         throw std::logic_error{
             std::format("Invalid step size, got: {}, expected 1 <= step < {}"),

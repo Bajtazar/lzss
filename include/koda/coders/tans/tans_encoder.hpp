@@ -13,7 +13,17 @@ namespace koda {
 template <typename Token, typename Count>
 class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
    public:
+    constexpr explicit TansEncoder(
+        const TansInitTable<Token, Count>& init_table)
+        : offset_map_{BuildStartOffsetMap(init_table)},
+          number_of_bits_{BuildNumberOfBitsMap(init_table)},
+          encoding_table_{BuildEncodingTable(init_table, offset_map_)} {}
+
    private:
+    Map<Token, Count> offset_map_;
+    Map<Count, uint8_t> number_of_bits_;
+    std::vector<Count> encoding_table_;
+
     static constexpr Map<Token, Count> BuildSaturationMap(
         const TansInitTable<Token, Count>& init_table) {
         Map<Token, Count> saturation_map;
@@ -45,11 +55,11 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
                 })};
     }
 
-    static constexpr Map<Token, size_t> MakeStartOffsetMap(
+    static constexpr Map<Token, Count> BuildStartOffsetMap(
         const TansInitTable<Token, Count>& init_table) {
         Map<Token, Count> offset_map;
 
-        size_t accumulator = init_table.state_sentinel();
+        Count accumulator = init_table.state_sentinel();
         for (const auto& [token, count] : init_table.counts()) {
             offset_map.Emplace(token, accumulator);
             accumulator -= count;
@@ -58,14 +68,14 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
         return offset_map;
     }
 
-    static constexpr std::vector<size_t> MakeEncodingTable(
+    static constexpr std::vector<Count> BuildEncodingTable(
         const TansInitTable<Token, Count>& init_table,
-        const Map<Token, size_t>& start_offset_map) {
+        const Map<Token, Count>& start_offset_map) {
         const auto sentinel = init_table.state_sentinel();
-        std::vector<size_t> encoding_table(sentinel);
+        std::vector<Count> encoding_table(sentinel);
         Map<Token, Count> next = init_table.counts();
 
-        for (size_t i = sentinel; i < 2 * sentinel; ++i) {
+        for (Count i = sentinel; i < 2 * sentinel; ++i) {
             const auto& token = init_table.symbols()[i - sentinel];
             auto offset_iter = start_offset_map.Find(token);
             auto next_iter = next.Find(token);
