@@ -73,7 +73,7 @@ template <std::integral Tp>
 
 template <std::integral Tp>
 [[nodiscard]] constexpr Tp IntCeilLog2(Tp value) noexcept {
-    return IntFloorLog2(value) + (std::popcount(value) == 1 ? 1 : 0);
+    return IntFloorLog2(value) + (std::popcount(value) == 1 ? 0 : 1);
 }
 
 }  // namespace koda
