@@ -42,6 +42,9 @@ template <std::ranges::range RangeTp>
 [[nodiscard]] constexpr auto AsSubrange(RangeTp&& range);
 
 template <std::integral Tp>
+[[nodiscard]] constexpr bool IsPowerOf2(Tp value) noexcept;
+
+template <std::integral Tp>
 [[nodiscard]] constexpr Tp IntFloorLog2(Tp value) noexcept;
 
 template <std::integral Tp>

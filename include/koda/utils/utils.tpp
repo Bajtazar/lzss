@@ -67,13 +67,18 @@ template <std::ranges::range RangeTp>
 }
 
 template <std::integral Tp>
+[[nodiscard]] constexpr bool IsPowerOf2(Tp value) noexcept {
+    return std::popcount(value) == 1;
+}
+
+template <std::integral Tp>
 [[nodiscard]] constexpr Tp IntFloorLog2(Tp value) noexcept {
     return sizeof(Tp) * CHAR_BIT - std::countl_zero(value) - 1;
 }
 
 template <std::integral Tp>
 [[nodiscard]] constexpr Tp IntCeilLog2(Tp value) noexcept {
-    return IntFloorLog2(value) + (std::popcount(value) == 1 ? 0 : 1);
+    return IntFloorLog2(value) + (IsPowerOf2(value) ? 0 : 1);
 }
 
 }  // namespace koda
