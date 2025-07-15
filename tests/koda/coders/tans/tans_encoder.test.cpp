@@ -33,3 +33,21 @@ BeginConstexprTest(TansEncoderTest, UniformDistribution) {
     ConstexprAssertEqual(stream, kExpected);
 }
 EndConstexprTest;
+
+BeginConstexprTest(TansEncoderTest, GeometricDistributionShifted) {
+    const koda::Map<char, size_t> kCounter = {{{'a', 8}, {'b', 4}, {'c', 2}}};
+
+    koda::TansInitTable table{kCounter};
+    koda::TansEncoder encoder{table};
+
+    const std::vector<bool> kExpected = {0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+                                         0, 0, 0, 1, 1, 1, 0, 1, 0, 1};
+
+    std::string sequence = "aabababacaabaaa";
+    std::vector<bool> stream;
+
+    encoder(sequence, stream | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(stream, kExpected);
+}
+EndConstexprTest;

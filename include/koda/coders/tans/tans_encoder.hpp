@@ -107,9 +107,9 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
 
         for (const auto& [token, count] : init_table.states_per_token()) {
             saturation_map.Emplace(
-                token, static_cast<Count>(std::log2(
+                token, static_cast<Count>(std::ceil(std::log2(
                            static_cast<double>(init_table.number_of_states()) /
-                           count)));
+                           count))));
         }
 
         return saturation_map;
@@ -122,7 +122,6 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
             BuildSaturationMap(init_table) |
             std::views::transform([&](const auto& saturation_tuple) {
                 const auto& [token, saturation] = saturation_tuple;
-
                 return std::pair{
                     token, 2 * init_table.number_of_states() * saturation -
                                (init_table.states_per_token().At(token)
