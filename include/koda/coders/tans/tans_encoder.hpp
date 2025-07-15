@@ -20,7 +20,29 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
           encoding_table_{BuildEncodingTable(init_table, offset_map_)},
           state_{init_table.number_of_states()} {}
 
-    auto Flush(BitOutputRange auto&& output) {
+    constexpr auto Encode(InputRange<Token> auto&& input,
+                          BitOutputRange auto&& output) {
+        auto sentinel = std::ranges::end(output);
+        auto iter = FlushEmitter(std::ranges::begin(output), sentinel);
+
+        if (iter == sentinel || encoding_table_.empty()) {
+            return CoderResult{std::forward<decltype(input)>(input),
+                               std::move(iter), std::move(sentinel)};
+        }
+
+        auto input_iter = std::ranges::begin(input);
+        auto input_sent = std::ranges::begin(output);
+
+        for (; (iter != sentinel) && (input_iter != input_sent); ++input_iter) {
+            EncodeToken(*input_iter);
+            iter = FlushEmitter(iter, sentinel);
+        }
+
+        return CoderResult{std::move(input_iter), std::move(input_sent),
+                           std::move(iter), std::move(sentinel)};
+    }
+
+    constexpr auto Flush(BitOutputRange auto&& output) {
         auto sentinel = std::ranges::end(output);
         auto iter = FlushEmitter(std::ranges::begin(output), sentinel);
 
@@ -46,8 +68,7 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
     Count state_;
     Count emitted_bits_[1];
 
-    constexpr void EncodeToken(auto& input_iter) {
-        auto token = *input_iter++;
+    constexpr void EncodeToken(const auto& token) {
         auto bit_count =
             (state_ + renorm_map_.At(token)) / (2 * encoding_table_.size());
         assert(bit_count <= CHAR_BIT * sizeof(Count));
