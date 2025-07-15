@@ -37,7 +37,7 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
         }
 
         auto input_iter = std::ranges::begin(input);
-        auto input_sent = std::ranges::begin(output);
+        auto input_sent = std::ranges::end(input);
 
         for (; (iter != sentinel) && (input_iter != input_sent); ++input_iter) {
             EncodeToken(*input_iter);
@@ -94,7 +94,7 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
         const auto& bit_sent = emitter_.second;
 
         for (; (bit_iter != bit_sent) && (output_iter != output_sent);
-             ++bit_iter, ++bit_sent) {
+             ++output_iter, ++bit_iter) {
             *output_iter = *bit_iter;
         }
         return output_iter;
