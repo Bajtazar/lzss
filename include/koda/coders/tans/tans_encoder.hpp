@@ -15,10 +15,16 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
    public:
     constexpr explicit TansEncoder(
         const TansInitTable<Token, Count>& init_table)
-        : offset_map_{BuildStartOffsetMap(init_table)},
-          renorm_map_{BuildRenormalizationOffsetMap(init_table)},
+        : saturation_map_{BuildSaturationMap(init_table)},
+          offset_map_{BuildStartOffsetMap(init_table)},
+          renorm_map_{
+              BuildRenormalizationOffsetMap(init_table, saturation_map_)},
           encoding_table_{BuildEncodingTable(init_table, offset_map_)},
           state_{init_table.number_of_states()} {}
+
+    constexpr float TokenBitSize(Token token) const {
+        return saturation_map_.At(token);
+    }
 
     constexpr auto Encode(InputRange<Token> auto&& input,
                           BitOutputRange auto&& output) {
@@ -61,6 +67,7 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
     using BitRange = std::pair<BitIter, BitIter>;
     using SCount = std::make_signed_t<Count>;
 
+    Map<Token, Count> saturation_map_;
     Map<Token, SCount> offset_map_;
     Map<Token, uint8_t> renorm_map_;
     std::vector<Count> encoding_table_;
@@ -108,9 +115,8 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
     }
 
     static constexpr Map<Token, uint8_t> BuildRenormalizationOffsetMap(
-        const TansInitTable<Token, Count>& init_table) {
-        auto saturation_map = BuildSaturationMap(init_table);
-
+        const TansInitTable<Token, Count>& init_table,
+        const Map<Token, Count>& saturation_map) {
         return Map<Token, uint8_t>{
             BuildSaturationMap(init_table) |
             std::views::transform([&](const auto& saturation_tuple) {
