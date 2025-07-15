@@ -56,6 +56,7 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
             return std::ranges::subrange{std::move(iter), std::move(sentinel)};
         }
 
+        // Encode final state with uniform distrib to simplify process
         SetEmitter(IntFloorLog2(encoding_table_.size()));
 
         return std::ranges::subrange{FlushEmitter(std::move(iter), sentinel),
@@ -124,8 +125,8 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
 
                 return std::pair{
                     token, 2 * init_table.number_of_states() * saturation -
-                                   init_table.states_per_token().At(token)
-                               << saturation};
+                               (init_table.states_per_token().At(token)
+                                << saturation)};
             })};
     }
 
