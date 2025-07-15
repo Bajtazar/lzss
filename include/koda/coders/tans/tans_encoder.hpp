@@ -122,10 +122,10 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
             BuildSaturationMap(init_table) |
             std::views::transform([&](const auto& saturation_tuple) {
                 const auto& [token, saturation] = saturation_tuple;
-                return std::pair{
-                    token, 2 * init_table.number_of_states() * saturation -
-                               (init_table.states_per_token().At(token)
-                                << saturation)};
+                auto max = 2 * init_table.number_of_states() * saturation;
+                auto min = init_table.states_per_token().At(token)
+                           << saturation;
+                return std::pair{token, max > min ? (max - min) : 0};
             })};
     }
 

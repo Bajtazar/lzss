@@ -15,7 +15,6 @@ constexpr TansInitTable<Token, CountTp>::TansInitTable(
     const CountTp total_size =
         std::ranges::fold_left(count | std::views::values, 0, std::plus<>{});
     number_of_states_ = normalize_to.value_or(total_size);
-    ValidateSentinelSize();
     ValidateStepSize(step);
 
     CountTp state = init_state % number_of_states_;
@@ -60,27 +59,19 @@ TansInitTable<Token, CountTp>::number_of_states() const noexcept {
 template <typename Token, std::integral CountTp>
 constexpr void TansInitTable<Token, CountTp>::ValidateStepSize(
     CountTp step) const {
+    if (step == 1) {
+        return;
+    }
     if (!step || step >= number_of_states_) [[unlikely]] {
         throw std::logic_error{
             std::format("Invalid step size, got: {}, expected 1 <= step < {}",
                         step, number_of_states_)};
     }
-    if (step != 1 && number_of_states_ % step == 0) [[unlikely]] {
+    if (number_of_states_ % step == 0) [[unlikely]] {
         throw std::logic_error{std::format(
             "Step size ({}) cannot be a multiple of the number of states ({})",
             step, number_of_states_)};
     }
-}
-
-template <typename Token, std::integral CountTp>
-constexpr void TansInitTable<Token, CountTp>::ValidateSentinelSize() const {
-    // Maybe will work without it!
-    // if (1uz << std::countr_zero(number_of_states_) != number_of_states_)
-    //     [[unlikely]] {
-    //     throw std::logic_error{std::format(
-    //         "State sentinel is not a power of 2! (got {})",
-    //         number_of_states_)};
-    // }
 }
 
 }  // namespace koda
