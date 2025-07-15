@@ -105,3 +105,18 @@ BeginConstexprTest(TansEncoderTest, UniformDistributionStridedAndScaled) {
     ConstexprAssertEqual(stream, kExpected);
 }
 EndConstexprTest;
+
+BeginConstexprTest(TansEncoderTest, DiracDistribution) {
+    const koda::Map<char, size_t> kCounter = {{'a', 1}};
+
+    koda::TansInitTable table{kCounter};
+    koda::TansEncoder encoder{table};
+
+    std::string sequence = "aaaaaaaaaaaaaaaa";
+    std::vector<bool> stream;
+
+    encoder(sequence, stream | koda::views::InsertFromBack);
+
+    ConstexprAssertTrue(stream.empty());
+}
+EndConstexprTest;
