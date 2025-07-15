@@ -21,12 +21,27 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
           state_{init_table.number_of_states()} {}
 
    private:
+    using BitIter = LittleEndianInputBitIter<const Count*>;
+    using BitRange = std::pair<BitIter, BitIter>;
     using SCount = std::make_signed_t<Count>;
 
     Map<Token, SCount> offset_map_;
     Map<Token, uint8_t> renorm_map_;
     std::vector<Count> encoding_table_;
-    Count state_[1];
+    BitRange emitter_;
+    Count state_;
+    Count emitted_bits_[1];
+
+    constexpr void SetEmitter(auto& input_iter) {
+        auto token = *input_iter++;
+        auto bit_count =
+            (state_ + renorm_map_.At(token)) / (2 * encoding_table_.size());
+        assert(bit_count <= CHAR_BIT * sizeof(Count));
+        emitted_bits_[0] = state_;
+        state_ = encoding_table_[offset_map_.At(token) + (state_ >> bit_count)];
+        BitIter start_iter{std::ranges::begin(emitted_bits_)};
+        emitter_ = std::pair{start_iter, std::next(start_iter, bit_count)};
+    }
 
     static constexpr Map<Token, Count> BuildSaturationMap(
         const TansInitTable<Token, Count>& init_table) {
