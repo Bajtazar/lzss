@@ -34,7 +34,7 @@ BeginConstexprTest(TansEncoderTest, UniformDistribution) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(TansEncoderTest, GeometricDistributionShifted) {
+BeginConstexprTest(TansEncoderTest, GeometricDistribution) {
     const koda::Map<char, size_t> kCounter = {{{'a', 8}, {'b', 4}, {'c', 2}}};
 
     koda::TansInitTable table{kCounter};
@@ -44,6 +44,33 @@ BeginConstexprTest(TansEncoderTest, GeometricDistributionShifted) {
                                          0, 0, 0, 1, 1, 1, 0, 1, 0, 1};
 
     std::string sequence = "aabababacaabaaa";
+    std::vector<bool> stream;
+
+    encoder(sequence, stream | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(stream, kExpected);
+}
+EndConstexprTest;
+
+BeginConstexprTest(TansEncoderTest, UniformDistributionStrided) {
+    const koda::Map<char, size_t> kCounter = {{{'a', 2},
+                                               {'b', 2},
+                                               {'c', 2},
+                                               {'d', 2},
+                                               {'e', 2},
+                                               {'f', 2},
+                                               {'g', 2},
+                                               {'h', 2}}};
+
+    koda::TansInitTable table{kCounter, 2, 7};
+    koda::TansEncoder encoder{table};
+
+    const std::vector<bool> kExpected = {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1,
+                                         0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0,
+                                         0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1,
+                                         1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1};
+
+    std::string sequence = "abacdaeffagggaah";
     std::vector<bool> stream;
 
     encoder(sequence, stream | koda::views::InsertFromBack);
