@@ -28,14 +28,10 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
             return std::ranges::subrange{std::move(iter), std::move(sentinel)};
         }
 
-        emitted_bits_[0] = state_;
-        BitIter start_iter{std::ranges::begin(emitted_bits_)};
-        emitter_ = std::pair{
-            start_iter,
-            std::next(start_iter, IntFloorLog2(encoding_table_.size()))};
-        encoding_table_.clear();
+        SetEmitter(IntFloorLog2(encoding_table_.size()));
 
-        return FlushEmitter(std::move(iter), sentinel);
+        return std::ranges::subrange{FlushEmitter(std::move(iter), sentinel),
+                                     sentinel};
     }
 
    private:
@@ -50,13 +46,17 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
     Count state_;
     Count emitted_bits_[1];
 
-    constexpr void SetEmitter(auto& input_iter) {
+    constexpr void EncodeToken(auto& input_iter) {
         auto token = *input_iter++;
         auto bit_count =
             (state_ + renorm_map_.At(token)) / (2 * encoding_table_.size());
         assert(bit_count <= CHAR_BIT * sizeof(Count));
-        emitted_bits_[0] = state_;
+        SetEmitter(bit_count);
         state_ = encoding_table_[offset_map_.At(token) + (state_ >> bit_count)];
+    }
+
+    constexpr void SetEmitter(Count bit_count) {
+        emitted_bits_[0] = state_;
         BitIter start_iter{std::ranges::begin(emitted_bits_)};
         emitter_ = std::pair{start_iter, std::next(start_iter, bit_count)};
     }
