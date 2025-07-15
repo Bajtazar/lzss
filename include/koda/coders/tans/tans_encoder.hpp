@@ -20,6 +20,24 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
           encoding_table_{BuildEncodingTable(init_table, offset_map_)},
           state_{init_table.number_of_states()} {}
 
+    auto Flush(BitOutputRange auto&& output) {
+        auto sentinel = std::ranges::end(output);
+        auto iter = FlushEmitter(std::ranges::begin(output), sentinel);
+
+        if (iter == sentinel || encoding_table_.empty()) {
+            return std::ranges::subrange{std::move(iter), std::move(sentinel)};
+        }
+
+        emitted_bits_[0] = state_;
+        BitIter start_iter{std::ranges::begin(emitted_bits_)};
+        emitter_ = std::pair{
+            start_iter,
+            std::next(start_iter, IntFloorLog2(encoding_table_.size()))};
+        encoding_table_.clear();
+
+        return FlushEmitter(std::move(iter), sentinel);
+    }
+
    private:
     using BitIter = LittleEndianInputBitIter<const Count*>;
     using BitRange = std::pair<BitIter, BitIter>;
@@ -41,6 +59,17 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
         state_ = encoding_table_[offset_map_.At(token) + (state_ >> bit_count)];
         BitIter start_iter{std::ranges::begin(emitted_bits_)};
         emitter_ = std::pair{start_iter, std::next(start_iter, bit_count)};
+    }
+
+    constexpr auto FlushEmitter(auto output_iter, const auto& output_sent) {
+        auto& bit_iter = emitter_.first;
+        const auto& bit_sent = emitter_.second;
+
+        for (; (bit_iter != bit_sent) && (output_iter != output_sent);
+             ++bit_iter, ++bit_sent) {
+            *output_iter = *bit_iter;
+        }
+        return output_iter;
     }
 
     static constexpr Map<Token, Count> BuildSaturationMap(

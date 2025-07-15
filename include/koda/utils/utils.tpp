@@ -71,4 +71,9 @@ template <std::integral Tp>
     return sizeof(Tp) * CHAR_BIT - std::countl_zero(value) - 1;
 }
 
+template <std::integral Tp>
+[[nodiscard]] constexpr Tp IntCeilLog2(Tp value) noexcept {
+    return IntFloorLog2(value) + (std::popcount(value) == 1 ? 1 : 0);
+}
+
 }  // namespace koda

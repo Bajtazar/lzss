@@ -44,6 +44,9 @@ template <std::ranges::range RangeTp>
 template <std::integral Tp>
 [[nodiscard]] constexpr Tp IntFloorLog2(Tp value) noexcept;
 
+template <std::integral Tp>
+[[nodiscard]] constexpr Tp IntCeilLog2(Tp value) noexcept;
+
 }  // namespace koda
 
 #include <koda/utils/utils.tpp>
