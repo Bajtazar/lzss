@@ -92,15 +92,15 @@ constexpr auto TansEncoder<Token, Count>::FlushEmitter(
 }
 
 template <typename Token, typename Count>
-/*static*/ constexpr Map<Token, Count>
+/*static*/ constexpr Map<Token, uint8_t>
 TansEncoder<Token, Count>::BuildSaturationMap(
     const TansInitTable<Token, Count>& init_table) {
-    Map<Token, Count> saturation_map;
+    Map<Token, uint8_t> saturation_map;
 
     for (const auto& [token, count] : init_table.states_per_token()) {
         saturation_map.Emplace(
             token,
-            static_cast<Count>(std::ceil(std::log2(
+            static_cast<uint8_t>(std::ceil(std::log2(
                 static_cast<double>(init_table.number_of_states()) / count))));
     }
 
@@ -108,11 +108,11 @@ TansEncoder<Token, Count>::BuildSaturationMap(
 }
 
 template <typename Token, typename Count>
-/*static*/ constexpr Map<Token, uint8_t>
+/*static*/ constexpr Map<Token, Count>
 TansEncoder<Token, Count>::BuildRenormalizationOffsetMap(
     const TansInitTable<Token, Count>& init_table,
-    const Map<Token, Count>& saturation_map) {
-    return Map<Token, uint8_t>{
+    const Map<Token, uint8_t>& saturation_map) {
+    return Map<Token, Count>{
         BuildSaturationMap(init_table) |
         std::views::transform([&](const auto& saturation_tuple) {
             const auto& [token, saturation] = saturation_tuple;

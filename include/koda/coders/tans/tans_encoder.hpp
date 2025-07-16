@@ -28,9 +28,9 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
     using BitRange = std::pair<BitIter, BitIter>;
     using SCount = std::make_signed_t<Count>;
 
-    Map<Token, Count> saturation_map_;
+    Map<Token, uint8_t> saturation_map_;
     Map<Token, SCount> offset_map_;
-    Map<Token, uint8_t> renorm_map_;
+    Map<Token, Count> renorm_map_;
     std::vector<Count> encoding_table_;
     BitRange emitter_;
     Count state_;
@@ -45,12 +45,12 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
 
     constexpr auto FlushEmitter(auto output_iter, const auto& output_sent);
 
-    static constexpr Map<Token, Count> BuildSaturationMap(
+    static constexpr Map<Token, uint8_t> BuildSaturationMap(
         const TansInitTable<Token, Count>& init_table);
 
-    static constexpr Map<Token, uint8_t> BuildRenormalizationOffsetMap(
+    static constexpr Map<Token, Count> BuildRenormalizationOffsetMap(
         const TansInitTable<Token, Count>& init_table,
-        const Map<Token, Count>& saturation_map);
+        const Map<Token, uint8_t>& saturation_map);
 
     static constexpr Map<Token, SCount> BuildStartOffsetMap(
         const TansInitTable<Token, Count>& init_table);
