@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <cinttypes>
 #include <climits>
 #include <concepts>
@@ -157,6 +158,14 @@ class LittleEndianOutputBitIter : public BitIteratorBase<Iter> {
 
     using BitIteratorBase<Iter>::BitIteratorBase;
 
+    explicit constexpr LittleEndianOutputBitIter(
+        Iter iterator,
+        size_t position) noexcept(std::is_nothrow_move_constructible_v<Iter>)
+        : BitIteratorBase<Iter>{std::move(iterator)} {
+        assert(position < this->ByteLength());
+        this->bit_iter += position;
+    }
+
     constexpr LittleEndianOutputBitIter(
         LittleEndianOutputBitIter&&
             other) noexcept(std::is_nothrow_move_constructible_v<Iter>) =
@@ -279,6 +288,14 @@ class BigEndianOutputBitIter : public BitIteratorBase<Iter> {
     using difference_type = std::ptrdiff_t;
 
     using BitIteratorBase<Iter>::BitIteratorBase;
+
+    explicit constexpr BigEndianOutputBitIter(
+        Iter iterator,
+        size_t position) noexcept(std::is_nothrow_move_constructible_v<Iter>)
+        : BitIteratorBase<Iter>{std::move(iterator)} {
+        assert(position < this->ByteLength());
+        this->bit_iter_ += position;
+    }
 
     constexpr BigEndianOutputBitIter(BigEndianOutputBitIter&& other) noexcept(
         std::is_nothrow_move_constructible_v<Iter>) = default;

@@ -17,8 +17,8 @@ class TansDecoder : public DecoderInterface<Token, TansDecoder<Token, Count>> {
         const TansInitTable<Token, Count>& init_table)
         : decoding_table_{BuildDecodingTable(init_table)},
           receiver_{BitIter{std::ranges::begin(received_bits_)},
-                    std::next(BitIter{std::ranges::begin(received_bits_)},
-                              IntFloorLog2(decoding_table_.size()))} {}
+                    BitIter{std::ranges::begin(received_bits_),
+                            IntFloorLog2(decoding_table_.size())}} {}
 
     constexpr auto Initialize(BitInputRange auto&& input) {
         return std::forward<decltype(input)>(input);
@@ -42,9 +42,9 @@ class TansDecoder : public DecoderInterface<Token, TansDecoder<Token, Count>> {
     }
 
    private:
-    using BitIter = BigEndianOutputBitIter<const State*>;
-    using BitRange = std::pair<BitIter, BitIter>;
     using State = Count;
+    using BitIter = BigEndianOutputBitIter<State*>;
+    using BitRange = std::pair<BitIter, BitIter>;
 
     struct DecodingEntry {
         Token symbol;
@@ -61,8 +61,8 @@ class TansDecoder : public DecoderInterface<Token, TansDecoder<Token, Count>> {
         auto& state_iter = receiver_.first;
         const auto& state_sent = receiver_.second;
 
-        for (; (iter != sent) && (state_iter != state_sent); ++iter;
-             ++state_iter) {
+        for (; (iter != sent) && (state_iter != state_sent);
+             ++iter, ++state_iter) {
             *state_iter = *iter;
         }
 
@@ -70,7 +70,8 @@ class TansDecoder : public DecoderInterface<Token, TansDecoder<Token, Count>> {
     }
 
     constexpr Token DecodeToken() {
-        auto shift = CHAR_BIT * sizeof(State) - state_sent.Position();
+        auto shift = CHAR_BIT * sizeof(State) - receiver_.second.Position();
+        receiver_.first.Flush();
         state_ += received_bits_[0] >> shift;
 
         const auto& decoding_entry = decoding_table_[state_];
@@ -78,8 +79,9 @@ class TansDecoder : public DecoderInterface<Token, TansDecoder<Token, Count>> {
         state_ = decoding_entry.next_state;
 
         receiver_ = {BitIter{std::ranges::begin(received_bits_)},
-                     std::next(BitIter{std::ranges::begin(received_bits_)},
-                               decoding_entry.bit_count)};
+                     BitIter{std::ranges::begin(received_bits_),
+                             decoding_entry.bit_count}};
+        return token;
     }
 
     static constexpr std::vector<DecodingEntry> BuildDecodingTable(
@@ -92,7 +94,7 @@ class TansDecoder : public DecoderInterface<Token, TansDecoder<Token, Count>> {
             const auto& token = init_table.state_table()[i];
             auto state = next.At(token)++;
             uint8_t bit_count = std::ceil(std::log2(
-                static_cast<double>(init_table.number_of_states()) / count));
+                static_cast<double>(init_table.number_of_states()) / state));
             auto new_state = (state << bit_count) - number_of_states;
             decoding_table.emplace_back(token, new_state, bit_count);
         }
