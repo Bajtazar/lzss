@@ -54,7 +54,7 @@ class TansDecoder : public DecoderInterface<Token, TansDecoder<Token, Count>> {
 
     std::vector<DecodingEntry> decoding_table_;
     BitRange receiver_;
-    State state_;
+    State state_ = 0;
     State received_bits_[1];
 
     constexpr auto SetReceiver(auto iter, const auto& sent) {
