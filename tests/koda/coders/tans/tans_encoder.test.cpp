@@ -42,7 +42,7 @@ BeginConstexprTest(TansEncoderTest, GeometricDistribution) {
     koda::TansEncoder encoder{table};
 
     const std::vector<bool> kExpected = {0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1,
-                                         0, 0, 0, 1, 1, 1, 0, 1, 1, 1};
+                                         0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0};
 
     std::string sequence = "aabababacaabaaa";
     std::vector<bool> stream;
@@ -93,10 +93,10 @@ BeginConstexprTest(TansEncoderTest, UniformDistributionStridedAndScaled) {
     koda::TansInitTable table{kCounter, 2, 7, 13};
     koda::TansEncoder encoder{table};
 
-    const std::vector<bool> kExpected = {1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1,
-                                         1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1,
-                                         1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1,
-                                         0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0};
+    const std::vector<bool> kExpected = {
+        1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+        0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0,
+        0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1};
 
     std::string sequence = "abacdaeffagggaah";
     std::vector<bool> stream;
@@ -137,7 +137,7 @@ BeginConstexprTest(TansEncoderTest, UniformDistribution) {
     const std::vector<bool> kExpected = {
         0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1,
         0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
-        0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0};
+        0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1};
 
     std::string sequence = "abacdaeffagggaah";
     std::vector<bool> stream;

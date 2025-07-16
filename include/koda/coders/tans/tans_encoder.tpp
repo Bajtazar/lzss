@@ -42,7 +42,7 @@ constexpr auto TansEncoder<Token, Count>::Flush(BitOutputRange auto&& output) {
 
     // Encode final state with uniform distrib to simplify process
     state_ -= encoding_table_.size();
-    SetEmitter(IntFloorLog2(encoding_table_.size()));
+    SetEmitter(IntCeilLog2(encoding_table_.size()));
 
     return std::ranges::subrange{FlushEmitter(std::move(iter), sentinel),
                                  sentinel};

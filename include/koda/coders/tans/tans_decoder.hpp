@@ -18,7 +18,7 @@ class TansDecoder : public DecoderInterface<Token, TansDecoder<Token, Count>> {
         : decoding_table_{BuildDecodingTable(init_table)},
           receiver_{BitIter{std::ranges::begin(received_bits_)},
                     BitIter{std::ranges::begin(received_bits_),
-                            IntFloorLog2(decoding_table_.size())}} {}
+                            IntCeilLog2(decoding_table_.size())}} {}
 
     constexpr auto Initialize(BitInputRange auto&& input) {
         return std::forward<decltype(input)>(input);
