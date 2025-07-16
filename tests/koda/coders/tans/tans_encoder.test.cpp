@@ -4,6 +4,11 @@
 #include <koda/utils/back_inserter_iterator.hpp>
 #include <koda/utils/bit_iterator.hpp>
 
+#include <cinttypes>
+
+static_assert(
+    koda::SizeAwareEncoder<koda::TansEncoder<uint8_t, size_t>, uint8_t>);
+
 BeginConstexprTest(TansEncoderTest, UniformDistribution) {
     const koda::Map<char, size_t> kCounter = {{{'a', 2},
                                                {'b', 2},
