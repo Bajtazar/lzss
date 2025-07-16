@@ -44,7 +44,7 @@ BeginConstexprTest(TansDecoderTest, GeometricDistribution) {
     koda::TansDecoder decoder{table};
 
     const std::vector<bool> kStream = {0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1,
-                                       0, 0, 0, 1, 1, 1, 0, 1, 1, 1};
+                                       0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0};
     const std::string kExpected = "aabababacaabaaa";
 
     std::string result;
@@ -98,10 +98,10 @@ BeginConstexprTest(TansDecoderTest, UniformDistributionStridedAndScaled) {
     koda::TansInitTable table{kCounter, 2, 7, 13};
     koda::TansDecoder decoder{table};
 
-    const std::vector<bool> kStream = {1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1,
-                                       1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1,
-                                       1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1,
-                                       0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0};
+    const std::vector<bool> kStream = {1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1,
+                                       1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0,
+                                       0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0,
+                                       1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1};
 
     const std::string kExpected = "abacdaeffagggaah";
 
