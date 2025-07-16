@@ -4,7 +4,10 @@
 #include <koda/utils/back_inserter_iterator.hpp>
 #include <koda/utils/bit_iterator.hpp>
 
+#include <gtest/gtest.h>
+
 #include <cinttypes>
+#include <print>
 
 static_assert(koda::Decoder<koda::TansDecoder<uint8_t, size_t>, uint8_t>);
 
@@ -41,7 +44,7 @@ BeginConstexprTest(TansDecoderTest, GeometricDistribution) {
     koda::TansDecoder decoder{table};
 
     const std::vector<bool> kStream = {0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1,
-                                       0, 0, 0, 1, 1, 1, 0, 1, 0, 1};
+                                       0, 0, 0, 1, 1, 1, 0, 1, 1, 1};
     const std::string kExpected = "aabababacaabaaa";
 
     std::string result;
