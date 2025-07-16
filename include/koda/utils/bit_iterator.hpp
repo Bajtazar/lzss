@@ -36,6 +36,13 @@ class BitIteratorBase {
         std::is_nothrow_move_constructible_v<Iter>)
         : iter_{std::move(iterator)} {}
 
+    explicit constexpr BitIteratorBase(Iter iterator, size_t position) noexcept(
+        std::is_nothrow_move_constructible_v<Iter>)
+        : iter_{std::move(iterator)} {
+        assert(position < this->ByteLength());
+        this->bit_iter_ += position;
+    }
+
     explicit constexpr BitIteratorBase() noexcept(
         std::is_nothrow_move_constructible_v<Iter>)
         requires std::constructible_from<Iter>
@@ -157,14 +164,6 @@ class LittleEndianOutputBitIter : public BitIteratorBase<Iter> {
     using difference_type = std::ptrdiff_t;
 
     using BitIteratorBase<Iter>::BitIteratorBase;
-
-    explicit constexpr LittleEndianOutputBitIter(
-        Iter iterator,
-        size_t position) noexcept(std::is_nothrow_move_constructible_v<Iter>)
-        : BitIteratorBase<Iter>{std::move(iterator)} {
-        assert(position < this->ByteLength());
-        this->bit_iter += position;
-    }
 
     constexpr LittleEndianOutputBitIter(
         LittleEndianOutputBitIter&&
@@ -288,14 +287,6 @@ class BigEndianOutputBitIter : public BitIteratorBase<Iter> {
     using difference_type = std::ptrdiff_t;
 
     using BitIteratorBase<Iter>::BitIteratorBase;
-
-    explicit constexpr BigEndianOutputBitIter(
-        Iter iterator,
-        size_t position) noexcept(std::is_nothrow_move_constructible_v<Iter>)
-        : BitIteratorBase<Iter>{std::move(iterator)} {
-        assert(position < this->ByteLength());
-        this->bit_iter_ += position;
-    }
 
     constexpr BigEndianOutputBitIter(BigEndianOutputBitIter&& other) noexcept(
         std::is_nothrow_move_constructible_v<Iter>) = default;

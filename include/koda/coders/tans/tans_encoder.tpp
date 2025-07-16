@@ -75,7 +75,8 @@ template <typename Token, typename Count>
 constexpr void TansEncoder<Token, Count>::SetEmitter(Count bit_count) {
     emitted_bits_[0] = state_;
     BitIter start_iter{std::ranges::begin(emitted_bits_)};
-    emitter_ = std::pair{start_iter, std::next(start_iter, bit_count)};
+    emitter_ = std::pair{BitIter{std::ranges::begin(emitted_bits_)},
+                         BitIter{std::ranges::begin(emitted_bits_), bit_count}};
 }
 
 template <typename Token, typename Count>
