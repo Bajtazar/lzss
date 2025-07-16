@@ -28,8 +28,9 @@ BeginConstexprTest(TansDecoderTest, UniformDistribution) {
 
     std::string result;
 
-    decoder(kStream, result | koda::views::InsertFromBack);
+    decoder(kExpected.size(), kStream | std::views::reverse,
+            result | koda::views::InsertFromBack);
 
-    ConstexprAssertEqual(result, kExpected);
+    ConstexprAssertEqual(result | std::views::reverse, kExpected);
 }
 EndConstexprTest;

@@ -70,9 +70,8 @@ class TansDecoder : public DecoderInterface<Token, TansDecoder<Token, Count>> {
     }
 
     constexpr Token DecodeToken() {
-        auto shift = CHAR_BIT * sizeof(State) - receiver_.second.Position();
         receiver_.first.Flush();
-        state_ += received_bits_[0] >> shift;
+        state_ += received_bits_[0] >> receiver_.second.Position();
 
         const auto& decoding_entry = decoding_table_[state_];
         Token token = decoding_entry.symbol;
