@@ -27,14 +27,15 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
     using BitIter = LittleEndianInputBitIter<const Count*>;
     using BitRange = std::pair<BitIter, BitIter>;
     using SCount = std::make_signed_t<Count>;
+    using State = Count;
 
     Map<Token, uint8_t> saturation_map_;
     Map<Token, SCount> offset_map_;
     Map<Token, Count> renorm_map_;
     std::vector<Count> encoding_table_;
     BitRange emitter_;
-    Count state_;
-    Count emitted_bits_[1];
+    State state_;
+    State emitted_bits_[1];
 
     constexpr auto EncodeTokens(InputRange<Token> auto&& input, auto iter,
                                 auto sentinel);
