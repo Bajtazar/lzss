@@ -4,10 +4,6 @@
 #include <koda/utils/back_inserter_iterator.hpp>
 #include <koda/utils/bit_iterator.hpp>
 
-#include <gtest/gtest.h>
-
-#include <print>
-
 BeginConstexprTest(TansEncoderTest, UniformDistribution) {
     const koda::Map<char, size_t> kCounter = {{{'a', 2},
                                                {'b', 2},
@@ -118,5 +114,31 @@ BeginConstexprTest(TansEncoderTest, DiracDistribution) {
     encoder(sequence, stream | koda::views::InsertFromBack);
 
     ConstexprAssertTrue(stream.empty());
+}
+EndConstexprTest;
+
+BeginConstexprTest(TansEncoderTest, UniformDistribution) {
+    const koda::Map<char, size_t> kCounter = {{{'a', 1},
+                                               {'b', 2},
+                                               {'c', 5},
+                                               {'d', 1},
+                                               {'e', 8},
+                                               {'f', 7},
+                                               {'g', 15},
+                                               {'h', 11}}};
+    koda::TansInitTable table{kCounter};
+    koda::TansEncoder encoder{table};
+
+    const std::vector<bool> kExpected = {
+        0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1,
+        0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+        0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1};
+
+    std::string sequence = "abacdaeffagggaah";
+    std::vector<bool> stream;
+
+    encoder(sequence, stream | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(stream, kExpected);
 }
 EndConstexprTest;
