@@ -24,10 +24,10 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
     constexpr auto Flush(BitOutputRange auto&& output);
 
    private:
+    using State = Count;
+    using SState = std::make_signed_t<State>;
     using BitIter = LittleEndianInputBitIter<const State*>;
     using BitRange = std::pair<BitIter, BitIter>;
-    using SState = std::make_signed_t<State>;
-    using State = Count;
 
     Map<Token, uint8_t> saturation_map_;
     Map<Token, SState> offset_map_;
