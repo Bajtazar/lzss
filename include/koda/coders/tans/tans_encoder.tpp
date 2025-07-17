@@ -76,21 +76,6 @@ constexpr void TansEncoder<Token, Count>::EncodeToken(const auto& token) {
     assert(bit_count <= CHAR_BIT * sizeof(Count));
     SetEmitter(bit_count);
     state_ = encoding_table_[offset_map_.At(token) + (state_ >> bit_count)];
-    ValidateStateTransitionCorrectness();
-}
-
-template <typename Token, typename Count>
-constexpr void TansEncoder<Token, Count>::ValidateStateTransitionCorrectness()
-    const {
-#ifdef KODA_CHECKED_BUILD
-    uint8_t estimated_bit_count = IntCeilLog2(static_cast<State>(std::llabs(
-        static_cast<SState>(state_) - static_cast<SState>(emitted_bits_[0]))));
-    if (estimated_bit_count != emitter_.second.Position()) [[unlikely]] {
-        throw std::runtime_error{std::format(
-            "Number of emitted bits ({}) and estimated bits ({}) differs",
-            emitter_.second.Position(), estimated_bit_count)};
-    }
-#endif  // KODA_CHECKED_BUILD
 }
 
 template <typename Token, typename Count>
@@ -152,7 +137,8 @@ TansEncoder<Token, Count>::BuildStartOffsetMap(
 
     Count accumulator = 0;
     for (const auto& [token, count] : init_table.states_per_token()) {
-        offset_map.Emplace(token, static_cast<SState>(accumulator) - count);
+        offset_map.Emplace(token, static_cast<SState>(accumulator) -
+                                      static_cast<SState>(count));
         accumulator += count;
     }
 

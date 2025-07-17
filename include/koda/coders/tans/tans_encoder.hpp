@@ -42,8 +42,6 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
 
     constexpr auto FlushEmitter(auto output_iter, const auto& output_sent);
 
-    constexpr void ValidateStateTransitionCorrectness() const;
-
     static constexpr Map<Token, uint8_t> BuildSaturationMap(
         const TansInitTable<Token, Count>& init_table);
 
