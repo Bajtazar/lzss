@@ -3,10 +3,6 @@
 #include <koda/coders/coder.hpp>
 #include <koda/coders/tans/tans_table.hpp>
 #include <koda/collections/map.hpp>
-#include <koda/utils/utils.hpp>
-
-#include <cassert>
-#include <cmath>
 
 namespace koda {
 
@@ -45,6 +41,8 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
     constexpr void SetEmitter(Count bit_count);
 
     constexpr auto FlushEmitter(auto output_iter, const auto& output_sent);
+
+    constexpr void ValidateStateTransitionCorrectness() const;
 
     static constexpr Map<Token, uint8_t> BuildSaturationMap(
         const TansInitTable<Token, Count>& init_table);
