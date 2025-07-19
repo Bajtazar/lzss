@@ -29,13 +29,15 @@ EndConstexprTest;
 BeginConstexprTest(TansTableTest, GeometricDistribution) {
     const koda::Map<char, size_t> kCounter = {{{'a', 2}, {'b', 4}, {'c', 8}}};
 
-    const std::vector<char> kExpectedStateTable = {
-        'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c'};
+    const std::vector<char> kExpectedStateTable = {'a', 'a', 'b', 'b', 'b', 'b',
+                                                   'c', 'c', 'c', 'c', 'c', 'c',
+                                                   'c', 'c', 'c', 'c'};
 
-    const koda::Map<char, size_t> kExpectedStatesPerToken = kCounter;
-    const size_t kNumberOfStates = 14;
+    const koda::Map<char, size_t> kExpectedStatesPerToken = {
+        {{'a', 2}, {'b', 4}, {'c', 10}}};
+    const size_t kNumberOfStates = 16;
 
-    koda::TansInitTable table{kCounter};
+    koda::TansInitTable table{kCounter, 0, 1, kNumberOfStates};
 
     ConstexprAssertEqual(table.state_table(), kExpectedStateTable);
     ConstexprAssertEqual(table.states_per_token(), kExpectedStatesPerToken);
@@ -46,13 +48,15 @@ EndConstexprTest;
 BeginConstexprTest(TansTableTest, GeometricDistributionShifted) {
     const koda::Map<char, size_t> kCounter = {{{'a', 2}, {'b', 4}, {'c', 8}}};
 
-    const std::vector<char> kExpectedStateTable = {
-        'c', 'c', 'c', 'c', 'c', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c'};
+    const std::vector<char> kExpectedStateTable = {'c', 'c', 'c', 'c', 'c', 'a',
+                                                   'a', 'b', 'b', 'b', 'b', 'c',
+                                                   'c', 'c', 'c', 'c'};
 
-    const koda::Map<char, size_t> kExpectedStatesPerToken = kCounter;
-    const size_t kNumberOfStates = 14;
+    const koda::Map<char, size_t> kExpectedStatesPerToken = {
+        {{'a', 2}, {'b', 4}, {'c', 10}}};
+    const size_t kNumberOfStates = 16;
 
-    koda::TansInitTable table{kCounter, 5};
+    koda::TansInitTable table{kCounter, 5, 1, kNumberOfStates};
 
     ConstexprAssertEqual(table.state_table(), kExpectedStateTable);
     ConstexprAssertEqual(table.states_per_token(), kExpectedStatesPerToken);
@@ -96,19 +100,21 @@ BeginConstexprTest(TansTableTest, UniformDistributionStridedAndScaled) {
                                                {'h', 2}}};
 
     const std::vector<char> kExpectedStateTable = {
-        'g', 'h', 'a', 'b', 'd', 'e', 'f', 'g', 'h', 'b', 'c', 'd', 'e'};
+        'e', 'c', 'a', 'f', 'd', 'b', 'h', 'e', 'c', 'a', 'g',
+        'd', 'b', 'h', 'f', 'c', 'a', 'g', 'e', 'b', 'h', 'f',
+        'd', 'a', 'g', 'e', 'c', 'h', 'f', 'd', 'b', 'g'};
 
-    const koda::Map<char, size_t> kExpectedStatesPerToken = {{{'a', 1},
-                                                              {'b', 2},
-                                                              {'c', 1},
-                                                              {'d', 2},
-                                                              {'e', 2},
-                                                              {'f', 1},
-                                                              {'g', 2},
-                                                              {'h', 2}}};
-    const size_t kNumberOfStates = 13;
+    const koda::Map<char, size_t> kExpectedStatesPerToken = {{{'a', 4},
+                                                              {'b', 4},
+                                                              {'c', 4},
+                                                              {'d', 4},
+                                                              {'e', 4},
+                                                              {'f', 4},
+                                                              {'g', 4},
+                                                              {'h', 4}}};
+    const size_t kNumberOfStates = 32;
 
-    koda::TansInitTable table{kCounter, 2, 7, 13};
+    koda::TansInitTable table{kCounter, 2, 7, kNumberOfStates};
 
     ConstexprAssertEqual(table.state_table(), kExpectedStateTable);
     ConstexprAssertEqual(table.states_per_token(), kExpectedStatesPerToken);
