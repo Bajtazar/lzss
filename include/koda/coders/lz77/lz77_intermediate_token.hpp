@@ -5,6 +5,7 @@
 
 #include <cinttypes>
 #include <cstddef>
+#include <format>
 #include <optional>
 
 namespace koda {
@@ -27,7 +28,7 @@ class [[nodiscard]] Lz77IntermediateToken {
 
     [[nodiscard]] constexpr LengthTp match_length() const noexcept;
 
-    [[nodiscard]] constexpr std::partial_ordering operator<=>(
+    [[nodiscard]] constexpr std::weak_ordering operator<=>(
         const Lz77IntermediateToken& right) const noexcept = default;
 
     [[nodiscard]] constexpr bool operator==(
@@ -53,5 +54,13 @@ struct TokenTraits<Lz77IntermediateToken<InputToken, PositionTp, LengthTp>> {
 };
 
 }  // namespace koda
+
+template <typename Token>
+struct std::formatter<koda::Lz77IntermediateToken<Token>> {
+    constexpr auto parse(std::format_parse_context& ctx);
+
+    auto format(const koda::Lz77IntermediateToken<Token>& obj,
+                std::format_context& ctx) const;
+};
 
 #include <koda/coders/lz77/lz77_intermediate_token.tpp>
