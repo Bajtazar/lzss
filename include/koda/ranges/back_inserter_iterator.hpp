@@ -39,20 +39,13 @@ class InsertFromBackView
     : public std::ranges::view_interface<InsertFromBackView<Range>> {
    public:
     template <ViewableDistinctRange<InsertFromBackView> RangeFwdTp>
-    constexpr InsertFromBackView(RangeFwdTp&& range)
-        : range_{std::forward<RangeFwdTp>(range)} {}
+    constexpr InsertFromBackView(RangeFwdTp&& range);
 
-    [[nodiscard]] constexpr BackInserterIterator<Range> begin() const {
-        return BackInserterIterator{range_.get()};
-    }
+    [[nodiscard]] constexpr BackInserterIterator<Range> begin() const;
 
-    [[nodiscard]] static consteval std::default_sentinel_t end() noexcept {
-        return std::default_sentinel;
-    }
+    [[nodiscard]] static consteval std::default_sentinel_t end() noexcept;
 
-    [[nodiscard]] constexpr auto&& range(this auto&& self) {
-        return std::forward_like<decltype(self)>(self.range_);
-    }
+    [[nodiscard]] constexpr auto&& range(this auto&& self);
 
    private:
     std::reference_wrapper<Range> range_;
@@ -69,9 +62,7 @@ namespace views {
 struct InsertFromBackAdaptorClosure
     : public std::ranges::range_adaptor_closure<InsertFromBackAdaptorClosure> {
     template <std::ranges::viewable_range Range>
-    [[nodiscard]] constexpr auto operator()(Range&& range) const {
-        return ranges::InsertFromBackView{std::forward<Range>(range)};
-    }
+    [[nodiscard]] constexpr auto operator()(Range&& range) const;
 };
 
 inline constexpr InsertFromBackAdaptorClosure InsertFromBack{};
@@ -79,3 +70,5 @@ inline constexpr InsertFromBackAdaptorClosure InsertFromBack{};
 }  // namespace views
 
 }  // namespace koda
+
+#include <koda/ranges/back_inserter_iterator.tpp>
