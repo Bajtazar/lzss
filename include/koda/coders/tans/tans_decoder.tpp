@@ -24,6 +24,11 @@ template <typename Token, typename Count>
 constexpr auto TansDecoder<Token, Count>::Decode(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
+    if (decoding_table_.size() == 1) {
+        return HandleDiracDelta(std::forward<decltype(input)>(input),
+                                std::forward<decltype(output)>(output));
+    }
+
     auto in_iter = std::ranges::begin(input);
     auto in_sent = std::ranges::end(input);
 
@@ -37,6 +42,18 @@ constexpr auto TansDecoder<Token, Count>::Decode(
 
     return CoderResult{std::move(in_iter), std::move(in_iter),
                        std::move(out_iter), std::move(out_sent)};
+}
+
+template <typename Token, typename Count>
+constexpr auto TansDecoder<Token, Count>::HandleDiracDelta(
+    BitInputRange auto&& input,
+    std::ranges::output_range<Token> auto&& output) {
+    auto out_iter = std::ranges::begin(output);
+    auto out_sent = std::ranges::end(output);
+    const Token& value = decoding_table_.front().symbol;
+    auto out = std::ranges::fill(std::move(out_iter), out_sent, value);
+    return CoderResult{std::forward<decltype(input)>(input), std::move(out),
+                       std::move(out_sent)};
 }
 
 template <typename Token, typename Count>

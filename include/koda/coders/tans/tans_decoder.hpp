@@ -31,7 +31,11 @@ class TansDecoder : public DecoderInterface<Token, TansDecoder<Token, Count>> {
     std::vector<DecodingEntry> decoding_table_;
     BitRange receiver_;
     State state_ = 0;
-    State received_bits_[1];
+    State received_bits_[1]{};
+
+    constexpr auto HandleDiracDelta(
+        BitInputRange auto&& input,
+        std::ranges::output_range<Token> auto&& output);
 
     constexpr auto SetReceiver(auto iter, const auto& sent);
 

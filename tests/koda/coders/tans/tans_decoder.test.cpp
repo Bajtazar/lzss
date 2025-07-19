@@ -110,3 +110,22 @@ BeginConstexprTest(TansDecoderTest, UniformDistributionStridedAndScaled) {
     ConstexprAssertEqual(result | std::views::reverse, kExpected);
 }
 EndConstexprTest;
+
+BeginConstexprTest(TansDecoderTest, DiracDistribution) {
+    const koda::Map<char, size_t> kCounter = {{'a', 1}};
+
+    koda::TansInitTable table{kCounter};
+    koda::TansDecoder decoder{table};
+
+    const std::vector<bool> kStream = {};
+
+    const std::string kExpected = "aaaaaaaaaaaaaaaa";
+
+    std::string result;
+
+    decoder(kExpected.size(), kStream | std::views::reverse,
+            result | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(result | std::views::reverse, kExpected);
+}
+EndConstexprTest;
