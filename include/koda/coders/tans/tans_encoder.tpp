@@ -120,28 +120,31 @@ TansEncoder<Token, Count>::BuildRenormalizationOffsetMap(
     const Map<Token, uint8_t>& saturation_map) {
     return Map<Token, Count>{
         BuildSaturationMap(init_table) |
-        std::views::transform([&](const auto& saturation_tuple) {
-            const auto& [token, saturation] = saturation_tuple;
-            auto max = 2 * init_table.number_of_states() * saturation;
-            auto min = init_table.states_per_token().At(token) << saturation;
-            return std::pair{token, max > min ? (max - min) : 0};
-        })};
+        std::views::transform(
+            [&, max_bit_size = IntFloorLog2(init_table.number_of_states())](
+                const auto& saturation_tuple) {
+                const auto& [token, saturation] = saturation_tuple;
+                auto max = saturation << max_bit_size;
+                auto min = init_table.states_per_token().At(token)
+                           << saturation;
+                return std::pair{token, max > min ? (max - min) : 0};
+            })};
 }
 
 template <typename Token, typename Count>
 /*static*/ constexpr Map<Token, typename TansEncoder<Token, Count>::SState>
 TansEncoder<Token, Count>::BuildStartOffsetMap(
     const TansInitTable<Token, Count>& init_table) {
-    Map<Token, SState> offset_map;
-
-    Count accumulator = 0;
-    for (const auto& [token, count] : init_table.states_per_token()) {
-        offset_map.Emplace(token, static_cast<SState>(accumulator) -
-                                      static_cast<SState>(count));
-        accumulator += count;
-    }
-
-    return offset_map;
+    return Map<Token, SState>{
+        init_table.states_per_token() |
+        std::views::transform([accumulator =
+                                   Count{0}](const auto& entry) mutable {
+            const auto& [token, count] = entry;
+            SState offset =
+                static_cast<SState>(accumulator) - static_cast<SState>(count);
+            accumulator += count;
+            return std::pair{token, offset};
+        })};
 }
 
 template <typename Token, typename Count>
@@ -153,11 +156,10 @@ TansEncoder<Token, Count>::BuildEncodingTable(
     std::vector<Count> encoding_table(number_of_states);
     Map<Token, Count> next = init_table.states_per_token();
 
-    for (Count i = 0; i < number_of_states; ++i) {
-        const auto& token = init_table.state_table()[i];
-
+    for (const auto& [index, token] :
+         std::views::enumerate(init_table.state_table())) {
         encoding_table[next.At(token)++ + start_offset_map.At(token)] =
-            i + number_of_states;
+            index + number_of_states;
     }
 
     return encoding_table;
