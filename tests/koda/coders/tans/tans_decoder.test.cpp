@@ -40,8 +40,8 @@ BeginConstexprTest(TansDecoderTest, GeometricDistribution) {
     koda::TansInitTable table{kCounter};
     koda::TansDecoder decoder{table};
 
-    const std::vector<bool> kStream = {0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1,
-                                       0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0};
+    const std::vector<bool> kStream = {0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1,
+                                       1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0};
     const std::string kExpected = "aabababacaabaaa";
 
     std::string result;
@@ -143,9 +143,9 @@ BeginConstexprTest(TansDecoderTest, RandomDistribution) {
     koda::TansDecoder decoder{table};
 
     const std::vector<bool> kStream = {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-        0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1,
-        1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1};
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0,
+        0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0,
+        0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
 
     const std::string kExpected = "abacdaeffagggaah";
     std::string result;
