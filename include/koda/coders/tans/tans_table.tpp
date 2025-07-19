@@ -19,12 +19,12 @@ constexpr TansInitTable<Token, CountTp>::TansInitTable(
     ValidateNumberOfStates(number_of_states);
     ValidateStepSize(step, number_of_states);
 
-    PopulateStateTable(count, init_state % number_of_states, step, total_size,
-                       number_of_states);
+    InitializeStateTable(count, init_state % number_of_states, step, total_size,
+                         number_of_states);
 }
 
 template <typename Token, std::integral CountTp>
-constexpr void TansInitTable<Token, CountTp>::PopulateStateTable(
+constexpr void TansInitTable<Token, CountTp>::InitializeStateTable(
     const Map<Token, CountTp>& count, CountTp state, CountTp step,
     CountTp total_size, size_t number_of_states) {
     state_table_.resize(number_of_states);
@@ -33,6 +33,21 @@ constexpr void TansInitTable<Token, CountTp>::PopulateStateTable(
     std::ranges::sort(sorted_count, std::less<>{},
                       &std::pair<Token, CountTp>::second);
 
+    CountTp norm_accumulator = PopulateStateTable(sorted_count, state, step,
+                                                  total_size, number_of_states);
+
+    if (norm_accumulator != number_of_states) [[unlikely]] {
+        throw FormattedException{
+            "Invalid allocation of states, allocated ({}) slots but ({}) slots "
+            "are available",
+            norm_accumulator, number_of_states};
+    }
+}
+
+template <typename Token, std::integral CountTp>
+constexpr CountTp TansInitTable<Token, CountTp>::PopulateStateTable(
+    const std::vector<std::pair<Token, CountTp>>& sorted_count, CountTp state,
+    CountTp step, CountTp total_size, size_t number_of_states) {
     CountTp occ_accumulator = 0, norm_accumulator = 0;
     for (const auto& [token, occurences] : sorted_count) {
         const CountTp limit = std::max<CountTp>(
@@ -48,13 +63,7 @@ constexpr void TansInitTable<Token, CountTp>::PopulateStateTable(
         occ_accumulator += occurences;
         norm_accumulator += limit;
     }
-
-    if (norm_accumulator != number_of_states) [[unlikely]] {
-        throw FormattedException{
-            "Invalid allocation of states, allocated ({}) slots but ({}) slots "
-            "are available",
-            norm_accumulator, number_of_states};
-    }
+    return norm_accumulator;
 }
 
 template <typename Token, std::integral CountTp>
