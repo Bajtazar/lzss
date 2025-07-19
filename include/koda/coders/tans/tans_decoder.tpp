@@ -76,8 +76,7 @@ TansDecoder<Token, Count>::BuildDecodingTable(
     std::vector<DecodingEntry> decoding_table;
     Map<Token, Count> next = init_table.states_per_token();
 
-    for (Count i = 0; i < number_of_states; ++i) {
-        const auto& token = init_table.state_table()[i];
+    for (const auto& token : init_table.state_table()) {
         auto state = next.At(token)++;
         uint8_t bit_count =
             IntFloorLog2(number_of_states) - IntFloorLog2(state);
