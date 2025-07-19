@@ -140,4 +140,4 @@ inline constexpr TakeViewAdaptor Take{};
 
 }  // namespace koda
 
-#include <koda/utils/views.tpp>
+#include <koda/ranges/views.tpp>

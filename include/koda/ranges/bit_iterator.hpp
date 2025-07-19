@@ -429,4 +429,4 @@ inline constexpr BigEndianOutputAdaptorClosure BigEndianOutput{};
 
 }  // namespace koda
 
-#include <koda/utils/bit_iterator.tpp>
+#include <koda/ranges/bit_iterator.tpp>

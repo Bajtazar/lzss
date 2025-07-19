@@ -1,9 +1,9 @@
 #include <koda/coders/huffman/huffman_decoder.hpp>
 #include <koda/coders/huffman/huffman_encoder.hpp>
 #include <koda/coders/huffman/huffman_table.hpp>
+#include <koda/ranges/back_inserter_iterator.hpp>
+#include <koda/ranges/bit_iterator.hpp>
 #include <koda/tests/tests.hpp>
-#include <koda/utils/back_inserter_iterator.hpp>
-#include <koda/utils/bit_iterator.hpp>
 #include <koda/utils/counter.hpp>
 
 #include <string_view>

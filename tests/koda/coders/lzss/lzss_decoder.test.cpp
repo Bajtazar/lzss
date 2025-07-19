@@ -1,7 +1,7 @@
 #include <koda/coders/lzss/lzss_decoder.hpp>
+#include <koda/ranges/back_inserter_iterator.hpp>
+#include <koda/ranges/bit_iterator.hpp>
 #include <koda/tests/tests.hpp>
-#include <koda/utils/back_inserter_iterator.hpp>
-#include <koda/utils/bit_iterator.hpp>
 
 static_assert(koda::Decoder<koda::LzssDecoder<uint8_t>, uint8_t>);
 

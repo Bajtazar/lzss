@@ -1,6 +1,6 @@
 #pragma once
 
-#include <koda/utils/bit_iterator.hpp>
+#include <koda/ranges/bit_iterator.hpp>
 
 #include <cinttypes>
 

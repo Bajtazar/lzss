@@ -1,7 +1,7 @@
 #include <koda/coders/huffman/huffman_encoder.hpp>
+#include <koda/ranges/back_inserter_iterator.hpp>
+#include <koda/ranges/bit_iterator.hpp>
 #include <koda/tests/tests.hpp>
-#include <koda/utils/back_inserter_iterator.hpp>
-#include <koda/utils/bit_iterator.hpp>
 
 #include <cmath>
 
