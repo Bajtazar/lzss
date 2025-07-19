@@ -46,15 +46,10 @@ template <BitIteratorUnderlyingInputOrOutputIterator Iter>
 class BitIteratorBase {
    public:
     explicit constexpr BitIteratorBase(Iter iterator) noexcept(
-        std::is_nothrow_move_constructible_v<Iter>)
-        : iter_{std::move(iterator)} {}
+        std::is_nothrow_move_constructible_v<Iter>);
 
     explicit constexpr BitIteratorBase(Iter iterator, size_t position) noexcept(
-        std::is_nothrow_move_constructible_v<Iter>)
-        : iter_{std::move(iterator)} {
-        assert(position < this->ByteLength());
-        this->bit_iter_ += position;
-    }
+        std::is_nothrow_move_constructible_v<Iter>);
 
     explicit constexpr BitIteratorBase() noexcept(
         std::is_nothrow_move_constructible_v<Iter>)
@@ -81,9 +76,7 @@ class BitIteratorBase {
         return sentinel == right.iter_;
     }
 
-    [[nodiscard]] static inline consteval size_t ByteLength() noexcept {
-        return sizeof(TemporaryTp) * CHAR_BIT;
-    }
+    [[nodiscard]] static inline consteval size_t ByteLength() noexcept;
 
    protected:
     using TemporaryTp = std::iter_value_t<Iter>;
@@ -132,34 +125,13 @@ class LittleEndianInputBitIter : public BitIteratorBase<Iter> {
     operator=(const LittleEndianInputBitIter& other) noexcept(
         std::is_nothrow_copy_assignable_v<Iter>) = default;
 
-    [[nodiscard]] constexpr bit operator*() const noexcept {
-        if (should_fetch_) {
-            this->current_value_ = *this->iter_ >> this->bit_iter_;
-            should_fetch_ = false;
-        }
-        return this->current_value_ & kParityBitMask;
-    }
+    [[nodiscard]] constexpr bit operator*() const noexcept;
 
-    constexpr LittleEndianInputBitIter& operator++() noexcept {
-        if (++this->bit_iter_ == this->ByteLength()) {
-            this->bit_iter_ = 0;
-            should_fetch_ = true;
-            ++this->iter_;
-        } else {
-            this->current_value_ >>= 1;
-        }
-        return *this;
-    }
+    constexpr LittleEndianInputBitIter& operator++() noexcept;
 
-    [[nodiscard]] constexpr LittleEndianInputBitIter operator++(int) noexcept {
-        auto temp = *this;
-        ++(*this);
-        return temp;
-    }
+    [[nodiscard]] constexpr LittleEndianInputBitIter operator++(int) noexcept;
 
-    [[nodiscard]] constexpr size_t Position() const noexcept {
-        return this->bit_iter_;
-    }
+    [[nodiscard]] constexpr size_t Position() const noexcept;
 
    private:
     using TemporaryTp = std::iter_value_t<Iter>;
@@ -196,37 +168,17 @@ class LittleEndianOutputBitIter : public BitIteratorBase<Iter> {
     operator=(const LittleEndianOutputBitIter& other) noexcept(
         std::is_nothrow_copy_assignable_v<Iter>) = default;
 
-    constexpr LittleEndianOutputBitIter& operator=(bit value) noexcept {
-        this->current_value_ |= (value ? 1 : 0) << this->bit_iter_;
-        if (++this->bit_iter_ == this->ByteLength()) {
-            *(this->iter_)++ = this->current_value_;
-            this->bit_iter_ = this->current_value_ = 0;
-        }
-        return *this;
-    }
+    constexpr LittleEndianOutputBitIter& operator=(bit value) noexcept;
 
-    [[nodiscard]] constexpr LittleEndianOutputBitIter& operator*(
-        void) noexcept {
-        return *this;
-    }
+    [[nodiscard]] constexpr LittleEndianOutputBitIter& operator*(void) noexcept;
 
-    constexpr LittleEndianOutputBitIter& operator++() noexcept { return *this; }
+    constexpr LittleEndianOutputBitIter& operator++() noexcept;
 
-    [[nodiscard]] constexpr LittleEndianOutputBitIter& operator++(
-        int) noexcept {
-        return *this;
-    }
+    [[nodiscard]] constexpr LittleEndianOutputBitIter& operator++(int) noexcept;
 
-    constexpr void Flush() noexcept {
-        if (this->bit_iter_) {
-            *(this->iter_)++ = this->current_value_;
-            this->bit_iter_ = this->current_value_ = 0;
-        }
-    }
+    constexpr void Flush() noexcept;
 
-    [[nodiscard]] constexpr size_t Position() const noexcept {
-        return this->bit_iter_;
-    }
+    [[nodiscard]] constexpr size_t Position() const noexcept;
 };
 
 template <BitIteratorUnderlyingInputIterator Iter>
@@ -254,34 +206,13 @@ class BigEndianInputBitIter : public BitIteratorBase<Iter> {
     operator=(const BigEndianInputBitIter& other) noexcept(
         std::is_nothrow_copy_assignable_v<Iter>) = default;
 
-    [[nodiscard]] constexpr bit operator*() const noexcept {
-        if (should_fetch_) {
-            this->current_value_ = *this->iter_ << this->bit_iter_;
-            should_fetch_ = false;
-        }
-        return this->current_value_ & kSignBitMask;
-    }
+    [[nodiscard]] constexpr bit operator*() const noexcept;
 
-    constexpr BigEndianInputBitIter& operator++() noexcept {
-        if (++this->bit_iter_ == this->ByteLength()) {
-            this->bit_iter_ = 0;
-            should_fetch_ = true;
-            ++this->iter_;
-        } else {
-            this->current_value_ <<= 1;
-        }
-        return *this;
-    }
+    constexpr BigEndianInputBitIter& operator++() noexcept;
 
-    [[nodiscard]] constexpr BigEndianInputBitIter operator++(int) noexcept {
-        auto temp = *this;
-        ++(*this);
-        return temp;
-    }
+    [[nodiscard]] constexpr BigEndianInputBitIter operator++(int) noexcept;
 
-    [[nodiscard]] constexpr size_t Position() const noexcept {
-        return this->ByteLength() - 1 - this->bit_iter_;
-    }
+    [[nodiscard]] constexpr size_t Position() const noexcept;
 
    private:
     using TemporaryTp = std::iter_value_t<Iter>;
@@ -317,36 +248,17 @@ class BigEndianOutputBitIter : public BitIteratorBase<Iter> {
     operator=(const BigEndianOutputBitIter& other) noexcept(
         std::is_nothrow_copy_assignable_v<Iter>) = default;
 
-    constexpr BigEndianOutputBitIter& operator=(bit value) noexcept {
-        this->current_value_ = (this->current_value_ << 1) | (value ? 1 : 0);
-        if (++this->bit_iter_ == this->ByteLength()) {
-            *(this->iter_)++ = this->current_value_;
-            this->bit_iter_ = this->current_value_ = 0;
-        }
-        return *this;
-    }
+    constexpr BigEndianOutputBitIter& operator=(bit value) noexcept;
 
-    [[nodiscard]] constexpr BigEndianOutputBitIter& operator*() noexcept {
-        return *this;
-    }
+    [[nodiscard]] constexpr BigEndianOutputBitIter& operator*() noexcept;
 
-    constexpr BigEndianOutputBitIter& operator++() noexcept { return *this; }
+    constexpr BigEndianOutputBitIter& operator++() noexcept;
 
-    [[nodiscard]] constexpr BigEndianOutputBitIter& operator++(int) noexcept {
-        return *this;
-    }
+    [[nodiscard]] constexpr BigEndianOutputBitIter& operator++(int) noexcept;
 
-    constexpr void Flush() noexcept {
-        if (this->bit_iter_) {
-            *(this->iter_)++ = this->current_value_
-                               << (this->ByteLength() - 1 - this->bit_iter_);
-            this->bit_iter_ = this->current_value_ = 0;
-        }
-    }
+    constexpr void Flush() noexcept;
 
-    [[nodiscard]] constexpr size_t Position() const noexcept {
-        return this->ByteLength() - 1 - this->bit_iter_;
-    }
+    [[nodiscard]] constexpr size_t Position() const noexcept;
 };
 
 namespace details {
@@ -362,21 +274,13 @@ class BitView
     constexpr BitView(RangeFwdTp&& range)
         : range_{std::forward<RangeFwdTp>(range)} {}
 
-    [[nodiscard]] constexpr BitIteratorTp<iterator_type> begin() const {
-        return BitIteratorTp<iterator_type>{std::ranges::begin(range_)};
-    }
+    [[nodiscard]] constexpr BitIteratorTp<iterator_type> begin() const;
 
     [[nodiscard]] constexpr auto end() const
-        requires(!std::same_as<sentinel_type, std::default_sentinel_t>)
-    {
-        return BitIteratorTp<sentinel_type>{std::ranges::end(range_)};
-    }
+        requires(!std::same_as<sentinel_type, std::default_sentinel_t>);
 
     [[nodiscard]] constexpr std::default_sentinel_t end() const
-        requires std::same_as<sentinel_type, std::default_sentinel_t>
-    {
-        return std::default_sentinel;
-    }
+        requires std::same_as<sentinel_type, std::default_sentinel_t>;
 
    private:
     RangeTp range_;
@@ -391,9 +295,7 @@ template <template <typename> class BitViewTp>
 struct BitViewAdaptorClosure : public std::ranges::range_adaptor_closure<
                                    BitViewAdaptorClosure<BitViewTp>> {
     template <std::ranges::viewable_range Range>
-    [[nodiscard]] constexpr auto operator()(Range&& range) const {
-        return BitViewTp{std::forward<Range>(range)};
-    }
+    [[nodiscard]] constexpr auto operator()(Range&& range) const;
 };
 
 }  // namespace details
