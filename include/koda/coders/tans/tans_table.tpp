@@ -16,24 +16,24 @@ constexpr TansInitTable<Token, CountTp>::TansInitTable(
     std::optional<CountTp> normalize_to) {
     const CountTp total_size =
         std::ranges::fold_left(count | std::views::values, 0, std::plus<>{});
-    number_of_states_ = normalize_to.value_or(total_size);
-    ValidateNumberOfStates();
-    ValidateStepSize(step);
+    const size_t number_of_states = normalize_to.value_or(total_size);
+    ValidateNumberOfStates(number_of_states);
+    ValidateStepSize(step, number_of_states);
 
-    CountTp state = init_state % number_of_states_;
+    CountTp state = init_state % number_of_states;
 
-    state_table_.resize(number_of_states_);
+    state_table_.resize(number_of_states);
 
     CountTp occ_accumulator = 0;
     CountTp norm_accumulator = 0;
     for (const auto& [token, occurences] : count) {
         const CountTp limit =
             static_cast<double>(occ_accumulator + occurences) *
-                number_of_states_ / total_size -
+                number_of_states / total_size -
             norm_accumulator;
         for (CountTp i = 0; i < limit; ++i) {
             state_table_[state] = token;
-            state = (state + step) % number_of_states_;
+            state = (state + step) % number_of_states;
         }
         states_per_token_.Emplace(token, limit);
         occ_accumulator += occurences;
@@ -56,33 +56,34 @@ TansInitTable<Token, CountTp>::states_per_token() const noexcept {
 template <typename Token, std::integral CountTp>
 [[nodiscard]] constexpr CountTp
 TansInitTable<Token, CountTp>::number_of_states() const noexcept {
-    return number_of_states_;
+    return state_table_.size();
 }
 
 template <typename Token, std::integral CountTp>
 constexpr void TansInitTable<Token, CountTp>::ValidateStepSize(
-    CountTp step) const {
+    CountTp step, size_t number_of_states) const {
     if (step == 1) {
         return;
     }
-    if (!step || step >= number_of_states_) [[unlikely]] {
+    if (!step || step >= number_of_states) [[unlikely]] {
         throw std::logic_error{
             std::format("Invalid step size, got: {}, expected 1 <= step < {}",
-                        step, number_of_states_)};
+                        step, number_of_states)};
     }
-    if (number_of_states_ % step == 0) [[unlikely]] {
+    if (number_of_states % step == 0) [[unlikely]] {
         throw std::logic_error{std::format(
             "Step size ({}) cannot be a multiple of the number of states ({})",
-            step, number_of_states_)};
+            step, number_of_states)};
     }
 }
 
 template <typename Token, std::integral CountTp>
-constexpr void TansInitTable<Token, CountTp>::ValidateNumberOfStates() const {
-    if (!IsPowerOf2(number_of_states_)) [[unlikely]] {
+constexpr void TansInitTable<Token, CountTp>::ValidateNumberOfStates(
+    size_t number_of_states) const {
+    if (!IsPowerOf2(number_of_states)) [[unlikely]] {
         throw std::logic_error{
             std::format("Number of states must be a power of two, got ({})",
-                        number_of_states_)};
+                        number_of_states)};
     }
 }
 

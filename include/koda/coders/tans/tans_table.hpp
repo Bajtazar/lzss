@@ -28,11 +28,11 @@ class TansInitTable {
    private:
     std::vector<Token> state_table_;
     Map<Token, CountTp> states_per_token_;
-    CountTp number_of_states_;
 
-    constexpr void ValidateStepSize(CountTp step) const;
+    constexpr void ValidateStepSize(CountTp step,
+                                    size_t number_of_states) const;
 
-    constexpr void ValidateNumberOfStates() const;
+    constexpr void ValidateNumberOfStates(size_t number_of_states) const;
 };
 
 template <typename Token, std::integral CountTp, typename InitTp>
