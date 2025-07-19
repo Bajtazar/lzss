@@ -38,6 +38,11 @@ concept BitIteratorUnderlyingOutputIterator =
     std::output_iterator<Iter, std::iter_value_t<Iter>>;
 
 template <typename Iter>
+concept BitIteratorUnderlyingInputOrOutputIterator =
+    BitIteratorUnderlyingInputIterator<Iter> ||
+    BitIteratorUnderlyingOutputIterator<Iter>;
+
+template <BitIteratorUnderlyingInputOrOutputIterator Iter>
 class BitIteratorBase {
    public:
     explicit constexpr BitIteratorBase(Iter iterator) noexcept(
