@@ -129,3 +129,29 @@ BeginConstexprTest(TansDecoderTest, DiracDistribution) {
     ConstexprAssertEqual(result | std::views::reverse, kExpected);
 }
 EndConstexprTest;
+
+BeginConstexprTest(TansDecoderTest, RandomDistribution) {
+    const koda::Map<char, size_t> kCounter = {{{'a', 1},
+                                               {'b', 2},
+                                               {'c', 5},
+                                               {'d', 1},
+                                               {'e', 8},
+                                               {'f', 7},
+                                               {'g', 15},
+                                               {'h', 11}}};
+    koda::TansInitTable table{kCounter, 0, 1, 64};
+    koda::TansDecoder decoder{table};
+
+    const std::vector<bool> kStream = {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1,
+        1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1};
+
+    const std::string kExpected = "abacdaeffagggaah";
+    std::string result;
+
+    decoder(kExpected.size(), kStream | std::views::reverse,
+            result | koda::views::InsertFromBack);
+    ConstexprAssertEqual(result | std::views::reverse, kExpected);
+}
+EndConstexprTest;

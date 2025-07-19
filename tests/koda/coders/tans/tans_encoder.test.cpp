@@ -122,7 +122,7 @@ BeginConstexprTest(TansEncoderTest, DiracDistribution) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(TansEncoderTest, UniformDistribution) {
+BeginConstexprTest(TansEncoderTest, RandomDistribution) {
     const koda::Map<char, size_t> kCounter = {{{'a', 1},
                                                {'b', 2},
                                                {'c', 5},
