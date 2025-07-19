@@ -19,17 +19,27 @@ constexpr TansInitTable<Token, CountTp>::TansInitTable(
     ValidateNumberOfStates(number_of_states);
     ValidateStepSize(step, number_of_states);
 
-    CountTp state = init_state % number_of_states;
+    PopulateStateTable(count, init_state % number_of_states, step, total_size,
+                       number_of_states);
+}
 
+template <typename Token, std::integral CountTp>
+constexpr void TansInitTable<Token, CountTp>::PopulateStateTable(
+    const Map<Token, CountTp>& count, CountTp state, CountTp step,
+    CountTp total_size, size_t number_of_states) {
     state_table_.resize(number_of_states);
 
-    CountTp occ_accumulator = 0;
-    CountTp norm_accumulator = 0;
-    for (const auto& [token, occurences] : count) {
-        const CountTp limit =
+    std::vector<std::pair<Token, CountTp>> sorted_count{std::from_range, count};
+    std::ranges::sort(sorted_count, std::less<>{},
+                      &std::pair<Token, CountTp>::second);
+
+    CountTp occ_accumulator = 0, norm_accumulator = 0;
+    for (const auto& [token, occurences] : sorted_count) {
+        const CountTp limit = std::max<CountTp>(
             static_cast<double>(occ_accumulator + occurences) *
-                number_of_states / total_size -
-            norm_accumulator;
+                    number_of_states / total_size -
+                norm_accumulator,
+            1);
         for (CountTp i = 0; i < limit; ++i) {
             state_table_[state] = token;
             state = (state + step) % number_of_states;
@@ -37,6 +47,13 @@ constexpr TansInitTable<Token, CountTp>::TansInitTable(
         states_per_token_.Emplace(token, limit);
         occ_accumulator += occurences;
         norm_accumulator += limit;
+    }
+
+    if (norm_accumulator != number_of_states) [[unlikely]] {
+        throw FormattedException{
+            "Invalid allocation of states, allocated ({}) slots but ({}) slots "
+            "are available",
+            norm_accumulator, number_of_states};
     }
 }
 

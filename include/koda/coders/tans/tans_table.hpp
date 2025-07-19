@@ -29,6 +29,11 @@ class TansInitTable {
     std::vector<Token> state_table_;
     Map<Token, CountTp> states_per_token_;
 
+    constexpr void PopulateStateTable(const Map<Token, CountTp>& count,
+                                      CountTp state, CountTp step,
+                                      CountTp total_size,
+                                      size_t number_of_states);
+
     constexpr void ValidateStepSize(CountTp step,
                                     size_t number_of_states) const;
 
