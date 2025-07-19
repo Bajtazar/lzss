@@ -1,9 +1,7 @@
 #pragma once
 
+#include <koda/utils/formatted_exception.hpp>
 #include <koda/utils/utils.hpp>
-
-#include <format>
-#include <stdexcept>
 
 namespace koda {
 
@@ -77,8 +75,8 @@ constexpr auto HuffmanEncoder<Token>::EncodeToken(const Token& token,
 
 template <typename Token>
 [[noreturn]] constexpr void HuffmanEncoder<Token>::ThrowException(Token token) {
-    throw std::runtime_error{std::format(
-        "Token ({}) is not described by the huffman codes table", token)};
+    throw FormattedException{
+        "Token ({}) is not described by the huffman codes table", token};
 }
 
 }  // namespace koda
