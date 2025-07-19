@@ -31,6 +31,8 @@ class TansInitTable {
     CountTp number_of_states_;
 
     constexpr void ValidateStepSize(CountTp step) const;
+
+    constexpr void ValidateNumberOfStates() const;
 };
 
 template <typename Token, std::integral CountTp, typename InitTp>

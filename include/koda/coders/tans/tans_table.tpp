@@ -1,5 +1,7 @@
 #pragma once
 
+#include <koda/utils/utils.hpp>
+
 #include <algorithm>
 #include <bit>
 #include <format>
@@ -15,6 +17,7 @@ constexpr TansInitTable<Token, CountTp>::TansInitTable(
     const CountTp total_size =
         std::ranges::fold_left(count | std::views::values, 0, std::plus<>{});
     number_of_states_ = normalize_to.value_or(total_size);
+    ValidateNumberOfStates();
     ValidateStepSize(step);
 
     CountTp state = init_state % number_of_states_;
@@ -71,6 +74,15 @@ constexpr void TansInitTable<Token, CountTp>::ValidateStepSize(
         throw std::logic_error{std::format(
             "Step size ({}) cannot be a multiple of the number of states ({})",
             step, number_of_states_)};
+    }
+}
+
+template <typename Token, std::integral CountTp>
+constexpr void TansInitTable<Token, CountTp>::ValidateNumberOfStates() const {
+    if (!IsPowerOf2(number_of_states_)) [[unlikely]] {
+        throw std::logic_error{
+            std::format("Number of states must be a power of two, got ({})",
+                        number_of_states_)};
     }
 }
 
