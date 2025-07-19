@@ -1,6 +1,7 @@
 #pragma once
 
 #include <koda/utils/back_inserter_iterator.hpp>
+#include <koda/utils/formatted_exception.hpp>
 #include <koda/utils/utils.hpp>
 
 namespace koda {
@@ -225,9 +226,9 @@ template <std::integral Token,
 LzssDecoder<Token, AuxiliaryDecoder, Allocator>::CalculateDictionarySize(
     size_t dictionary_size, size_t look_ahead_size) {
     if (dictionary_size < look_ahead_size) [[unlikely]] {
-        throw std::logic_error{std::format(
+        throw FormattedException{
             "Dictionary ({}) cannot be smaller than the buffer size ({})",
-            dictionary_size, look_ahead_size)};
+            dictionary_size, look_ahead_size};
     }
     return dictionary_size - look_ahead_size;
 }

@@ -1,12 +1,11 @@
 #pragma once
 
+#include <koda/utils/formatted_exception.hpp>
 #include <koda/utils/utils.hpp>
 
 #include <algorithm>
 #include <bit>
-#include <format>
 #include <ranges>
-#include <stdexcept>
 
 namespace koda {
 
@@ -66,14 +65,14 @@ constexpr void TansInitTable<Token, CountTp>::ValidateStepSize(
         return;
     }
     if (!step || step >= number_of_states) [[unlikely]] {
-        throw std::logic_error{
-            std::format("Invalid step size, got: {}, expected 1 <= step < {}",
-                        step, number_of_states)};
+        throw FormattedException{
+            "Invalid step size, got: {}, expected 1 <= step < {}", step,
+            number_of_states};
     }
     if (number_of_states % step == 0) [[unlikely]] {
-        throw std::logic_error{std::format(
+        throw FormattedException{
             "Step size ({}) cannot be a multiple of the number of states ({})",
-            step, number_of_states)};
+            step, number_of_states};
     }
 }
 
@@ -81,9 +80,9 @@ template <typename Token, std::integral CountTp>
 constexpr void TansInitTable<Token, CountTp>::ValidateNumberOfStates(
     size_t number_of_states) const {
     if (!IsPowerOf2(number_of_states)) [[unlikely]] {
-        throw std::logic_error{
-            std::format("Number of states must be a power of two, got ({})",
-                        number_of_states)};
+        throw FormattedException{
+            "Number of states must be a power of two, got ({})",
+            number_of_states};
     }
 }
 
