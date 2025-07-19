@@ -16,8 +16,8 @@ constexpr TansEncoder<Token, Count>::TansEncoder(
       renorm_map_{BuildRenormalizationOffsetMap(init_table, saturation_map_)},
       encoding_table_{BuildEncodingTable(init_table, offset_map_)},
       state_{init_table.number_of_states()},
-      shift_{
-          static_cast<uint8_t>(IntFloorLog2(init_table.number_of_states()))} {}
+      shift_{static_cast<uint8_t>(
+          1 + IntFloorLog2(init_table.number_of_states()))} {}
 
 template <typename Token, typename Count>
 constexpr float TansEncoder<Token, Count>::TokenBitSize(Token token) const {
@@ -121,7 +121,7 @@ TansEncoder<Token, Count>::BuildRenormalizationOffsetMap(
     return Map<Token, Count>{
         BuildSaturationMap(init_table) |
         std::views::transform(
-            [&, max_bit_size = IntFloorLog2(init_table.number_of_states())](
+            [&, max_bit_size = 1 + IntFloorLog2(init_table.number_of_states())](
                 const auto& saturation_tuple) {
                 const auto& [token, saturation] = saturation_tuple;
                 auto max = saturation << max_bit_size;
