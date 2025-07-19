@@ -1,3 +1,5 @@
+#pragma once
+
 #include <koda/coders/huffman/huffman_table.hpp>
 
 #include <vector>

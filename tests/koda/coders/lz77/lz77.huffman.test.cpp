@@ -7,6 +7,8 @@
 #include <koda/tests/tests.hpp>
 #include <koda/utils/counter.hpp>
 
+#include "common.hpp"
+
 static constexpr std::string_view kTestString =
     "The number theoretic transform is based on generalizing the $ N$ th "
     "primitive root of unity (see §3.12) to a ``quotient ring'' instead of "
@@ -22,36 +24,7 @@ using HuffmanDecoder = koda::HuffmanDecoder<koda::Lz77IntermediateToken<char>>;
 using Lz77Encoder = koda::Lz77Encoder<char, HuffmanEncoder>;
 using Lz77Decoder = koda::Lz77Decoder<char, HuffmanDecoder>;
 
-namespace {
-
-template <typename Tp>
-struct Lz77DummyAuxEncoder
-    : public koda::EncoderInterface<Tp, Lz77DummyAuxEncoder<Tp>> {
-    constexpr explicit Lz77DummyAuxEncoder() = default;
-
-    std::vector<Tp> tokens = {};
-
-    [[noreturn]] constexpr float TokenBitSize([[maybe_unused]] Tp token) const {
-        throw std::runtime_error{"Unused expression!"};
-    }
-
-    constexpr auto Encode(koda::InputRange<Tp> auto&& input,
-                          koda::BitOutputRange auto&& output) {
-        tokens.insert_range(tokens.end(), std::forward<decltype(input)>(input));
-        // Circumvent static analysis
-        auto iter = std::ranges::begin(input);
-        const auto sent = std::ranges::end(input);
-        for (; iter != sent; ++iter);
-        return koda::CoderResult{iter, sent,
-                                 std::forward<decltype(output)>(output)};
-    }
-
-    constexpr auto Flush(koda::BitOutputRange auto&& output) {
-        return std::forward<decltype(output)>(output);
-    }
-};
-
-constexpr koda::HuffmanTable<koda::Lz77IntermediateToken<char>>
+static constexpr koda::HuffmanTable<koda::Lz77IntermediateToken<char>>
 BuildHuffmanTable(size_t dictionary_size, size_t look_ahead_size) {
     koda::Lz77Encoder<char,
                       Lz77DummyAuxEncoder<koda::Lz77IntermediateToken<char>>>
@@ -63,8 +36,6 @@ BuildHuffmanTable(size_t dictionary_size, size_t look_ahead_size) {
     return koda::MakeHuffmanTable(
         koda::Counter{encoder.auxiliary_encoder().tokens}.counted());
 }
-
-}  // namespace
 
 BeginConstexprTest(Lz77HuffmanTest, NormalTest) {
     const auto kTable = BuildHuffmanTable(1024, 16);
