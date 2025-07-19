@@ -4,10 +4,7 @@
 #include <koda/utils/back_inserter_iterator.hpp>
 #include <koda/utils/bit_iterator.hpp>
 
-#include <gtest/gtest.h>
-
 #include <cinttypes>
-#include <print>
 
 static_assert(koda::Decoder<koda::TansDecoder<uint8_t, size_t>, uint8_t>);
 
@@ -39,12 +36,12 @@ BeginConstexprTest(TansDecoderTest, UniformDistribution) {
 EndConstexprTest;
 
 BeginConstexprTest(TansDecoderTest, GeometricDistribution) {
-    const koda::Map<char, size_t> kCounter = {{{'a', 8}, {'b', 4}, {'c', 2}}};
+    const koda::Map<char, size_t> kCounter = {{{'a', 10}, {'b', 4}, {'c', 2}}};
     koda::TansInitTable table{kCounter};
     koda::TansDecoder decoder{table};
 
-    const std::vector<bool> kStream = {0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1,
-                                       0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0};
+    const std::vector<bool> kStream = {0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1,
+                                       0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0};
     const std::string kExpected = "aabababacaabaaa";
 
     std::string result;
@@ -95,13 +92,13 @@ BeginConstexprTest(TansDecoderTest, UniformDistributionStridedAndScaled) {
                                                {'g', 2},
                                                {'h', 2}}};
 
-    koda::TansInitTable table{kCounter, 2, 7, 13};
+    koda::TansInitTable table{kCounter, 2, 7, 64};
     koda::TansDecoder decoder{table};
 
-    const std::vector<bool> kStream = {1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1,
-                                       1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0,
-                                       0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0,
-                                       1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1};
+    const std::vector<bool> kStream = {0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0,
+                                       0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0,
+                                       0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0,
+                                       0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0};
 
     const std::string kExpected = "abacdaeffagggaah";
 
