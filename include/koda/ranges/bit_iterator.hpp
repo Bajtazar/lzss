@@ -30,6 +30,14 @@ concept BitOutputRange = std::ranges::output_range<Range, bool> &&
                          BitOutputIterator<std::ranges::iterator_t<Range>>;
 
 template <typename Iter>
+concept BitIteratorUnderlyingInputIterator =
+    std::input_iterator<Iter> && std::integral<std::iter_value_t<Iter>>;
+
+template <typename Iter>
+concept BitIteratorUnderlyingOutputIterator =
+    std::output_iterator<Iter, std::iter_value_t<Iter>>;
+
+template <typename Iter>
 class BitIteratorBase {
    public:
     explicit constexpr BitIteratorBase(Iter iterator) noexcept(
@@ -92,7 +100,7 @@ class BitIteratorBase {
     uint16_t bit_iter_ = 0;
 };
 
-template <typename Iter>
+template <BitIteratorUnderlyingInputIterator Iter>
 class LittleEndianInputBitIter : public BitIteratorBase<Iter> {
    public:
     using bit = bool;
@@ -156,7 +164,7 @@ class LittleEndianInputBitIter : public BitIteratorBase<Iter> {
     mutable bool should_fetch_ = true;
 };
 
-template <typename Iter>
+template <BitIteratorUnderlyingOutputIterator Iter>
 class LittleEndianOutputBitIter : public BitIteratorBase<Iter> {
    public:
     using bit = bool;
@@ -216,7 +224,7 @@ class LittleEndianOutputBitIter : public BitIteratorBase<Iter> {
     }
 };
 
-template <typename Iter>
+template <BitIteratorUnderlyingInputIterator Iter>
 class BigEndianInputBitIter : public BitIteratorBase<Iter> {
    public:
     using bit = bool;
@@ -279,7 +287,7 @@ class BigEndianInputBitIter : public BitIteratorBase<Iter> {
     mutable bool should_fetch_ = true;
 };
 
-template <typename Iter>
+template <BitIteratorUnderlyingOutputIterator Iter>
 class BigEndianOutputBitIter : public BitIteratorBase<Iter> {
    public:
     using bit = bool;
@@ -353,7 +361,7 @@ class BitView
         return BitIteratorTp<iterator_type>{std::ranges::begin(range_)};
     }
 
-    [[nodiscard]] constexpr BitIteratorTp<sentinel_type> end() const
+    [[nodiscard]] constexpr auto end() const
         requires(!std::same_as<sentinel_type, std::default_sentinel_t>)
     {
         return BitIteratorTp<sentinel_type>{std::ranges::end(range_)};
