@@ -74,6 +74,7 @@ TansDecoder<Token, Count>::BuildDecodingTable(
     const TansInitTable<Token, Count>& init_table) {
     const auto number_of_states = init_table.number_of_states();
     std::vector<DecodingEntry> decoding_table;
+    decoding_table.reserve(number_of_states);
     Map<Token, Count> next = init_table.states_per_token();
 
     for (const auto& token : init_table.state_table()) {

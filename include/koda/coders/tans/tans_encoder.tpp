@@ -15,7 +15,9 @@ constexpr TansEncoder<Token, Count>::TansEncoder(
       offset_map_{BuildStartOffsetMap(init_table)},
       renorm_map_{BuildRenormalizationOffsetMap(init_table, saturation_map_)},
       encoding_table_{BuildEncodingTable(init_table, offset_map_)},
-      state_{init_table.number_of_states()} {}
+      state_{init_table.number_of_states()},
+      shift_{
+          static_cast<uint8_t>(IntFloorLog2(init_table.number_of_states()))} {}
 
 template <typename Token, typename Count>
 constexpr float TansEncoder<Token, Count>::TokenBitSize(Token token) const {
@@ -48,7 +50,7 @@ constexpr auto TansEncoder<Token, Count>::Flush(BitOutputRange auto&& output) {
 
     // Encode final state with uniform distrib to simplify process
     state_ -= encoding_table_.size();
-    SetEmitter(IntCeilLog2(encoding_table_.size()));
+    SetEmitter(IntFloorLog2(encoding_table_.size()));
 
     return std::ranges::subrange{FlushEmitter(std::move(iter), sentinel),
                                  sentinel};
@@ -71,8 +73,7 @@ constexpr auto TansEncoder<Token, Count>::EncodeTokens(
 
 template <typename Token, typename Count>
 constexpr void TansEncoder<Token, Count>::EncodeToken(const auto& token) {
-    auto bit_count =
-        (state_ + renorm_map_.At(token)) / (2 * encoding_table_.size());
+    auto bit_count = (state_ + renorm_map_.At(token)) >> shift_;
     assert(bit_count <= CHAR_BIT * sizeof(Count));
     SetEmitter(bit_count);
     state_ = encoding_table_[offset_map_.At(token) + (state_ >> bit_count)];
@@ -102,16 +103,14 @@ template <typename Token, typename Count>
 /*static*/ constexpr Map<Token, uint8_t>
 TansEncoder<Token, Count>::BuildSaturationMap(
     const TansInitTable<Token, Count>& init_table) {
-    Map<Token, uint8_t> saturation_map;
-
-    for (const auto& [token, count] : init_table.states_per_token()) {
-        saturation_map.Emplace(
-            token,
-            static_cast<uint8_t>(std::ceil(std::log2(
-                static_cast<double>(init_table.number_of_states()) / count))));
-    }
-
-    return saturation_map;
+    return Map<Token, uint8_t>{
+        init_table.states_per_token() |
+        std::views::transform(
+            [max_bit_size = IntFloorLog2(init_table.number_of_states())](
+                const auto& entry) {
+                const auto& [token, count] = entry;
+                return std::pair{token, max_bit_size - IntFloorLog2(count)};
+            })};
 }
 
 template <typename Token, typename Count>

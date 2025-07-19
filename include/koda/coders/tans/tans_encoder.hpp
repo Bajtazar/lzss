@@ -32,6 +32,7 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
     BitRange emitter_;
     State state_;
     State emitted_bits_[1];
+    uint8_t shift_;
 
     constexpr auto EncodeTokens(InputRange<Token> auto&& input, auto iter,
                                 auto sentinel);
