@@ -66,7 +66,7 @@ BuildHuffmanTable(size_t dictionary_size, size_t look_ahead_size) {
 
 }  // namespace
 
-BeginConstexprTest(Lz77Test, NormalTest) {
+BeginConstexprTest(Lz77HuffmanTest, NormalTest) {
     const auto kTable = BuildHuffmanTable(1024, 16);
 
     Lz77Encoder encoder{1024, 16, HuffmanEncoder{kTable}};
@@ -85,44 +85,40 @@ BeginConstexprTest(Lz77Test, NormalTest) {
 }
 EndConstexprTest;
 
-// BeginConstexprTest(Lz77Test, SmallBufferTest) {
-//     std::string sequence = kTestString;
+BeginConstexprTest(Lz77HuffmanTest, SmallBufferTest) {
+    const auto kTable = BuildHuffmanTable(1024, 1);
 
-//     koda::Lz77Encoder<char> encoder{1024, 1};
+    Lz77Encoder encoder{1024, 1, HuffmanEncoder{kTable}};
 
-//     std::vector<uint8_t> encoded;
+    std::vector<bool> encoded;
 
-//     encoder(sequence, encoded | koda::views::InsertFromBack |
-//                           koda::views::LittleEndianOutput);
+    encoder(kTestString, encoded | koda::views::InsertFromBack);
 
-//     std::string decoded;
+    std::string decoded;
 
-//     koda::Lz77Decoder<char> decoder{1024, 1};
+    Lz77Decoder decoder{1024, 1, HuffmanDecoder{kTable}};
 
-//     decoder(sequence.size(), encoded | koda::views::LittleEndianInput,
-//             decoded | koda::views::InsertFromBack);
+    decoder(kTestString.size(), encoded, decoded | koda::views::InsertFromBack);
 
-//     ConstexprAssertEqual(sequence, decoded);
-// };
-// EndConstexprTest;
+    ConstexprAssertEqual(kTestString, decoded);
+};
+EndConstexprTest;
 
-// BeginConstexprTest(Lz77Test, SmallDictionaryTest) {
-//     std::string sequence = kTestString;
+BeginConstexprTest(Lz77HuffmanTest, SmallDictionaryTest) {
+    const auto kTable = BuildHuffmanTable(16, 16);
 
-//     koda::Lz77Encoder<char> encoder{16, 16};
+    Lz77Encoder encoder{16, 16, HuffmanEncoder{kTable}};
 
-//     std::vector<uint8_t> encoded;
+    std::vector<bool> encoded;
 
-//     encoder(sequence, encoded | koda::views::InsertFromBack |
-//                           koda::views::LittleEndianOutput);
+    encoder(kTestString, encoded | koda::views::InsertFromBack);
 
-//     std::string decoded;
+    std::string decoded;
 
-//     koda::Lz77Decoder<char> decoder{16, 16};
+    Lz77Decoder decoder{16, 16, HuffmanDecoder{kTable}};
 
-//     decoder(sequence.size(), encoded | koda::views::LittleEndianInput,
-//             decoded | koda::views::InsertFromBack);
+    decoder(kTestString.size(), encoded, decoded | koda::views::InsertFromBack);
 
-//     ConstexprAssertEqual(sequence, decoded);
-// }
-// EndConstexprTest;
+    ConstexprAssertEqual(kTestString, decoded);
+}
+EndConstexprTest;
