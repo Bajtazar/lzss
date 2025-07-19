@@ -3,7 +3,6 @@
 #include <koda/utils/utils.hpp>
 
 #include <cassert>
-#include <cmath>
 
 namespace koda {
 
@@ -13,7 +12,7 @@ constexpr TansDecoder<Token, Count>::TansDecoder(
     : decoding_table_{BuildDecodingTable(init_table)},
       receiver_{BitIter{std::ranges::begin(received_bits_)},
                 BitIter{std::ranges::begin(received_bits_),
-                        IntCeilLog2(decoding_table_.size())}} {}
+                        IntFloorLog2(decoding_table_.size())}} {}
 
 template <typename Token, typename Count>
 constexpr auto TansDecoder<Token, Count>::Initialize(
@@ -80,8 +79,8 @@ TansDecoder<Token, Count>::BuildDecodingTable(
     for (Count i = 0; i < number_of_states; ++i) {
         const auto& token = init_table.state_table()[i];
         auto state = next.At(token)++;
-        uint8_t bit_count = std::ceil(std::log2(
-            static_cast<double>(init_table.number_of_states()) / state));
+        uint8_t bit_count =
+            IntFloorLog2(number_of_states) - IntFloorLog2(state);
         auto new_state = (state << bit_count) - number_of_states;
         decoding_table.emplace_back(token, new_state, bit_count);
     }
