@@ -6,7 +6,7 @@
 
 namespace koda {
 
-template <typename Token, typename Count>
+template <typename Token, typename Count, typename State = size_t>
 class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
    public:
     constexpr explicit TansEncoder(
@@ -20,15 +20,14 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
     constexpr auto Flush(BitOutputRange auto&& output);
 
    private:
-    using State = Count;
     using SState = std::make_signed_t<State>;
     using BitIter = LittleEndianInputBitIter<const State*>;
     using BitRange = std::pair<BitIter, BitIter>;
 
     Map<Token, uint8_t> saturation_map_;
     Map<Token, SState> offset_map_;
-    Map<Token, Count> renorm_map_;
-    std::vector<Count> encoding_table_;
+    Map<Token, State> renorm_map_;
+    std::vector<State> encoding_table_;
     BitRange emitter_;
     State state_;
     State emitted_bits_[1];
@@ -46,14 +45,14 @@ class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
     static constexpr Map<Token, uint8_t> BuildSaturationMap(
         const TansInitTable<Token, Count>& init_table);
 
-    static constexpr Map<Token, Count> BuildRenormalizationOffsetMap(
+    static constexpr Map<Token, State> BuildRenormalizationOffsetMap(
         const TansInitTable<Token, Count>& init_table,
         const Map<Token, uint8_t>& saturation_map);
 
     static constexpr Map<Token, SState> BuildStartOffsetMap(
         const TansInitTable<Token, Count>& init_table);
 
-    static constexpr std::vector<Count> BuildEncodingTable(
+    static constexpr std::vector<State> BuildEncodingTable(
         const TansInitTable<Token, Count>& init_table,
         const Map<Token, SState>& start_offset_map);
 };

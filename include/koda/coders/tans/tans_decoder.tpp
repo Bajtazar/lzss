@@ -6,22 +6,22 @@
 
 namespace koda {
 
-template <typename Token, typename Count>
-constexpr TansDecoder<Token, Count>::TansDecoder(
+template <typename Token, typename Count, typename State>
+constexpr TansDecoder<Token, Count, State>::TansDecoder(
     const TansInitTable<Token, Count>& init_table)
     : decoding_table_{BuildDecodingTable(init_table)},
       receiver_{BitIter{std::ranges::begin(received_bits_)},
                 BitIter{std::ranges::begin(received_bits_),
                         IntFloorLog2(decoding_table_.size())}} {}
 
-template <typename Token, typename Count>
-constexpr auto TansDecoder<Token, Count>::Initialize(
+template <typename Token, typename Count, typename State>
+constexpr auto TansDecoder<Token, Count, State>::Initialize(
     BitInputRange auto&& input) {
     return std::forward<decltype(input)>(input);
 }
 
-template <typename Token, typename Count>
-constexpr auto TansDecoder<Token, Count>::Decode(
+template <typename Token, typename Count, typename State>
+constexpr auto TansDecoder<Token, Count, State>::Decode(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
     if (decoding_table_.size() == 1) {
@@ -44,8 +44,8 @@ constexpr auto TansDecoder<Token, Count>::Decode(
                        std::move(out_iter), std::move(out_sent)};
 }
 
-template <typename Token, typename Count>
-constexpr auto TansDecoder<Token, Count>::HandleDiracDelta(
+template <typename Token, typename Count, typename State>
+constexpr auto TansDecoder<Token, Count, State>::HandleDiracDelta(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
     auto out_iter = std::ranges::begin(output);
@@ -56,9 +56,9 @@ constexpr auto TansDecoder<Token, Count>::HandleDiracDelta(
                        std::move(out_sent)};
 }
 
-template <typename Token, typename Count>
-constexpr auto TansDecoder<Token, Count>::SetReceiver(auto iter,
-                                                      const auto& sent) {
+template <typename Token, typename Count, typename State>
+constexpr auto TansDecoder<Token, Count, State>::SetReceiver(auto iter,
+                                                             const auto& sent) {
     auto& state_iter = receiver_.first;
     const auto& state_sent = receiver_.second;
 
@@ -69,8 +69,8 @@ constexpr auto TansDecoder<Token, Count>::SetReceiver(auto iter,
     return iter;
 }
 
-template <typename Token, typename Count>
-constexpr Token TansDecoder<Token, Count>::DecodeToken() {
+template <typename Token, typename Count, typename State>
+constexpr Token TansDecoder<Token, Count, State>::DecodeToken() {
     receiver_.first.Flush();
     state_ += received_bits_[0] >> receiver_.second.Position();
 
@@ -84,10 +84,10 @@ constexpr Token TansDecoder<Token, Count>::DecodeToken() {
     return token;
 }
 
-template <typename Token, typename Count>
+template <typename Token, typename Count, typename State>
 /*static*/ constexpr std::vector<
-    typename TansDecoder<Token, Count>::DecodingEntry>
-TansDecoder<Token, Count>::BuildDecodingTable(
+    typename TansDecoder<Token, Count, State>::DecodingEntry>
+TansDecoder<Token, Count, State>::BuildDecodingTable(
     const TansInitTable<Token, Count>& init_table) {
     const auto number_of_states = init_table.number_of_states();
     std::vector<DecodingEntry> decoding_table;

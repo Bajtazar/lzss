@@ -6,7 +6,7 @@
 
 namespace koda {
 
-template <typename Token, typename Count>
+template <typename Token, typename Count, typename State = size_t>
 class TansDecoder : public DecoderInterface<Token, TansDecoder<Token, Count>> {
    public:
     constexpr explicit TansDecoder(
@@ -18,7 +18,6 @@ class TansDecoder : public DecoderInterface<Token, TansDecoder<Token, Count>> {
                           std::ranges::output_range<Token> auto&& output);
 
    private:
-    using State = Count;
     using BitIter = BigEndianOutputBitIter<State*>;
     using BitRange = std::pair<BitIter, BitIter>;
 

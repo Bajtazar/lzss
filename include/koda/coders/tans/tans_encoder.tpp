@@ -8,8 +8,8 @@
 
 namespace koda {
 
-template <typename Token, typename Count>
-constexpr TansEncoder<Token, Count>::TansEncoder(
+template <typename Token, typename Count, typename State>
+constexpr TansEncoder<Token, Count, State>::TansEncoder(
     const TansInitTable<Token, Count>& init_table)
     : saturation_map_{BuildSaturationMap(init_table)},
       offset_map_{BuildStartOffsetMap(init_table)},
@@ -19,14 +19,15 @@ constexpr TansEncoder<Token, Count>::TansEncoder(
       shift_{static_cast<uint8_t>(
           1 + IntFloorLog2(init_table.number_of_states()))} {}
 
-template <typename Token, typename Count>
-constexpr float TansEncoder<Token, Count>::TokenBitSize(Token token) const {
+template <typename Token, typename Count, typename State>
+constexpr float TansEncoder<Token, Count, State>::TokenBitSize(
+    Token token) const {
     return saturation_map_.At(token);
 }
 
-template <typename Token, typename Count>
-constexpr auto TansEncoder<Token, Count>::Encode(InputRange<Token> auto&& input,
-                                                 BitOutputRange auto&& output) {
+template <typename Token, typename Count, typename State>
+constexpr auto TansEncoder<Token, Count, State>::Encode(
+    InputRange<Token> auto&& input, BitOutputRange auto&& output) {
     auto sentinel = std::ranges::end(output);
     auto iter = FlushEmitter(std::ranges::begin(output), sentinel);
 
@@ -39,8 +40,9 @@ constexpr auto TansEncoder<Token, Count>::Encode(InputRange<Token> auto&& input,
                         std::move(sentinel));
 }
 
-template <typename Token, typename Count>
-constexpr auto TansEncoder<Token, Count>::Flush(BitOutputRange auto&& output) {
+template <typename Token, typename Count, typename State>
+constexpr auto TansEncoder<Token, Count, State>::Flush(
+    BitOutputRange auto&& output) {
     auto sentinel = std::ranges::end(output);
     auto iter = FlushEmitter(std::ranges::begin(output), sentinel);
 
@@ -56,8 +58,8 @@ constexpr auto TansEncoder<Token, Count>::Flush(BitOutputRange auto&& output) {
                                  sentinel};
 }
 
-template <typename Token, typename Count>
-constexpr auto TansEncoder<Token, Count>::EncodeTokens(
+template <typename Token, typename Count, typename State>
+constexpr auto TansEncoder<Token, Count, State>::EncodeTokens(
     InputRange<Token> auto&& input, auto iter, auto sentinel) {
     auto input_iter = std::ranges::begin(input);
     auto input_sent = std::ranges::end(input);
@@ -71,23 +73,24 @@ constexpr auto TansEncoder<Token, Count>::EncodeTokens(
                        std::move(iter), std::move(sentinel)};
 }
 
-template <typename Token, typename Count>
-constexpr void TansEncoder<Token, Count>::EncodeToken(const auto& token) {
+template <typename Token, typename Count, typename State>
+constexpr void TansEncoder<Token, Count, State>::EncodeToken(
+    const auto& token) {
     auto bit_count = (state_ + renorm_map_.At(token)) >> shift_;
     assert(bit_count <= CHAR_BIT * sizeof(Count));
     SetEmitter(bit_count);
     state_ = encoding_table_[offset_map_.At(token) + (state_ >> bit_count)];
 }
 
-template <typename Token, typename Count>
-constexpr void TansEncoder<Token, Count>::SetEmitter(Count bit_count) {
+template <typename Token, typename Count, typename State>
+constexpr void TansEncoder<Token, Count, State>::SetEmitter(Count bit_count) {
     emitted_bits_[0] = state_;
     emitter_ = std::pair{BitIter{std::ranges::begin(emitted_bits_)},
                          BitIter{std::ranges::begin(emitted_bits_), bit_count}};
 }
 
-template <typename Token, typename Count>
-constexpr auto TansEncoder<Token, Count>::FlushEmitter(
+template <typename Token, typename Count, typename State>
+constexpr auto TansEncoder<Token, Count, State>::FlushEmitter(
     auto output_iter, const auto& output_sent) {
     auto& bit_iter = emitter_.first;
     const auto& bit_sent = emitter_.second;
@@ -99,9 +102,9 @@ constexpr auto TansEncoder<Token, Count>::FlushEmitter(
     return output_iter;
 }
 
-template <typename Token, typename Count>
+template <typename Token, typename Count, typename State>
 /*static*/ constexpr Map<Token, uint8_t>
-TansEncoder<Token, Count>::BuildSaturationMap(
+TansEncoder<Token, Count, State>::BuildSaturationMap(
     const TansInitTable<Token, Count>& init_table) {
     return Map<Token, uint8_t>{
         init_table.states_per_token() |
@@ -113,9 +116,9 @@ TansEncoder<Token, Count>::BuildSaturationMap(
             })};
 }
 
-template <typename Token, typename Count>
-/*static*/ constexpr Map<Token, Count>
-TansEncoder<Token, Count>::BuildRenormalizationOffsetMap(
+template <typename Token, typename Count, typename State>
+/*static*/ constexpr Map<Token, State>
+TansEncoder<Token, Count, State>::BuildRenormalizationOffsetMap(
     const TansInitTable<Token, Count>& init_table,
     const Map<Token, uint8_t>& saturation_map) {
     return Map<Token, Count>{
@@ -131,9 +134,10 @@ TansEncoder<Token, Count>::BuildRenormalizationOffsetMap(
             })};
 }
 
-template <typename Token, typename Count>
-/*static*/ constexpr Map<Token, typename TansEncoder<Token, Count>::SState>
-TansEncoder<Token, Count>::BuildStartOffsetMap(
+template <typename Token, typename Count, typename State>
+/*static*/ constexpr Map<Token,
+                         typename TansEncoder<Token, Count, State>::SState>
+TansEncoder<Token, Count, State>::BuildStartOffsetMap(
     const TansInitTable<Token, Count>& init_table) {
     return Map<Token, SState>{
         init_table.states_per_token() |
@@ -147,9 +151,9 @@ TansEncoder<Token, Count>::BuildStartOffsetMap(
         })};
 }
 
-template <typename Token, typename Count>
-/*static*/ constexpr std::vector<Count>
-TansEncoder<Token, Count>::BuildEncodingTable(
+template <typename Token, typename Count, typename State>
+/*static*/ constexpr std::vector<State>
+TansEncoder<Token, Count, State>::BuildEncodingTable(
     const TansInitTable<Token, Count>& init_table,
     const Map<Token, SState>& start_offset_map) {
     const auto number_of_states = init_table.number_of_states();
