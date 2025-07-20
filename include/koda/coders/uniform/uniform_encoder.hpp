@@ -26,7 +26,7 @@ class UniformEncoder : public EncoderInterface<Token, UniformEncoder<Token>> {
 
     using Traits = TokenTraits<Token>;
 
-    constexpr explicit UniformEncoder(uint8_t token_bit_length) noexcept;
+    constexpr explicit UniformEncoder() noexcept = default;
 
     constexpr float TokenBitSize(Token token) const;
 
@@ -42,7 +42,6 @@ class UniformEncoder : public EncoderInterface<Token, UniformEncoder<Token>> {
 
     std::array<uint8_t, Traits::TokenMaxByteSize()> buffer_;
     BitRange emitter_;
-    uint8_t token_bit_length_;
 
     constexpr auto EncodeTokens(InputRange<Token> auto&& input, auto iter,
                                 auto sentinel);

@@ -20,13 +20,8 @@ template <std::integral Token>
 }
 
 template <typename Token>
-constexpr UniformEncoder<Token>::UniformEncoder(
-    uint8_t token_bit_length) noexcept
-    : token_bit_length_{token_bit_length} {}
-
-template <typename Token>
 constexpr float UniformEncoder<Token>::TokenBitSize(Token token) const {
-    return token_bit_length_;
+    return TokenMaxByteSize() * CHAR_BIT;
 }
 
 template <typename Token>
