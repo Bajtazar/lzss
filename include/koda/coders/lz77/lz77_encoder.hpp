@@ -1,6 +1,7 @@
 #pragma once
 
 #include <koda/coders/coder.hpp>
+#include <koda/coders/coder_traits.hpp>
 #include <koda/coders/direct_encoder.hpp>
 #include <koda/coders/lz77/lz77_intermediate_token.hpp>
 #include <koda/collections/fused_dictionary_and_buffer.hpp>
@@ -47,6 +48,7 @@ class Lz77Encoder
     using SequenceView = typename FusedDictionaryAndBuffer<Token>::SequenceView;
     using IMToken = Lz77IntermediateToken<Token>;
     using Match = typename SearchBinaryTree<Token>::RepeatitionMarker;
+    using Traits = CoderTraits<AuxiliaryEncoder>;
 
     struct FusedDictAndBufferInfo {
         size_t dictionary_size;
