@@ -22,6 +22,8 @@ class Lz77Encoder
     : public EncoderInterface<Token,
                               Lz77Encoder<Token, AuxiliaryEncoder, Allocator>> {
    public:
+    using token_type = Token;
+
     constexpr explicit Lz77Encoder(
         size_t dictionary_size, size_t lookahead_size,
         AuxiliaryEncoder auxiliary_encoder,

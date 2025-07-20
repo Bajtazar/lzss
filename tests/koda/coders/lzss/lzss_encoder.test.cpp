@@ -10,6 +10,8 @@ namespace {
 template <typename Tp>
 struct LzssDummyAuxEncoder
     : public koda::EncoderInterface<Tp, LzssDummyAuxEncoder<Tp>> {
+    using token_type = Tp;
+
     constexpr explicit LzssDummyAuxEncoder(bool should_pass_all_markers = true)
         : should_pass_all_markers{should_pass_all_markers} {}
 

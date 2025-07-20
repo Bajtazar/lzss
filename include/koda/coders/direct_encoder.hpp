@@ -7,6 +7,8 @@ namespace koda {
 
 template <typename Token>
 struct DirectEncoder : public EncoderInterface<Token, DirectEncoder<Token>> {
+    using token_type = Token;
+
     using Traits = TokenTraits<Token>;
 
     constexpr explicit DirectEncoder() noexcept = default;

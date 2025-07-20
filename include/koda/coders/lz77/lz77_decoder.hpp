@@ -19,6 +19,8 @@ class Lz77Decoder
     : public DecoderInterface<Token,
                               Lz77Decoder<Token, AuxiliaryDecoder, Allocator>> {
    public:
+    using token_type = Token;
+
     constexpr explicit Lz77Decoder(
         size_t dictionary_size, size_t look_ahead_size,
         AuxiliaryDecoder auxiliary_decoder,

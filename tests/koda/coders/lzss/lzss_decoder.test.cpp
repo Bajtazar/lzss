@@ -11,6 +11,8 @@ template <typename Tp>
 class LzssDummyAuxDecoder
     : public koda::DecoderInterface<Tp, LzssDummyAuxDecoder<Tp>> {
    public:
+    using token_type = Tp;
+
     constexpr explicit LzssDummyAuxDecoder(std::vector<Tp> tokens = {})
         : tokens_{std::move(tokens)} {}
 

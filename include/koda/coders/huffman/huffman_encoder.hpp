@@ -10,6 +10,8 @@ namespace koda {
 template <typename Token>
 class HuffmanEncoder : public EncoderInterface<Token, HuffmanEncoder<Token>> {
    public:
+    using token_type = Token;
+
     constexpr explicit HuffmanEncoder(HuffmanTable<Token> table);
 
     constexpr HuffmanEncoder(HuffmanEncoder&& other) noexcept = default;

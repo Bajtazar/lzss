@@ -17,6 +17,8 @@ class LzssDecoder
     : public DecoderInterface<Token,
                               LzssDecoder<Token, AuxiliaryDecoder, Allocator>> {
    public:
+    using token_type = Token;
+
     constexpr explicit LzssDecoder(
         size_t dictionary_size, size_t look_ahead_size,
         AuxiliaryDecoder auxiliary_decoder,

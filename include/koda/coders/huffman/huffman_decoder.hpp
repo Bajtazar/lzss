@@ -14,6 +14,8 @@ namespace koda {
 template <typename Token>
 class HuffmanDecoder : public DecoderInterface<Token, HuffmanDecoder<Token>> {
    public:
+    using token_type = Token;
+
     constexpr explicit HuffmanDecoder(const HuffmanTable<Token>& table);
 
     constexpr HuffmanDecoder(HuffmanDecoder&& other) noexcept = default;

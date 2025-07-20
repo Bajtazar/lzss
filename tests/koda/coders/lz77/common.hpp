@@ -5,6 +5,8 @@
 template <typename Tp>
 struct Lz77DummyAuxEncoder
     : public koda::EncoderInterface<Tp, Lz77DummyAuxEncoder<Tp>> {
+    using token_type = Tp;
+
     constexpr explicit Lz77DummyAuxEncoder() = default;
 
     std::vector<Tp> tokens = {};
@@ -33,6 +35,8 @@ template <typename Tp>
 class Lz77DummyAuxDecoder
     : public koda::DecoderInterface<Tp, Lz77DummyAuxDecoder<Tp>> {
    public:
+    using token_type = Tp;
+
     constexpr explicit Lz77DummyAuxDecoder(std::vector<Tp> tokens = {})
         : tokens_{std::move(tokens)} {}
 

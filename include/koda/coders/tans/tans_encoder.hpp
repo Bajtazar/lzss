@@ -9,6 +9,9 @@ namespace koda {
 template <typename Token, typename Count, typename State = size_t>
 class TansEncoder : public EncoderInterface<Token, TansEncoder<Token, Count>> {
    public:
+    using asymetrical = void;
+    using token_type = Token;
+
     constexpr explicit TansEncoder(
         const TansInitTable<Token, Count>& init_table);
 

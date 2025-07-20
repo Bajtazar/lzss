@@ -22,6 +22,8 @@ class LzssEncoder
     : public EncoderInterface<Token,
                               LzssEncoder<Token, AuxiliaryEncoder, Allocator>> {
    public:
+    using token_type = Token;
+
     constexpr explicit LzssEncoder(
         size_t dictionary_size, size_t look_ahead_size,
         AuxiliaryEncoder auxiliary_encoder,
