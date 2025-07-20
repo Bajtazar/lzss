@@ -203,7 +203,7 @@ template <std::integral Token,
     requires(CoderTraits<AuxiliaryEncoder>::IsSymetrical)
 constexpr void Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::
     TryToRemoveStringFromSearchTree(FusedDictionaryAndBuffer<Token>& dict) {
-    if (dict.dictionary_size() == dict.max_dictionary_size()) {
+    if (dict.full()) {
         auto string = dict.get_oldest_dictionary_full_match();
         string.remove_suffix(1);
         this->search_tree_.RemoveString(string);
@@ -253,6 +253,86 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::GetBufferAndLookAhead(
     auto look_ahead = buffer;
     look_ahead.remove_suffix(1);
     return {buffer, look_ahead};
+}
+
+template <std::integral Token,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Flush(
+    BitOutputRange auto&& output) {
+    return this->auxiliary_encoder_.Flush(
+        FlushData(std::forward<decltype(output)>(output)));
+}
+
+template <std::integral Token,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Encode(
+    InputRange<Token> auto&& input, BitOutputRange auto&& output) {
+    if (std::holds_alternative<typename Base::FusedDictAndBufferInfo>(
+            this->dictionary_and_buffer_)) {
+        return EncodeData(this->InitializeBuffer(input), output);
+    }
+    return EncodeData(input, output);
+}
+
+template <std::integral Token,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
+    InputRange<Token> auto&& input, BitOutputRange auto&& output) {
+    [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(
+        this->dictionary_and_buffer_))]];
+
+    auto& dict =
+        std::get<FusedDictionaryAndBuffer<Token>>(this->dictionary_and_buffer_);
+
+    auto out_range = AsSubrange(std::forward<decltype(output)>(output));
+
+    if (this->queued_token_) {
+        out_range = this->FlushQueue(out_range);
+        if (this->queued_token_) {
+            return CoderResult{std::forward<decltype(input)>(input),
+                               std::move(out_range)};
+        }
+    }
+
+    auto [input_iter, input_sent] =
+        PopulateDictionary(std::forward<decltype(input)>(input), dict);
+
+    for (; (input_iter != input_sent) && !out_range.empty(); ++input_iter) {
+        auto [buffer, look_ahead] = GetBufferAndLookAhead(dict);
+        this->search_tree_.RemoveString(look_ahead);
+        this->search_tree_.AddString(dict.get_buffer());
+        out_range =
+            PeformEncodigStep(dict, buffer, look_ahead, std::move(out_range));
+
+        dict.AddSymbolToBuffer(*input_iter);
+    }
+    return CoderResult{std::move(input_iter), std::move(input_sent),
+                       std::move(out_range)};
+}
+
+template <std::integral Token,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+constexpr auto
+Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PopulateDictionary(
+    InputRange<Token> auto&& input, FusedDictionaryAndBuffer<Token>& dict) {
+    auto input_iter = std::ranges::begin(input);
+    auto input_sent = std::ranges::end(input);
+
+    // Asymetrical mode finds repeatitions in the future so entire dictionary
+    // has to be populated before the algorithm even starts working
+    for (; !dict.full() && (input_iter != input_sent); ++input_iter) {
+        dict.AddSymbolToBuffer(*input_iter);
+    }
+
+    return std::pair{std::move(input_iter), std::move(input_sent)};
 }
 
 }  // namespace koda

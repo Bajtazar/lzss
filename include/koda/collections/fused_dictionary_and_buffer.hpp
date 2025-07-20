@@ -122,6 +122,8 @@ class FusedDictionaryAndBuffer {
 
     [[nodiscard]] constexpr size_t buffer_size() const noexcept;
 
+    [[nodiscard]] constexpr bool full() const noexcept;
+
    private:
     using Buffer = std::vector<ValueType>;
     using BufferIter = typename std::vector<ValueType>::iterator;

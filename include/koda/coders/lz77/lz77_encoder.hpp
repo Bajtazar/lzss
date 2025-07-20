@@ -120,6 +120,43 @@ class Lz77Encoder<Token, AuxiliaryEncoder, Allocator>
         FusedDictionaryAndBuffer<Token>& dict) const;
 };
 
+template <std::integral Token,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+class Lz77Encoder<Token, AuxiliaryEncoder, Allocator>
+    : public EncoderInterface<Token,
+                              Lz77Encoder<Token, AuxiliaryEncoder, Allocator>>,
+      private details::Lz77EncoderBase<Token, AuxiliaryEncoder, Allocator> {
+    using Base = details::Lz77EncoderBase<Token, AuxiliaryEncoder, Allocator>;
+
+   public:
+    using token_type = Token;
+
+    using Base::Lz77EncoderBase;
+
+    constexpr auto Encode(InputRange<Token> auto&& input,
+                          BitOutputRange auto&& output);
+
+    constexpr auto Flush(BitOutputRange auto&& output);
+
+    using Base::auxiliary_encoder;
+
+    friend class details::Lz77EncoderBase<Token, AuxiliaryEncoder, Allocator>;
+
+   private:
+    using SequenceView = Base::SequenceView;
+    using IMToken = Base::IMToken;
+    using Match = Base::Match;
+    using AuxTraits = Base::AuxTraits;
+
+    constexpr auto EncodeData(InputRange<Token> auto&& input,
+                              BitOutputRange auto&& output);
+
+    constexpr auto PopulateDictionary(InputRange<Token> auto&& input,
+                                      FusedDictionaryAndBuffer<Token>& dict);
+};
+
 }  // namespace koda
 
 #include <koda/coders/lz77/lz77_encoder.tpp>
