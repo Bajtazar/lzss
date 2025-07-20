@@ -2,9 +2,6 @@
 
 #include <koda/coders/coder.hpp>
 
-#include <array>
-#include <concepts>
-
 namespace koda {
 
 template <std::integral Token>
@@ -13,7 +10,7 @@ class UniformEncoder : public EncoderInterface<Token, UniformEncoder<Token>> {
     using token_type = Token;
 
     constexpr explicit UniformEncoder(
-        uint8_t token_bit_size = sizeof(Token) * CHAR_BIT) noexcept;
+        size_t token_bit_size = sizeof(Token) * CHAR_BIT) noexcept;
 
     constexpr float TokenBitSize(Token token) const;
 
@@ -28,7 +25,7 @@ class UniformEncoder : public EncoderInterface<Token, UniformEncoder<Token>> {
 
     Token token_[1];
     BitRange emitter_;
-    uint8_t token_bit_size_;
+    size_t token_bit_size_;
 
     constexpr auto EncodeTokens(InputRange<Token> auto&& input, auto iter,
                                 auto sentinel);

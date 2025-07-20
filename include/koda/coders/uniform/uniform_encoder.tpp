@@ -5,7 +5,7 @@
 namespace koda {
 
 template <std::integral Token>
-constexpr UniformEncoder<Token>::UniformEncoder(uint8_t token_bit_size) noexcept
+constexpr UniformEncoder<Token>::UniformEncoder(size_t token_bit_size) noexcept
     : token_bit_size_{token_bit_size} {}
 
 template <std::integral Token>
