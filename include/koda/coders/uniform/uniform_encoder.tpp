@@ -1,6 +1,20 @@
 #pragma once
 
+#include <bit>
+
 namespace koda {
+
+template <std::integral Token>
+[[nodiscard]] consteval UniformEncoderTraits<
+    Token>::TokenMaxByteSize() noexcept {
+    return sizeof(Token);
+}
+
+template <std::integral Token>
+/*static*/ constexpr uint8_t UniformEncoderTraits<Token>::PopulateBuffer(
+    std::array<uint8_t, Size>& array, const Token& token) {
+    array = std::bit_cast<std::array<uint8_t, Size>>(token);
+}
 
 template <typename Token>
 constexpr UniformEncoder<Token>::UniformEncoder(

@@ -3,12 +3,16 @@
 #include <koda/coders/coder.hpp>
 
 #include <array>
+#include <concepts>
 
 namespace koda {
 
 template <typename Token>
-struct UniformEncoderTraits {
-    [[nodiscard]] consteval size_t TokenMaxBitSize() noexcept;
+struct UniformEncoderTraits;
+
+template <std::integral Token>
+struct UniformEncoderTraits<Token> {
+    [[nodiscard]] consteval size_t TokenMaxByteSize() noexcept;
 
     template <size_t Size>
     static constexpr uint8_t PopulateBuffer(std::array<uint8_t, Size>& array,
@@ -36,7 +40,7 @@ class UniformEncoder : public EncoderInterface<Token, UniformEncoder<Token>> {
     using BitRange = std::pair<BitIter, BitIter>;
     using Traits = UniformEncoderTraits<Token>;
 
-    std::array<uint8_t, Traits::TokenMaxBitSize()> buffer_;
+    std::array<uint8_t, Traits::TokenMaxByteSize()> buffer_;
     BitRange emitter_;
     uint8_t token_bit_length_;
 
