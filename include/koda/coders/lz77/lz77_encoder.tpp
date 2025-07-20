@@ -236,16 +236,7 @@ constexpr std::pair<
     typename Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::SequenceView>
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::GetBufferAndLookAhead(
     FusedDictionaryAndBuffer<Token>& dict) const {
-    auto buffer = [&] {
-        if constexpr (AuxTraits::IsSymetrical) {
-            return dict.get_buffer();
-        } else {
-            // In case of asymetrical coders algorithm will look for the
-            // repeatitions in the future which will become past in the decoder
-            // and will be available
-            auto buffer = dict.get_oldest_dictionary_full_match();
-        }
-    }();
+    auto buffer = dict.get_buffer();
     auto look_ahead = buffer;
     look_ahead.remove_suffix(1);
     return {buffer, look_ahead};
