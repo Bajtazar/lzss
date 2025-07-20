@@ -64,9 +64,9 @@ constexpr auto UniformEncoder<Token>::FlushEmitter(auto output_iter,
 
 template <typename Token>
 constexpr void UniformEncoder<Token>::SetEmitter(const Token& token) {
-    token_[0] = token;
-    emitter_ = std::pair{BitIter{std::ranges::begin(token_)},
-                         BitIter{std::ranges::begin(token_), bit_count}};
+    auto bit_count = Traits::PopulateBuffer(buffer_, token);
+    emitter_ = std::pair{BitIter{std::ranges::begin(buffer_)},
+                         BitIter{std::ranges::begin(buffer_), bit_count}};
 }
 
 }  // namespace koda
