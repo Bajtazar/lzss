@@ -86,7 +86,7 @@ BeginConstexprTest(UniformEncoderTest, EncodeIntegers) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(UniformEncoderTest, PartialEncoding) {
+BeginConstexprTest(UniformEncoderTest, PartialInputEncoding) {
     const std::vector<uint8_t> expected{{0x43, 0x74, 0x35, 0x33}};
     std::vector<uint8_t> target;
 
@@ -109,5 +109,34 @@ BeginConstexprTest(UniformEncoderTest, PartialEncoding) {
         target | koda::views::InsertFromBack | koda::views::LittleEndianOutput);
 
     ConstexprAssertEqual(expected, target);
+}
+EndConstexprTest;
+
+BeginConstexprTest(UniformEncoderTest, PartialOutputEncoding) {
+    const std::vector<uint8_t> kSource{{0x43, 0x74, 0x35, 0x33}};
+    auto kExpected = kSource | koda::views::LittleEndianInput |
+                     std::ranges::to<std::vector>();
+
+    koda::UniformEncoder<uint8_t> encoder;
+
+    std::vector<bool> stream;
+
+    auto [in_1, _] = encoder.Encode(
+        kSource, stream | koda::views::InsertFromBack | koda::views::Take(5));
+
+    ConstexprAssertEqual(stream.size(), 5);
+    ConstexprAssertEqual(stream, kExpected | koda::views::Take(5));
+
+    auto [in_2, _] =
+        encoder.Encode(std::move(in_1), stream | koda::views::InsertFromBack |
+                                            koda::views::Take(13));
+
+    ConstexprAssertEqual(stream.size(), 18);
+    ConstexprAssertEqual(stream, kExpected | koda::views::Take(18));
+
+    encoder(std::move(in_2), stream | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(stream.size(), kExpected.size());
+    ConstexprAssertEqual(stream, kExpected);
 }
 EndConstexprTest;
