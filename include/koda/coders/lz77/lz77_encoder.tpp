@@ -3,8 +3,6 @@
 #include <koda/ranges/back_inserter_iterator.hpp>
 #include <koda/utils/utils.hpp>
 
-#include <print>
-
 namespace koda {
 
 namespace details {
@@ -468,7 +466,6 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
     // Buffer is one element longer than the search tree match
     while (!dict.empty()) {
         auto [buffer, look_ahead] = GetBufferAndLookAhead(dict);
-        std::println("Buffer: {}", buffer);
         this->search_tree_.RemoveString(look_ahead);
         out_range =
             PeformEncodigStep(dict, buffer, look_ahead, std::move(out_range));
