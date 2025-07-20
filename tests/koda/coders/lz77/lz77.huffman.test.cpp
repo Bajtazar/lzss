@@ -26,8 +26,8 @@ using Lz77Decoder = koda::Lz77Decoder<char, HuffmanDecoder>;
 
 static constexpr koda::HuffmanTable<koda::Lz77IntermediateToken<char>>
 BuildHuffmanTable(size_t dictionary_size, size_t look_ahead_size) {
-    koda::Lz77Encoder<char,
-                      Lz77DummyAuxEncoder<koda::Lz77IntermediateToken<char>>>
+    koda::Lz77Encoder<
+        char, Lz77DummyAuxEncoder<koda::Lz77IntermediateToken<char>, false>>
         encoder{dictionary_size, look_ahead_size};
 
     std::vector<bool> encoded{0};

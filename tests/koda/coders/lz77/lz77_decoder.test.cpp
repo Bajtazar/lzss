@@ -7,7 +7,8 @@
 
 static_assert(koda::Decoder<koda::Lz77Decoder<uint8_t>, uint8_t>);
 
-using DummyDecoder = Lz77DummyAuxDecoder<koda::Lz77IntermediateToken<char>, false>;
+using DummyDecoder =
+    Lz77DummyAuxDecoder<koda::Lz77IntermediateToken<char>, false>;
 
 BeginConstexprTest(Lz77Decoder, DecodeTokens) {
     std::vector input_sequence = {
