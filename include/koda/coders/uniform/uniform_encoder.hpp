@@ -7,24 +7,13 @@
 
 namespace koda {
 
-template <typename Token>
-struct UniformEncoderTraits;
-
 template <std::integral Token>
-struct UniformEncoderTraits<Token> {
-    [[nodiscard]] static consteval size_t TokenMaxByteSize() noexcept;
-
-    template <size_t Size>
-    static constexpr uint8_t PopulateBuffer(std::array<uint8_t, Size>& array,
-                                            const Token& token);
-};
-
-template <typename Token>
 class UniformEncoder : public EncoderInterface<Token, UniformEncoder<Token>> {
    public:
     using token_type = Token;
 
-    constexpr explicit UniformEncoder() noexcept = default;
+    constexpr explicit UniformEncoder(
+        uint8_t token_bit_size = sizeof(Token) * CHAR_BIT) noexcept;
 
     constexpr float TokenBitSize(Token token) const;
 
@@ -34,12 +23,12 @@ class UniformEncoder : public EncoderInterface<Token, UniformEncoder<Token>> {
     constexpr auto Flush(BitOutputRange auto&& output);
 
    private:
-    using BitIter = LittleEndianInputBitIter<const uint8_t*>;
+    using BitIter = LittleEndianInputBitIter<const Token*>;
     using BitRange = std::pair<BitIter, BitIter>;
-    using Traits = UniformEncoderTraits<Token>;
 
-    std::array<uint8_t, Traits::TokenMaxByteSize()> buffer_;
+    Token token_[1];
     BitRange emitter_;
+    uint8_t token_bit_size_;
 
     constexpr auto EncodeTokens(InputRange<Token> auto&& input, auto iter,
                                 auto sentinel);
