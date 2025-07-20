@@ -21,13 +21,13 @@ BeginConstexprTest(Lz77EncoderAsymetricTest, EncodeTokens) {
         koda::Lz77IntermediateToken<char>{'k', 3, 4},  // ' ma k'
         koda::Lz77IntermediateToken<char>{'a', 7, 2},  // 'ota'
         koda::Lz77IntermediateToken<char>{' ', 2, 2},  // ' a '
-        koda::Lz77IntermediateToken<char>{'k', 9, 0},  // 'k'
-        koda::Lz77IntermediateToken<char>{'o', 8, 0},  // 'o'
-        koda::Lz77IntermediateToken<char>{'t', 7, 0},  // 't'
+        koda::Lz77IntermediateToken<char>{'k', 0, 0},  // 'k'
+        koda::Lz77IntermediateToken<char>{'o', 0, 0},  // 'o'
+        koda::Lz77IntermediateToken<char>{'t', 0, 0},  // 't'
         koda::Lz77IntermediateToken<char>{'m', 3, 1},  // ' m'
         koda::Lz77IntermediateToken<char>{' ', 2, 1},  // 'a '
-        koda::Lz77IntermediateToken<char>{'a', 2, 0},  // 'a'
-        koda::Lz77IntermediateToken<char>{'l', 1, 0},  // 'l'
+        koda::Lz77IntermediateToken<char>{'a', 0, 0},  // 'a'
+        koda::Lz77IntermediateToken<char>{'l', 0, 0},  // 'l'
         koda::Lz77IntermediateToken<char>{'e', 0, 0},  // 'e'
     };
 
@@ -42,38 +42,35 @@ BeginConstexprTest(Lz77EncoderAsymetricTest, EncodeTokens) {
 }
 EndConstexprTest;
 
-// BeginConstexprTest(Lz77EncoderAsymetricTest, EncodeMoreTokens) {
-//     std::string input_sequence = "std::nullptr_t & nullptr";
-//     std::vector expected_result = {
-//         koda::Lz77IntermediateToken<char>{'s', 0, 0},   // 's'
-//         koda::Lz77IntermediateToken<char>{'t', 0, 0},   // 't'
-//         koda::Lz77IntermediateToken<char>{'d', 0, 0},   // 'd'
-//         koda::Lz77IntermediateToken<char>{':', 0, 0},   // ':'
-//         koda::Lz77IntermediateToken<char>{'n', 3, 1},   // ':n'
-//         koda::Lz77IntermediateToken<char>{'u', 0, 0},   // 'u'
-//         koda::Lz77IntermediateToken<char>{'l', 0, 0},   // 'l'
-//         koda::Lz77IntermediateToken<char>{'p', 7, 1},   // 'lp'
-//         koda::Lz77IntermediateToken<char>{'r', 1, 1},   // 'tr'
-//         koda::Lz77IntermediateToken<char>{'_', 0, 0},   // '_'
-//         koda::Lz77IntermediateToken<char>{' ', 10, 1},  // 't '
-//         koda::Lz77IntermediateToken<char>{'&', 0, 0},   // '&'
-//         koda::Lz77IntermediateToken<char>{'n', 14, 1},  // ' n'
-//         koda::Lz77IntermediateToken<char>{'r', 6, 5}    // 'ullptr'
-//     };
+BeginConstexprTest(Lz77EncoderAsymetricTest, EncodeMoreTokens) {
+    std::string input_sequence = "std::nullptr_t & nullptr";
+    std::vector expected_result = {
+        koda::Lz77IntermediateToken<char>{'s', 0, 0},   // 's'
+        koda::Lz77IntermediateToken<char>{'d', 10, 1},  // 'td'
+        koda::Lz77IntermediateToken<char>{':', 19, 1},  // '::'
+        koda::Lz77IntermediateToken<char>{'_', 0, 7},   // 'nullptr_'
+        koda::Lz77IntermediateToken<char>{' ', 1, 1},   // 't '
+        koda::Lz77IntermediateToken<char>{'&', 0, 0},   // '&'
+        koda::Lz77IntermediateToken<char>{' ', 0, 0},   // ' '
+        koda::Lz77IntermediateToken<char>{'n', 0, 0},   // 'n'
+        koda::Lz77IntermediateToken<char>{'u', 0, 0},   // 'u'
+        koda::Lz77IntermediateToken<char>{'l', 3, 1},   // 'll'
+        koda::Lz77IntermediateToken<char>{'p', 0, 0},   // 'p'
+        koda::Lz77IntermediateToken<char>{'t', 0, 0},   // 't'
+        koda::Lz77IntermediateToken<char>{'r', 0, 0},   // 'r'
+    };
 
-//     std::vector<uint8_t> target;
+    std::vector<uint8_t> target;
 
-//     koda::Lz77Encoder<char,
-//                       Lz77DummyAuxEncoder<koda::Lz77IntermediateToken<char>>>
-//         encoder{1024, 7};
+    koda::Lz77Encoder<char, DummyEncoder> encoder{1024, 7};
 
-//     encoder(input_sequence, target | koda::views::InsertFromBack |
-//                                 koda::views::LittleEndianOutput);
+    encoder(input_sequence, target | koda::views::InsertFromBack |
+                                koda::views::LittleEndianOutput);
 
-//     ConstexprAssertEqual(encoder.auxiliary_encoder().tokens,
-//     expected_result); ConstexprAssertTrue(target.empty());
-// }
-// EndConstexprTest;
+    ConstexprAssertEqual(encoder.auxiliary_encoder().tokens, expected_result);
+    ConstexprAssertTrue(target.empty());
+}
+EndConstexprTest;
 
 // BeginConstexprTest(Lz77EncoderAsymetricTest, EncodeTokensRepeatitions) {
 //     std::string input_sequence = "kot kot kot kot kot kot kot";
