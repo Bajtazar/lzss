@@ -37,7 +37,9 @@ constexpr auto TansDecoder<Token, Count, State>::Decode(
 
     for (; (in_iter != in_sent) && (out_iter != out_sent); ++out_iter) {
         in_iter = SetReceiver(in_iter, in_sent);
-        *out_iter = DecodeToken();
+        if (receiver_.first == receiver_.second) {
+            *out_iter = DecodeToken();
+        }
     }
 
     return CoderResult{std::move(in_iter), std::move(in_iter),
