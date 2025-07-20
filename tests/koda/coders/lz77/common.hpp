@@ -35,7 +35,6 @@ template <typename Tp>
 class Lz77DummyAuxDecoderBase
     : public koda::DecoderInterface<Tp, Lz77DummyAuxDecoderBase<Tp>> {
    public:
-    using asymetrical = void;
     using token_type = Tp;
 
     constexpr explicit Lz77DummyAuxDecoderBase(std::vector<Tp> tokens = {})
