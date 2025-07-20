@@ -155,6 +155,15 @@ class Lz77Encoder<Token, AuxiliaryEncoder, Allocator>
 
     constexpr auto PopulateDictionary(InputRange<Token> auto&& input,
                                       FusedDictionaryAndBuffer<Token>& dict);
+
+    constexpr auto PeformEncodigStep(FusedDictionaryAndBuffer<Token>& dict,
+                                     SequenceView buffer,
+                                     SequenceView look_ahead,
+                                     BitOutputRange auto&& output);
+
+    constexpr auto EncodeTokenOrMatch(FusedDictionaryAndBuffer<Token>& dict,
+                                      SequenceView buffer, Match&& match,
+                                      BitOutputRange auto&& output);
 };
 
 }  // namespace koda

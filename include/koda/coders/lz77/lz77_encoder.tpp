@@ -329,10 +329,60 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PopulateDictionary(
     // Asymetrical mode finds repeatitions in the future so entire dictionary
     // has to be populated before the algorithm even starts working
     for (; !dict.full() && (input_iter != input_sent); ++input_iter) {
+        this->search_tree_.AddString(dict.get_buffer());
         dict.AddSymbolToBuffer(*input_iter);
     }
 
     return std::pair{std::move(input_iter), std::move(input_sent)};
+}
+
+template <std::integral Token,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+constexpr auto
+Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
+    FusedDictionaryAndBuffer<Token>& dict, SequenceView buffer,
+    SequenceView look_ahead, BitOutputRange auto&& output) {
+    if (!this->match_count_) {
+        auto new_output = EncodeTokenOrMatch(
+            dict, buffer, this->search_tree_.FindMatch(look_ahead),
+            std::move(output));
+        return new_output;
+    }
+
+    --this->match_count_;
+    return AsSubrange(output);
+}
+
+template <std::integral Token,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+constexpr auto
+Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
+    FusedDictionaryAndBuffer<Token>& dict, SequenceView buffer, Match&& match,
+    BitOutputRange auto&& output) {
+    // buffer is one symbol longer than the actual look-ahead buffer
+    // calculate the match end position since decoding will be performed from
+    // the last symbol to the first one
+    auto match_end_position = match.match_position + match.match_length;
+    match.match_position = match_end_position >= dict.dictionary_size()
+                               ? 0
+                               : dict.dictionary_size() - match_end_position;
+    match.match_length = match_end_position >= dict.dictionary_size()
+                             ? dict.dictionary_size() - match.match_position - 1
+                             : match.match_length;
+
+    auto suffix_token = buffer[match.match_length];
+    IMToken symbol_token{
+        suffix_token,
+        static_cast<typename IMToken::Position>(match.match_position),
+        static_cast<typename IMToken::Length>(match.match_length)};
+
+    this->match_count_ = match.match_length;
+    return this->EncodeIntermediateToken(
+        std::move(symbol_token), std::forward<decltype(output)>(output));
 }
 
 }  // namespace koda
