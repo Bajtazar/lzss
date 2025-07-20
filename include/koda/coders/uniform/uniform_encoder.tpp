@@ -13,7 +13,10 @@ template <std::integral Token>
 template <std::integral Token>
 /*static*/ constexpr uint8_t UniformEncoderTraits<Token>::PopulateBuffer(
     std::array<uint8_t, Size>& array, const Token& token) {
-    array = std::bit_cast<std::array<uint8_t, Size>>(token);
+    auto token_cpy = token;
+    for (size_t i = 0; i < TokenMaxByteSize(); ++i, token_cpy >>= CHAR_BIT) {
+        array[i] = token_cpy & 0xff;
+    }
 }
 
 template <typename Token>
