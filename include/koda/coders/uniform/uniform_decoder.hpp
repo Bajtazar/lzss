@@ -10,7 +10,7 @@ class UniformDecoder : public DecoderInterface<Token, UniformDecoder<Token>> {
     using token_type = Token;
 
     constexpr explicit UniformDecoder(
-        uint8_t token_bit_size = sizeof(Token) * CHAR_BIT) noexcept;
+        size_t token_bit_size = sizeof(Token) * CHAR_BIT) noexcept;
 
     constexpr auto Decode(BitInputRange auto&& input,
                           std::ranges::output_range<Token> auto&& output);
@@ -18,7 +18,7 @@ class UniformDecoder : public DecoderInterface<Token, UniformDecoder<Token>> {
     constexpr auto Initialize(BitInputRange auto&& input);
 
    private:
-    using BitIter = BigEndianOutputBitIter<Token*>;
+    using BitIter = LittleEndianOutputBitIter<Token*>;
     using BitRange = std::pair<BitIter, BitIter>;
 
     Token token_[1];

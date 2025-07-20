@@ -3,7 +3,7 @@
 namespace koda {
 
 template <std::integral Token>
-constexpr UniformDecoder<Token>::UniformDecoder(uint8_t token_bit_size) noexcept
+constexpr UniformDecoder<Token>::UniformDecoder(size_t token_bit_size) noexcept
     : receiver_{BitIter{std::ranges::begin(token_)},
                 token_bit_size == (sizeof(Token) * CHAR_BIT)
                     ? BitIter{std::ranges::end(token_)}
@@ -20,14 +20,14 @@ constexpr auto UniformDecoder<Token>::Decode(
     auto out_iter = std::ranges::begin(output);
     auto out_sent = std::ranges::end(output);
 
-    for (; (in_iter != in_sent) && (out_iter != out_sent); ++out_iter) {
+    while ((in_iter != in_sent) && (out_iter != out_sent)) {
         in_iter = SetReceiver(in_iter, in_sent);
         if (receiver_.first == receiver_.second) {
-            *out_iter = DecodeToken();
+            *out_iter++ = DecodeToken();
         }
     }
 
-    return CoderResult{std::move(in_iter), std::move(in_iter),
+    return CoderResult{std::move(in_iter), std::move(in_sent),
                        std::move(out_iter), std::move(out_sent)};
 }
 
