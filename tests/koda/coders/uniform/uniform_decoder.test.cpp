@@ -82,3 +82,31 @@ BeginConstexprTest(UniformDecoderTest, PartialInputDecoding) {
     ConstexprAssertEqual(expected, reconstruction);
 }
 EndConstexprTest;
+
+BeginConstexprTest(UniformDecoderTest, PartialOutputDecoding) {
+    const std::vector<uint8_t> kExpected{{0x43, 0x74, 0x35, 0x33}};
+    auto stream = Encode(kExpected);
+
+    koda::UniformDecoder<uint8_t> decoder;
+
+    std::vector<uint8_t> result;
+
+    decoder.Decode(
+        stream | koda::views::LittleEndianInput | koda::views::Take(5),
+        result | koda::views::InsertFromBack);
+
+    ConstexprAssertTrue(result.empty());
+
+    decoder.Decode(stream | koda::views::LittleEndianInput |
+                       std::views::drop(5) | koda::views::Take(5),
+                   result | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(result, kExpected | koda::views::Take(1));
+
+    decoder(stream | koda::views::LittleEndianInput | std::views::drop(10),
+            result | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(result.size(), kExpected.size());
+    ConstexprAssertEqual(result, kExpected);
+}
+EndConstexprTest;
