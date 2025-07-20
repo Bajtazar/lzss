@@ -7,7 +7,7 @@
 
 static_assert(koda::Encoder<koda::Lz77Encoder<uint8_t>, uint8_t>);
 
-BeginConstexprTest(Lz77Encoder, EncodeTokens) {
+BeginConstexprTest(Lz77EncoderSymetricTest, EncodeTokens) {
     std::string input_sequence = "ala ma kota a kot ma ale";
     std::vector expected_result = {
         koda::Lz77IntermediateToken<char>{'a', 0, 0},  // 'a'
@@ -36,7 +36,7 @@ BeginConstexprTest(Lz77Encoder, EncodeTokens) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(Lz77Encoder, EncodeMoreTokens) {
+BeginConstexprTest(Lz77EncoderSymetricTest, EncodeMoreTokens) {
     std::string input_sequence = "std::nullptr_t & nullptr";
     std::vector expected_result = {
         koda::Lz77IntermediateToken<char>{'s', 0, 0},   // 's'
@@ -69,7 +69,7 @@ BeginConstexprTest(Lz77Encoder, EncodeMoreTokens) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(Lz77Encoder, EncodeTokensRepeatitions) {
+BeginConstexprTest(Lz77EncoderSymetricTest, EncodeTokensRepeatitions) {
     std::string input_sequence = "kot kot kot kot kot kot kot";
     std::vector expected_result = {
         koda::Lz77IntermediateToken<char>{'k', 0, 0},   // 'k'
@@ -97,7 +97,7 @@ BeginConstexprTest(Lz77Encoder, EncodeTokensRepeatitions) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(Lz77Encoder, EncodeTokensShortDictionary) {
+BeginConstexprTest(Lz77EncoderSymetricTest, EncodeTokensShortDictionary) {
     std::string input_sequence = "kot abcdefghijkelmouprst kot";
     std::vector expected_result = {
         koda::Lz77IntermediateToken<char>{'k', 0, 0},  //         [|kot]
@@ -142,7 +142,7 @@ BeginConstexprTest(Lz77Encoder, EncodeTokensShortDictionary) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(Lz77Encoder, EncodeRepeatingSequence) {
+BeginConstexprTest(Lz77EncoderSymetricTest, EncodeRepeatingSequence) {
     std::string input_sequence = "aaaaaaa";
     std::vector<uint8_t> target;
     std::vector expected_result = {
