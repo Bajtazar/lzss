@@ -391,7 +391,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
     // the last symbol to the first one
     auto match_end_position = match.match_position + match.match_length;
     match.match_position =
-        match_end_position >= dict.dictionary_size()
+        match_end_position >= dict.dictionary_size() || !match.match_length
             ? 0
             : dict.dictionary_size() - match_end_position - 1;
     match.match_length = match_end_position >= dict.dictionary_size()
