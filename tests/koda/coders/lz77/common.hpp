@@ -2,12 +2,12 @@
 
 #include <koda/coders/coder.hpp>
 
-template <typename Tp>
-struct Lz77DummyAuxEncoder
-    : public koda::EncoderInterface<Tp, Lz77DummyAuxEncoder<Tp>> {
-    using token_type = Tp;
+namespace details {
 
-    constexpr explicit Lz77DummyAuxEncoder() = default;
+template <typename Tp>
+struct Lz77DummyAuxEncoderBase
+    : public koda::EncoderInterface<Tp, Lz77DummyAuxEncoderBase<Tp>> {
+    constexpr explicit Lz77DummyAuxEncoderBase() = default;
 
     std::vector<Tp> tokens = {};
 
@@ -32,12 +32,13 @@ struct Lz77DummyAuxEncoder
 };
 
 template <typename Tp>
-class Lz77DummyAuxDecoder
-    : public koda::DecoderInterface<Tp, Lz77DummyAuxDecoder<Tp>> {
+class Lz77DummyAuxDecoderBase
+    : public koda::DecoderInterface<Tp, Lz77DummyAuxDecoderBase<Tp>> {
    public:
+    using asymetrical = void;
     using token_type = Tp;
 
-    constexpr explicit Lz77DummyAuxDecoder(std::vector<Tp> tokens = {})
+    constexpr explicit Lz77DummyAuxDecoderBase(std::vector<Tp> tokens = {})
         : tokens_{std::move(tokens)} {}
 
     [[noreturn]] constexpr float TokenBitSize([[maybe_unused]] Tp token) const {
@@ -66,4 +67,46 @@ class Lz77DummyAuxDecoder
 
    private:
     std::vector<Tp> tokens_;
+};
+
+}  // namespace details
+
+template <typename Tp, bool IsAsymetrical>
+struct Lz77DummyAuxEncoder;
+
+template <typename Tp>
+struct Lz77DummyAuxEncoder<Tp, false>
+    : public details::Lz77DummyAuxEncoderBase<Tp> {
+    using details::Lz77DummyAuxEncoderBase<Tp>::Lz77DummyAuxEncoderBase;
+
+    using token_type = Tp;
+};
+
+template <typename Tp>
+struct Lz77DummyAuxEncoder<Tp, true>
+    : public details::Lz77DummyAuxEncoderBase<Tp> {
+    using details::Lz77DummyAuxEncoderBase<Tp>::Lz77DummyAuxEncoderBase;
+
+    using asymetrical = void;
+    using token_type = Tp;
+};
+
+template <typename Tp, bool IsAsymetrical>
+struct Lz77DummyAuxDecoder;
+
+template <typename Tp>
+struct Lz77DummyAuxDecoder<Tp, false>
+    : public details::Lz77DummyAuxDecoderBase<Tp> {
+    using details::Lz77DummyAuxDecoderBase<Tp>::Lz77DummyAuxDecoderBase;
+
+    using token_type = Tp;
+};
+
+template <typename Tp>
+struct Lz77DummyAuxDecoder<Tp, true>
+    : public details::Lz77DummyAuxDecoderBase<Tp> {
+    using details::Lz77DummyAuxDecoderBase<Tp>::Lz77DummyAuxDecoderBase;
+
+    using asymetrical = void;
+    using token_type = Tp;
 };
