@@ -7,6 +7,9 @@
 
 static_assert(koda::Encoder<koda::Lz77Encoder<uint8_t>, uint8_t>);
 
+using DummyEncoder =
+    Lz77DummyAuxEncoder<koda::Lz77IntermediateToken<char>, false>;
+
 BeginConstexprTest(Lz77EncoderSymetricTest, EncodeTokens) {
     std::string input_sequence = "ala ma kota a kot ma ale";
     std::vector expected_result = {
@@ -25,9 +28,7 @@ BeginConstexprTest(Lz77EncoderSymetricTest, EncodeTokens) {
 
     std::vector<uint8_t> target;
 
-    koda::Lz77Encoder<char,
-                      Lz77DummyAuxEncoder<koda::Lz77IntermediateToken<char>>>
-        encoder{1024, 4};
+    koda::Lz77Encoder<char, DummyEncoder> encoder{1024, 4};
     encoder(input_sequence, target | koda::views::InsertFromBack |
                                 koda::views::LittleEndianOutput);
 
@@ -57,9 +58,7 @@ BeginConstexprTest(Lz77EncoderSymetricTest, EncodeMoreTokens) {
 
     std::vector<uint8_t> target;
 
-    koda::Lz77Encoder<char,
-                      Lz77DummyAuxEncoder<koda::Lz77IntermediateToken<char>>>
-        encoder{1024, 7};
+    koda::Lz77Encoder<char, DummyEncoder> encoder{1024, 7};
 
     encoder(input_sequence, target | koda::views::InsertFromBack |
                                 koda::views::LittleEndianOutput);
@@ -86,9 +85,7 @@ BeginConstexprTest(Lz77EncoderSymetricTest, EncodeTokensRepeatitions) {
 
     std::vector<uint8_t> target;
 
-    koda::Lz77Encoder<char,
-                      Lz77DummyAuxEncoder<koda::Lz77IntermediateToken<char>>>
-        encoder{1024, 3};
+    koda::Lz77Encoder<char, DummyEncoder> encoder{1024, 3};
     encoder(input_sequence, target | koda::views::InsertFromBack |
                                 koda::views::LittleEndianOutput);
 
@@ -131,9 +128,7 @@ BeginConstexprTest(Lz77EncoderSymetricTest, EncodeTokensShortDictionary) {
 
     std::vector<uint8_t> target;
 
-    koda::Lz77Encoder<char,
-                      Lz77DummyAuxEncoder<koda::Lz77IntermediateToken<char>>>
-        encoder{8, 3};
+    koda::Lz77Encoder<char, DummyEncoder> encoder{8, 3};
     encoder(input_sequence, target | koda::views::InsertFromBack |
                                 koda::views::LittleEndianOutput);
 
@@ -150,9 +145,7 @@ BeginConstexprTest(Lz77EncoderSymetricTest, EncodeRepeatingSequence) {
         koda::Lz77IntermediateToken<char>{'a', 0, 3},
         koda::Lz77IntermediateToken<char>{'a', 2, 1}};
 
-    koda::Lz77Encoder<char,
-                      Lz77DummyAuxEncoder<koda::Lz77IntermediateToken<char>>>
-        encoder{8, 3};
+    koda::Lz77Encoder<char, DummyEncoder> encoder{8, 3};
     encoder(input_sequence, target | koda::views::InsertFromBack |
                                 koda::views::LittleEndianOutput);
 
