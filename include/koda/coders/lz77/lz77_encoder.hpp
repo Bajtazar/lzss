@@ -19,7 +19,13 @@ template <std::integral Token = uint8_t,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder =
               DirectEncoder<Lz77IntermediateToken<Token>>,
           typename Allocator = std::allocator<Token>>
-class Lz77Encoder
+class Lz77Encoder;
+
+template <std::integral Token,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(CoderTraits<AuxiliaryEncoder>::IsSymetrical)
+class Lz77Encoder<Token, AuxiliaryEncoder, Allocator>
     : public EncoderInterface<Token,
                               Lz77Encoder<Token, AuxiliaryEncoder, Allocator>> {
    public:
