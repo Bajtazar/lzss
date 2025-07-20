@@ -17,18 +17,18 @@ using DummyEncoder =
 BeginConstexprTest(Lz77EncoderAsymetricTest, EncodeTokens) {
     std::string input_sequence = "ala ma kota a kot ma ale";
     std::vector expected_result = {
-        koda::Lz77IntermediateToken<char>{'a', 1, 2},  // 'a'
-        koda::Lz77IntermediateToken<char>{'k', 3, 4},  // 'l'
-        koda::Lz77IntermediateToken<char>{'a', 7, 2},  // 'a '
-        koda::Lz77IntermediateToken<char>{' ', 2, 2},  // 'm'
-        koda::Lz77IntermediateToken<char>{'k', 9, 0},  // 'a k'
+        koda::Lz77IntermediateToken<char>{'a', 1, 2},  // 'ala'
+        koda::Lz77IntermediateToken<char>{'k', 3, 4},  // ' ma k'
+        koda::Lz77IntermediateToken<char>{'a', 7, 2},  // 'ota'
+        koda::Lz77IntermediateToken<char>{' ', 2, 2},  // ' a '
+        koda::Lz77IntermediateToken<char>{'k', 9, 0},  // 'k'
         koda::Lz77IntermediateToken<char>{'o', 8, 0},  // 'o'
         koda::Lz77IntermediateToken<char>{'t', 7, 0},  // 't'
-        koda::Lz77IntermediateToken<char>{'m', 3, 1},  // 'a a'
-        koda::Lz77IntermediateToken<char>{' ', 2, 1},  // ' kot '
-        koda::Lz77IntermediateToken<char>{'a', 2, 0},  // 'ma a'
-        koda::Lz77IntermediateToken<char>{'l', 1, 0},  // 'le'
-        koda::Lz77IntermediateToken<char>{'e', 0, 0},  // 'le'
+        koda::Lz77IntermediateToken<char>{'m', 3, 1},  // ' m'
+        koda::Lz77IntermediateToken<char>{' ', 2, 1},  // 'a '
+        koda::Lz77IntermediateToken<char>{'a', 2, 0},  // 'a'
+        koda::Lz77IntermediateToken<char>{'l', 1, 0},  // 'l'
+        koda::Lz77IntermediateToken<char>{'e', 0, 0},  // 'e'
     };
 
     std::vector<uint8_t> target;
