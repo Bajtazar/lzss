@@ -31,7 +31,7 @@ constexpr auto TansEncoder<Token, Count, State>::Encode(
     auto sentinel = std::ranges::end(output);
     auto iter = FlushEmitter(std::ranges::begin(output), sentinel);
 
-    if (iter == sentinel || encoding_table_.empty()) {
+    if (iter == sentinel) {
         return CoderResult{std::forward<decltype(input)>(input),
                            std::move(iter), std::move(sentinel)};
     }
