@@ -10,7 +10,7 @@ static_assert(koda::Decoder<koda::Lz77Decoder<uint8_t>, uint8_t>);
 using DummyDecoder =
     Lz77DummyAuxDecoder<koda::Lz77IntermediateToken<char>, false>;
 
-BeginConstexprTest(Lz77Decoder, DecodeTokens) {
+BeginConstexprTest(Lz77DecoderSymetricTest, DecodeTokens) {
     std::vector input_sequence = {
         koda::Lz77IntermediateToken<char>{'a', 0, 0},  // 'a'
         koda::Lz77IntermediateToken<char>{'l', 0, 0},  // 'l'
@@ -38,7 +38,7 @@ BeginConstexprTest(Lz77Decoder, DecodeTokens) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(Lz77Decoder, DecodeMoreTokens) {
+BeginConstexprTest(Lz77DecoderSymetricTest, DecodeMoreTokens) {
     std::vector input_sequence = {
         koda::Lz77IntermediateToken<char>{'s', 0, 0},   // 's'
         koda::Lz77IntermediateToken<char>{'t', 0, 0},   // 't'
@@ -69,7 +69,7 @@ BeginConstexprTest(Lz77Decoder, DecodeMoreTokens) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(Lz77Decoder, DecodeTokensRepeatitions) {
+BeginConstexprTest(Lz77DecoderSymetricTest, DecodeTokensRepeatitions) {
     std::vector input_sequence = {
         koda::Lz77IntermediateToken<char>{'k', 0, 0},   // 'k'
         koda::Lz77IntermediateToken<char>{'o', 0, 0},   // 'o'
@@ -96,7 +96,7 @@ BeginConstexprTest(Lz77Decoder, DecodeTokensRepeatitions) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(Lz77Decoder, DecodeTokensShortDictionary) {
+BeginConstexprTest(Lz77DecoderSymetricTest, DecodeTokensShortDictionary) {
     std::vector input_sequence = {
         koda::Lz77IntermediateToken<char>{'k', 0, 0},  //         [|kot]
         koda::Lz77IntermediateToken<char>{'o', 0, 0},  //        [k|ot ]
@@ -140,7 +140,7 @@ BeginConstexprTest(Lz77Decoder, DecodeTokensShortDictionary) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(Lz77Decoder, DecodeRepeatingSequence) {
+BeginConstexprTest(Lz77DecoderSymetricTest, DecodeRepeatingSequence) {
     std::vector input_sequence = {koda::Lz77IntermediateToken<char>{'a', 0, 0},
                                   koda::Lz77IntermediateToken<char>{'l', 0, 0},
                                   koda::Lz77IntermediateToken<char>{'r', 0, 4}};
@@ -158,7 +158,7 @@ BeginConstexprTest(Lz77Decoder, DecodeRepeatingSequence) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(Lz77Decoder, PartialDecoding) {
+BeginConstexprTest(Lz77DecoderSymetricTest, PartialDecoding) {
     std::vector input_sequence = {koda::Lz77IntermediateToken<char>{'a', 0, 0},
                                   koda::Lz77IntermediateToken<char>{'l', 0, 0},
                                   koda::Lz77IntermediateToken<char>{'r', 0, 4}};
@@ -183,7 +183,7 @@ BeginConstexprTest(Lz77Decoder, PartialDecoding) {
 }
 EndConstexprTest;
 
-BeginConstexprTest(Lz77Decoder, SplittedPartialDecoding) {
+BeginConstexprTest(Lz77DecoderSymetricTest, SplittedPartialDecoding) {
     std::vector input_sequence = {koda::Lz77IntermediateToken<char>{'a', 0, 0},
                                   koda::Lz77IntermediateToken<char>{'l', 0, 0},
                                   koda::Lz77IntermediateToken<char>{'r', 0, 4}};
