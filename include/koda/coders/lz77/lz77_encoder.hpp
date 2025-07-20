@@ -15,42 +15,28 @@
 
 namespace koda {
 
-template <std::integral Token = uint8_t,
-          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder =
-              DirectEncoder<Lz77IntermediateToken<Token>>,
-          typename Allocator = std::allocator<Token>>
-class Lz77Encoder;
+namespace details {
 
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsSymetrical)
-class Lz77Encoder<Token, AuxiliaryEncoder, Allocator>
-    : public EncoderInterface<Token,
-                              Lz77Encoder<Token, AuxiliaryEncoder, Allocator>> {
+class Lz77EncoderBase {
    public:
-    using token_type = Token;
-
-    constexpr explicit Lz77Encoder(
+    constexpr explicit Lz77EncoderBase(
         size_t dictionary_size, size_t lookahead_size,
         AuxiliaryEncoder auxiliary_encoder,
         std::optional<size_t> cyclic_buffer_size = std::nullopt,
         const Allocator& allocator = Allocator{});
 
-    constexpr explicit Lz77Encoder(
+    constexpr explicit Lz77EncoderBase(
         size_t dictionary_size, size_t look_ahead_size,
         std::optional<size_t> cyclic_buffer_size = std::nullopt,
         const Allocator& allocator = Allocator{})
         requires std::is_default_constructible_v<AuxiliaryEncoder>;
 
-    constexpr auto Encode(InputRange<Token> auto&& input,
-                          BitOutputRange auto&& output);
-
-    constexpr auto Flush(BitOutputRange auto&& output);
-
     [[nodiscard]] constexpr auto&& auxiliary_encoder(this auto&& self);
 
-   private:
+   protected:
     using SequenceView = typename FusedDictionaryAndBuffer<Token>::SequenceView;
     using IMToken = Lz77IntermediateToken<Token>;
     using Match = typename SearchBinaryTree<Token>::RepeatitionMarker;
@@ -70,10 +56,52 @@ class Lz77Encoder<Token, AuxiliaryEncoder, Allocator>
 
     constexpr auto InitializeBuffer(InputRange<Token> auto&& input);
 
+    constexpr auto FlushQueue(BitOutputRange auto&& output);
+
+    constexpr auto EncodeIntermediateToken(IMToken&& token,
+                                           BitOutputRange auto&& output);
+};
+
+}  // namespace details
+
+template <std::integral Token = uint8_t,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder =
+              DirectEncoder<Lz77IntermediateToken<Token>>,
+          typename Allocator = std::allocator<Token>>
+class Lz77Encoder;
+
+template <std::integral Token,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(CoderTraits<AuxiliaryEncoder>::IsSymetrical)
+class Lz77Encoder<Token, AuxiliaryEncoder, Allocator>
+    : public EncoderInterface<Token,
+                              Lz77Encoder<Token, AuxiliaryEncoder, Allocator>>,
+      private details::Lz77EncoderBase<Token, AuxiliaryEncoder, Allocator> {
+    using Base = details::Lz77EncoderBase<Token, AuxiliaryEncoder, Allocator>;
+
+   public:
+    using token_type = Token;
+
+    using Base::Lz77EncoderBase;
+
+    constexpr auto Encode(InputRange<Token> auto&& input,
+                          BitOutputRange auto&& output);
+
+    constexpr auto Flush(BitOutputRange auto&& output);
+
+    using Base::auxiliary_encoder;
+
+    friend class details::Lz77EncoderBase<Token, AuxiliaryEncoder, Allocator>;
+
+   private:
+    using SequenceView = Base::SequenceView;
+    using IMToken = Base::IMToken;
+    using Match = Base::Match;
+    using AuxTraits = Base::AuxTraits;
+
     constexpr auto EncodeData(InputRange<Token> auto&& input,
                               BitOutputRange auto&& output);
-
-    constexpr auto FlushQueue(BitOutputRange auto&& output);
 
     constexpr auto FlushData(BitOutputRange auto&& output);
 
@@ -84,9 +112,6 @@ class Lz77Encoder<Token, AuxiliaryEncoder, Allocator>
                                      SequenceView buffer,
                                      SequenceView look_ahead,
                                      BitOutputRange auto&& output);
-
-    constexpr auto EncodeIntermediateToken(IMToken&& token,
-                                           BitOutputRange auto&& output);
 
     constexpr void TryToRemoveStringFromSearchTree(
         FusedDictionaryAndBuffer<Token>& dict);
