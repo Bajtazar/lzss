@@ -237,7 +237,7 @@ constexpr std::pair<
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::GetBufferAndLookAhead(
     FusedDictionaryAndBuffer<Token>& dict) const {
     auto buffer = [&] {
-        if constexpr (Traits::IsSymetrical) {
+        if constexpr (AuxTraits::IsSymetrical) {
             return dict.get_buffer();
         } else {
             // In case of asymetrical coders algorithm will look for the

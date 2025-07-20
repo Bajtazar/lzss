@@ -10,13 +10,15 @@ template <typename CoderTp>
 struct CoderTraits {
     using token_type = typename CoderTp::token_type;
 
-    inline constexpr bool IsSizeAware =
+    static constexpr bool IsSizeAware =
         requires(CoderTp coder, token_type token) {
             { coder.TokenBitSize(token) } -> std::same_as<float>;
         };
 
-    inline constexpr bool IsAsymetrical =
+    static constexpr bool IsAsymetrical =
         requires { typename CoderTp::asymetrical; };
+
+    static constexpr bool IsSymetrical = !IsAsymetrical;
 };
 
 }  // namespace koda

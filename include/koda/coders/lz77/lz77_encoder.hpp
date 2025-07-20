@@ -48,7 +48,7 @@ class Lz77Encoder
     using SequenceView = typename FusedDictionaryAndBuffer<Token>::SequenceView;
     using IMToken = Lz77IntermediateToken<Token>;
     using Match = typename SearchBinaryTree<Token>::RepeatitionMarker;
-    using Traits = CoderTraits<AuxiliaryEncoder>;
+    using AuxTraits = CoderTraits<AuxiliaryEncoder>;
 
     struct FusedDictAndBufferInfo {
         size_t dictionary_size;
