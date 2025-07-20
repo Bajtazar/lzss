@@ -178,6 +178,8 @@ class Lz77Encoder<Token, AuxiliaryEncoder, Allocator>
     constexpr std::pair<SequenceView, SequenceView> GetBufferAndLookAhead(
         FusedDictionaryAndBuffer<Token>& dict) const;
 
+    constexpr void AddStringToSearchTree(FusedDictionaryAndBuffer<Token>& dict);
+
     constexpr auto FlushData(BitOutputRange auto&& output);
 };
 

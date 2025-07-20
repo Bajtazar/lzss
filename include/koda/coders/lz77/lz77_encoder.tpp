@@ -329,7 +329,7 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
     for (; (input_iter != input_sent) && !out_range.empty(); ++input_iter) {
         auto [buffer, look_ahead] = GetBufferAndLookAhead(dict);
         this->search_tree_.RemoveString(look_ahead);
-        this->search_tree_.AddString(dict.get_buffer());
+        AddStringToSearchTree(dict);
         out_range =
             PeformEncodigStep(dict, buffer, look_ahead, std::move(out_range));
 
@@ -352,7 +352,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PopulateDictionary(
     // Asymetrical mode finds repeatitions in the future so entire dictionary
     // has to be populated before the algorithm even starts working
     for (; !dict.full() && (input_iter != input_sent); ++input_iter) {
-        this->search_tree_.AddString(dict.get_buffer());
+        AddStringToSearchTree(dict);
         dict.AddSymbolToBuffer(*input_iter);
     }
 
@@ -421,6 +421,18 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::GetBufferAndLookAhead(
     auto look_ahead = buffer;
     look_ahead.remove_suffix(1);
     return {buffer, look_ahead};
+}
+
+template <std::integral Token,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+constexpr void
+Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::AddStringToSearchTree(
+    FusedDictionaryAndBuffer<Token>& dict) {
+    auto buffer = dict.get_buffer();
+    buffer.remove_suffix(1);
+    this->search_tree_.AddString(buffer);
 }
 
 template <std::integral Token,
