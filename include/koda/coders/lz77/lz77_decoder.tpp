@@ -1,5 +1,6 @@
 #pragma once
 
+#include <koda/coders/coder_traits.hpp>
 #include <koda/ranges/back_inserter_iterator.hpp>
 #include <koda/utils/formatted_exception.hpp>
 #include <koda/utils/utils.hpp>
@@ -11,6 +12,8 @@ template <std::integral Token,
           typename Allocator>
 template <std::ranges::output_range<Token> RangeTp>
 class Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
+    using AuxTraits = CoderTraits<AuxiliaryDecoder>;
+
    public:
     constexpr explicit SlidingDecoderView(
         FusedDictionaryAndBuffer<Token>& dictionary,
@@ -43,10 +46,15 @@ class Lz77Decoder<Token, AuxiliaryDecoder, Allocator>::SlidingDecoderView {
         }
 
         constexpr Iterator& operator=(value_type token) {
-            CopySequenceToDictionary(token);
+            if constexpr (AuxTraits::IsSymetrical) {
+                CopySequenceToDictionary(token);
+            }
             if (parent_->iterator_ != parent_->sentinel_) {
                 *parent_->iterator_++ = token.suffix_symbol();
                 parent_->dictionary_.AddSymbolToBuffer(token.suffix_symbol());
+            }
+            if constexpr (AuxTraits::IsAsymetrical) {
+                CopySequenceToDictionary(token);
             }
             return *this;
         }
