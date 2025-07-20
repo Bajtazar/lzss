@@ -15,13 +15,13 @@ using namespace std::literals;
 BeginConstexprTest(Lz77DecoderAsymetricTest, DecodeTokens) {
     std::vector input_sequence = {
         koda::Lz77IntermediateToken<char>{'e', 0, 0},  // 'e'
-        koda::Lz77IntermediateToken<char>{'l', 1, 0},  // 'l'
-        koda::Lz77IntermediateToken<char>{'a', 2, 0},  // 'a'
+        koda::Lz77IntermediateToken<char>{'l', 0, 0},  // 'l'
+        koda::Lz77IntermediateToken<char>{'a', 0, 0},  // 'a'
         koda::Lz77IntermediateToken<char>{' ', 2, 1},  // 'a '
         koda::Lz77IntermediateToken<char>{'m', 3, 1},  // ' m'
-        koda::Lz77IntermediateToken<char>{'t', 7, 0},  // 't'
-        koda::Lz77IntermediateToken<char>{'o', 8, 0},  // 'o'
-        koda::Lz77IntermediateToken<char>{'k', 9, 0},  // 'k'
+        koda::Lz77IntermediateToken<char>{'t', 0, 0},  // 't'
+        koda::Lz77IntermediateToken<char>{'o', 0, 0},  // 'o'
+        koda::Lz77IntermediateToken<char>{'k', 0, 0},  // 'k'
         koda::Lz77IntermediateToken<char>{' ', 2, 2},  // ' a '
         koda::Lz77IntermediateToken<char>{'a', 7, 2},  // 'ota'
         koda::Lz77IntermediateToken<char>{'k', 3, 4},  // ' ma k'
