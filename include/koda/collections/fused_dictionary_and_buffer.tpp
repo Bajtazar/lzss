@@ -181,13 +181,13 @@ FusedDictionaryAndBuffer<Tp, AllocatorTp>::buffer_size() const noexcept {
 template <typename Tp, typename AllocatorTp>
 [[nodiscard]] constexpr bool FusedDictionaryAndBuffer<Tp, AllocatorTp>::full()
     const noexcept {
-    return dict.dictionary_size() == dict.max_dictionary_size();
+    return current_dictionary_size_ == dictionary_size_;
 }
 
 template <typename Tp, typename AllocatorTp>
 [[nodiscard]] constexpr bool FusedDictionaryAndBuffer<Tp, AllocatorTp>::empty()
     const noexcept {
-    return !dict.dictionary_size();
+    return !current_dictionary_size_;
 }
 
 template <typename Tp, typename AllocatorTp>

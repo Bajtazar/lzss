@@ -23,7 +23,7 @@ template <std::integral Token,
 class Lz77EncoderBase {
    public:
     constexpr explicit Lz77EncoderBase(
-        size_t dictionary_size, size_t lookahead_size,
+        size_t dictionary_size, size_t look_ahead_size,
         AuxiliaryEncoder auxiliary_encoder,
         std::optional<size_t> cyclic_buffer_size = std::nullopt,
         const Allocator& allocator = Allocator{});
@@ -134,7 +134,7 @@ class Lz77Encoder<Token, AuxiliaryEncoder, Allocator>
     using token_type = Token;
 
     constexpr explicit Lz77Encoder(
-        size_t dictionary_size, size_t lookahead_size,
+        size_t dictionary_size, size_t look_ahead_size,
         AuxiliaryEncoder auxiliary_encoder,
         std::optional<size_t> cyclic_buffer_size = std::nullopt,
         const Allocator& allocator = Allocator{});
