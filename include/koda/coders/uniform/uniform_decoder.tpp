@@ -4,7 +4,11 @@ namespace koda {
 
 template <std::integral Token>
 constexpr UniformDecoder<Token>::UniformDecoder(uint8_t token_bit_size) noexcept
-    : token_bit_size_{token_bit_size} {}
+    : receiver_{BitIter{std::ranges::begin(token_)},
+                token_bit_size == (sizeof(Token) * CHAR_BIT)
+                    ? BitIter{std::ranges::end(token_)}
+                    : BitIter{std::ranges::begin(token_), token_bit_size}},
+      token_bit_size_{token_bit_size} {}
 
 template <std::integral Token>
 constexpr auto UniformDecoder<Token>::Decode(

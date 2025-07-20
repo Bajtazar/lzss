@@ -22,7 +22,7 @@ class UniformDecoder : public DecoderInterface<Token, UniformDecoder<Token>> {
     using BitRange = std::pair<BitIter, BitIter>;
 
     Token token_[1];
-    BitRange emitter_;
+    BitRange receiver_;
     size_t token_bit_size_;
 
     constexpr auto SetReceiver(auto iter, const auto& sent);
