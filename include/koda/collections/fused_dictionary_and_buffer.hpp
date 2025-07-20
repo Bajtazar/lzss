@@ -142,6 +142,8 @@ class FusedDictionaryAndBuffer {
 
     constexpr bool SlideDictionary();
 
+    constexpr void IncrementDictionaryIterator();
+
     static constexpr size_t CalculateCyclicBufferSize(
         size_t dictionary_size, size_t buffer_size,
         std::optional<size_t> cyclic_buffer_size);

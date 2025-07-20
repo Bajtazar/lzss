@@ -62,15 +62,28 @@ constexpr bool FusedDictionaryAndBuffer<Tp, AllocatorTp>::AddSymbolToBuffer(
         ++buffer_iter_;
     }
     *buffer_sentinel_++ = symbol;
-    return SlideDictionary();
+
+    if (!SlideDictionary()) {
+        ++current_dictionary_size_;
+        return false;
+    }
+    return true;
 }
 
 template <typename Tp, typename AllocatorTp>
 constexpr bool
 FusedDictionaryAndBuffer<Tp, AllocatorTp>::AddEndSymbolToBuffer() {
     /// Relocation is not needed since no symbol is appended
-    ++buffer_iter_;
-    return SlideDictionary();
+    if (buffer_iter_ != buffer_sentinel_) {
+        ++buffer_iter_;
+        SlideDictionary();
+        return false;
+    }
+
+    // If buffer is empty then start to shrink the dictionary
+    IncrementDictionaryIterator();
+    --current_dictionary_size_;
+    return true;
 }
 
 template <typename Tp, typename AllocatorTp>
@@ -134,15 +147,20 @@ constexpr bool FusedDictionaryAndBuffer<Tp, AllocatorTp>::SlideDictionary() {
     if (current_dictionary_size_ == dictionary_size_) [[likely]] {
         // Prune the element if last buffer_size - 1 symbols of the dictionary
         // are contiguous
-        if (++dictionary_iter_ == right_telomere_tag_) [[unlikely]] {
-            // Otherwise the first M-1 element of the cyclic buffer are same as
-            // the last M-1 ones
-            dictionary_iter_ = cyclic_buffer_.begin();
-        }
+        IncrementDictionaryIterator();
         return true;
     }
-    ++current_dictionary_size_;
     return false;
+}
+
+template <typename Tp, typename AllocatorTp>
+constexpr void
+FusedDictionaryAndBuffer<Tp, AllocatorTp>::IncrementDictionaryIterator() {
+    if (++dictionary_iter_ == right_telomere_tag_) [[unlikely]] {
+        // Otherwise the first M-1 element of the cyclic buffer are same as
+        // the last M-1 ones
+        dictionary_iter_ = cyclic_buffer_.begin();
+    }
 }
 
 template <typename Tp, typename AllocatorTp>
