@@ -63,11 +63,7 @@ constexpr bool FusedDictionaryAndBuffer<Tp, AllocatorTp>::AddSymbolToBuffer(
     }
     *buffer_sentinel_++ = symbol;
 
-    if (!SlideDictionary()) {
-        ++current_dictionary_size_;
-        return false;
-    }
-    return true;
+    return SlideDictionary();
 }
 
 template <typename Tp, typename AllocatorTp>
@@ -76,8 +72,7 @@ FusedDictionaryAndBuffer<Tp, AllocatorTp>::AddEndSymbolToBuffer() {
     /// Relocation is not needed since no symbol is appended
     if (buffer_iter_ != buffer_sentinel_) {
         ++buffer_iter_;
-        SlideDictionary();
-        return false;
+        return SlideDictionary();
     }
 
     // If buffer is empty then start to shrink the dictionary
@@ -150,6 +145,7 @@ constexpr bool FusedDictionaryAndBuffer<Tp, AllocatorTp>::SlideDictionary() {
         IncrementDictionaryIterator();
         return true;
     }
+    ++current_dictionary_size_;
     return false;
 }
 

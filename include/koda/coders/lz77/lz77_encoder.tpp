@@ -3,6 +3,8 @@
 #include <koda/ranges/back_inserter_iterator.hpp>
 #include <koda/utils/utils.hpp>
 
+#include <print>
+
 namespace koda {
 
 namespace details {
@@ -390,9 +392,10 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
     // calculate the match end position since decoding will be performed from
     // the last symbol to the first one
     auto match_end_position = match.match_position + match.match_length;
-    match.match_position = match_end_position >= dict.dictionary_size()
-                               ? 0
-                               : dict.dictionary_size() - match_end_position;
+    match.match_position =
+        match_end_position >= dict.dictionary_size()
+            ? 0
+            : dict.dictionary_size() - match_end_position - 1;
     match.match_length = match_end_position >= dict.dictionary_size()
                              ? dict.dictionary_size() - match.match_position - 1
                              : match.match_length;
@@ -431,8 +434,9 @@ constexpr void
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::AddStringToSearchTree(
     FusedDictionaryAndBuffer<Token>& dict) {
     auto buffer = dict.get_buffer();
-    buffer.remove_suffix(1);
-    this->search_tree_.AddString(buffer);
+    this->search_tree_.AddString(
+        {buffer.begin(),
+         std::next(buffer.begin(), this->search_tree_.string_size())});
 }
 
 template <std::integral Token,
@@ -455,9 +459,16 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
         }
     }
 
+    // Remove front buffer
+    for (size_t i = 0; !dict.full() && !dict.get_buffer().empty(); ++i) {
+        AddStringToSearchTree(dict);
+        dict.AddEndSymbolToBuffer();
+    }
+
     // Buffer is one element longer than the search tree match
     while (!dict.empty()) {
         auto [buffer, look_ahead] = GetBufferAndLookAhead(dict);
+        std::println("Buffer: {}", buffer);
         this->search_tree_.RemoveString(look_ahead);
         out_range =
             PeformEncodigStep(dict, buffer, look_ahead, std::move(out_range));
