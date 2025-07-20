@@ -164,6 +164,11 @@ class Lz77Encoder<Token, AuxiliaryEncoder, Allocator>
     constexpr auto EncodeTokenOrMatch(FusedDictionaryAndBuffer<Token>& dict,
                                       SequenceView buffer, Match&& match,
                                       BitOutputRange auto&& output);
+
+    constexpr std::pair<SequenceView, SequenceView> GetBufferAndLookAhead(
+        FusedDictionaryAndBuffer<Token>& dict) const;
+
+    constexpr auto FlushData(BitOutputRange auto&& output);
 };
 
 }  // namespace koda

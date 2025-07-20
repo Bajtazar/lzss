@@ -385,4 +385,50 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
         std::move(symbol_token), std::forward<decltype(output)>(output));
 }
 
+template <std::integral Token,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+constexpr std::pair<
+    typename Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::SequenceView,
+    typename Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::SequenceView>
+Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::GetBufferAndLookAhead(
+    FusedDictionaryAndBuffer<Token>& dict) const {
+    auto buffer = dict.get_oldest_dictionary_full_match();
+    auto look_ahead = buffer;
+    look_ahead.remove_suffix(1);
+    return {buffer, look_ahead};
+}
+
+template <std::integral Token,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
+    BitOutputRange auto&& output) {
+    [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(
+        this->dictionary_and_buffer_))]];
+
+    auto& dict =
+        std::get<FusedDictionaryAndBuffer<Token>>(this->dictionary_and_buffer_);
+    auto out_range = AsSubrange(std::forward<decltype(output)>(output));
+
+    if (this->queued_token_) {
+        out_range = this->FlushQueue(out_range);
+        if (this->queued_token_) {
+            return out_range;
+        }
+    }
+
+    // Buffer is one element longer than the search tree match
+    while (!dict.empty()) {
+        auto [buffer, look_ahead] = GetBufferAndLookAhead(dict);
+        this->search_tree_.RemoveString(look_ahead);
+        out_range =
+            PeformEncodigStep(dict, buffer, look_ahead, std::move(out_range));
+        dict.AddEndSymbolToBuffer();
+    }
+    return out_range;
+}
+
 }  // namespace koda
