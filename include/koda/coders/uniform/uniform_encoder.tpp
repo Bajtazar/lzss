@@ -5,23 +5,26 @@
 namespace koda {
 
 template <std::integral Token>
-[[nodiscard]] consteval UniformEncoderTraits<
-    Token>::TokenMaxByteSize() noexcept {
+[[nodiscard]] /*static*/ consteval size_t
+UniformEncoderTraits<Token>::TokenMaxByteSize() noexcept {
     return sizeof(Token);
 }
 
 template <std::integral Token>
+template <size_t Size>
 /*static*/ constexpr uint8_t UniformEncoderTraits<Token>::PopulateBuffer(
     std::array<uint8_t, Size>& array, const Token& token) {
-    auto token_cpy = token;
-    for (size_t i = 0; i < TokenMaxByteSize(); ++i, token_cpy >>= CHAR_BIT) {
-        array[i] = token_cpy & 0xff;
+    size_t length = 0;
+    for (auto token_cpy = token; length != TokenMaxByteSize();
+         ++length, token_cpy >>= CHAR_BIT) {
+        array[length] = token_cpy & 0xff;
     }
+    return length * CHAR_BIT;
 }
 
 template <typename Token>
 constexpr float UniformEncoder<Token>::TokenBitSize(Token token) const {
-    return TokenMaxByteSize() * CHAR_BIT;
+    return Traits::TokenMaxByteSize() * CHAR_BIT;
 }
 
 template <typename Token>
@@ -77,8 +80,12 @@ constexpr auto UniformEncoder<Token>::FlushEmitter(auto output_iter,
 template <typename Token>
 constexpr void UniformEncoder<Token>::SetEmitter(const Token& token) {
     auto bit_count = Traits::PopulateBuffer(buffer_, token);
-    emitter_ = std::pair{BitIter{std::ranges::begin(buffer_)},
-                         BitIter{std::ranges::begin(buffer_), bit_count}};
+    auto shift = bit_count / CHAR_BIT;
+    emitter_ =
+        std::pair{BitIter{&buffer_[0]},
+                  BitIter{shift != buffer_.size() ? &buffer_[shift]
+                                                  : std::ranges::end(buffer_),
+                          static_cast<size_t>(bit_count % CHAR_BIT)}};
 }
 
 }  // namespace koda

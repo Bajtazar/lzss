@@ -12,7 +12,7 @@ struct UniformEncoderTraits;
 
 template <std::integral Token>
 struct UniformEncoderTraits<Token> {
-    [[nodiscard]] consteval size_t TokenMaxByteSize() noexcept;
+    [[nodiscard]] static consteval size_t TokenMaxByteSize() noexcept;
 
     template <size_t Size>
     static constexpr uint8_t PopulateBuffer(std::array<uint8_t, Size>& array,
@@ -24,8 +24,6 @@ class UniformEncoder : public EncoderInterface<Token, UniformEncoder<Token>> {
    public:
     using token_type = Token;
 
-    using Traits = TokenTraits<Token>;
-
     constexpr explicit UniformEncoder() noexcept = default;
 
     constexpr float TokenBitSize(Token token) const;
@@ -36,7 +34,7 @@ class UniformEncoder : public EncoderInterface<Token, UniformEncoder<Token>> {
     constexpr auto Flush(BitOutputRange auto&& output);
 
    private:
-    using BitIter = LittleEndianInputBitIter<const State*>;
+    using BitIter = LittleEndianInputBitIter<const uint8_t*>;
     using BitRange = std::pair<BitIter, BitIter>;
     using Traits = UniformEncoderTraits<Token>;
 
