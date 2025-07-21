@@ -46,6 +46,17 @@ class LzssIntermediateTokenDecoder
     PositionDecoder position_decoder_;
     LengthDecoder length_decoder_;
     State state_ = State::kBit;
+    PositionTp receiver_position_[0];
+
+    constexpr void ReceiveBit(bool bit);
+
+    constexpr void ReceiveToken(auto& input_iter, auto& input_sent,
+                                auto& output_iter);
+
+    constexpr void ReceivePosition(auto& input_iter, auto& input_sent);
+
+    constexpr void ReceiveLength(auto& input_iter, auto& input_sent,
+                                 auto& output_iter);
 
     static constexpr bool IsSymetric = TokenTraits::IsSymetric &&
                                        PositionTraits::IsSymetric &&
@@ -56,3 +67,5 @@ class LzssIntermediateTokenDecoder
 };
 
 }  // namespace koda
+
+#include <koda/coders/lzss/lzss_intermediate_token_decoder.tpp>
