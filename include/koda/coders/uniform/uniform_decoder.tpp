@@ -11,6 +11,30 @@ constexpr UniformDecoder<Token>::UniformDecoder(size_t token_bit_size) noexcept
       token_bit_size_{token_bit_size} {}
 
 template <std::integral Token>
+constexpr UniformDecoder<Token>::UniformDecoder(
+    const UniformDecoder&& other) noexcept
+    : token_bit_size_{other.token_bit_size_},
+      token_{other.token_[0]},
+      receiver_{
+          BitIter{std::ranges::begin(token_), other.receiver_.first.Position()},
+          token_bit_size_ == (sizeof(Token) * CHAR_BIT)
+              ? BitIter{std::ranges::end(token_)}
+              : BitIter{std::ranges::begin(token_)}} {}
+
+template <std::integral Token>
+constexpr UniformDecoder<Token>& UniformDecoder<Token>::operator=(
+    UniformDecoder&& other) {
+    token_bit_size_ = other.token_bit_size_;
+    token_[0] = other.token_[0];
+    receiver_ = {
+        BitIter{std::ranges::begin(token_), other.receiver_.first.Position()},
+        token_bit_size_ == (sizeof(Token) * CHAR_BIT)
+            ? BitIter{std::ranges::end(token_)}
+            : BitIter{std::ranges::begin(token_)}};
+    return *this;
+}
+
+template <std::integral Token>
 constexpr auto UniformDecoder<Token>::Decode(
     BitInputRange auto&& input,
     std::ranges::output_range<Token> auto&& output) {
@@ -50,13 +74,14 @@ constexpr auto UniformDecoder<Token>::SetReceiver(auto iter, const auto& sent) {
 
 template <std::integral Token>
 constexpr Token UniformDecoder<Token>::DecodeToken() {
+    receiver_.first.Flush();
     Token token = token_[0];
     token_[0] = {};
     receiver_ =
         std::pair{BitIter{std::ranges::begin(token_)},
-                  token_bit_size_ == (sizeof(Token) * CHAR_BIT)
-                      ? BitIter{std::ranges::end(token_)}
-                      : BitIter{std::ranges::begin(token_), token_bit_size_}};
+                  (token_bit_size_ == (sizeof(Token) * CHAR_BIT)
+                       ? BitIter{std::ranges::end(token_)}
+                       : BitIter{std::ranges::begin(token_), token_bit_size_})};
     return token;
 }
 
