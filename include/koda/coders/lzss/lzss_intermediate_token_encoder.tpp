@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 namespace koda {
 
 template <std::integral InputToken, UnsignedIntegral PositionTp,
@@ -162,6 +164,7 @@ constexpr void LzssIntermediateTokenEncoder<
         *output_iter++ = state_ == State::kDeferredBitFromMarker;
         state_ = State::kBit;
     } else {
+        // Invalid state in symetric encoding
         std::unreachable();
     }
 }

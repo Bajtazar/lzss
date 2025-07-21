@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 namespace koda {
 
 template <std::integral InputToken, UnsignedIntegral PositionTp,
