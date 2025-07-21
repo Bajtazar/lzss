@@ -99,10 +99,9 @@ BeginConstexprTest(Lz77EncoderAsymetricTest, EncodeTokensRepeatitions) {
 }
 EndConstexprTest;
 
-TEST(Lz77EncoderAsymetricTest, EncodeTokensShortDictionary) {
+BeginConstexprTest(Lz77EncoderAsymetricTest, EncodeTokensShortDictionary) {
     std::string input_sequence = "kot abcdefghijkelmouprst kot";
     std::vector expected_result = {
-
         koda::Lz77IntermediateToken<char>{'k', 0, 0},  // [kot| abcdefg]
         koda::Lz77IntermediateToken<char>{'o', 0, 0},  // [ot |abcdefgh]
         koda::Lz77IntermediateToken<char>{'t', 0, 0},  // [t a|bcdefghi]
@@ -110,7 +109,7 @@ TEST(Lz77EncoderAsymetricTest, EncodeTokensShortDictionary) {
         koda::Lz77IntermediateToken<char>{'a', 0, 0},  // [abc|defghijk]
         koda::Lz77IntermediateToken<char>{'b', 0, 0},  // [bcd|efghijke]
         koda::Lz77IntermediateToken<char>{'c', 0, 0},  // [cde|fghijkel]
-        koda::Lz77IntermediateToken<char>{'d', 0, 0},  // [def|ghijkelm] e=2,1
+        koda::Lz77IntermediateToken<char>{'d', 2, 1},  // [def|ghijkelm] e=2,1
         koda::Lz77IntermediateToken<char>{'f', 0, 0},  // [fg|hijkelmou]
         koda::Lz77IntermediateToken<char>{'g', 0, 0},  // [ghi|jkelmoup]
         koda::Lz77IntermediateToken<char>{'h', 0, 0},  // [hij|kelmoupr]
@@ -123,7 +122,7 @@ TEST(Lz77EncoderAsymetricTest, EncodeTokensShortDictionary) {
         koda::Lz77IntermediateToken<char>{'u', 0, 0},  // [upr|st kot]
         koda::Lz77IntermediateToken<char>{'p', 0, 0},  // [prs|t kot]
         koda::Lz77IntermediateToken<char>{'r', 0, 0},  // [rst| kot]
-        koda::Lz77IntermediateToken<char>{'s', 0, 0},  // [st |kot]      t=0,1
+        koda::Lz77IntermediateToken<char>{'s', 0, 1},  // [st |kot]      t=0,1
         koda::Lz77IntermediateToken<char>{' ', 0, 0},  // [ ko|t]
         koda::Lz77IntermediateToken<char>{'k', 0, 0},  // [kot]
         koda::Lz77IntermediateToken<char>{'o', 0, 0},  // [ot]
@@ -136,10 +135,10 @@ TEST(Lz77EncoderAsymetricTest, EncodeTokensShortDictionary) {
     encoder(input_sequence, target | koda::views::InsertFromBack |
                                 koda::views::LittleEndianOutput);
 
-    // ConstexprAssertEqual(encoder.auxiliary_encoder().tokens,
-    // expected_result); ConstexprAssertTrue(target.empty());
+    ConstexprAssertEqual(encoder.auxiliary_encoder().tokens, expected_result);
+    ConstexprAssertTrue(target.empty());
 }
-// EndConstexprTest;
+EndConstexprTest;
 
 // BeginConstexprTest(Lz77EncoderAsymetricTest, EncodeRepeatingSequence) {
 //     std::string input_sequence = "aaaaaaa";
