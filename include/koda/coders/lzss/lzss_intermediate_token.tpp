@@ -29,10 +29,9 @@ constexpr LzssIntermediateToken<InputToken, PositionTp, LengthTp>::
 
 template <std::integral InputToken, UnsignedIntegral PositionTp,
           UnsignedIntegral LengthTp>
-constexpr LzssIntermediateToken<InputToken, PositionTp,
-                                LengthTp>&
-LzssIntermediateToken<InputToken, PositionTp,
-                                LengthTp>::operator=(const LzssIntermediateToken& other) noexcept {
+constexpr LzssIntermediateToken<InputToken, PositionTp, LengthTp>&
+LzssIntermediateToken<InputToken, PositionTp, LengthTp>::operator=(
+    const LzssIntermediateToken& other) noexcept {
     Destroy();
     if ((holds_distance_match_pair_ = other.holds_distance_match_pair_)) {
         repeatition_marker_ = other.repeatition_marker_;

@@ -101,7 +101,7 @@ constexpr void LzssIntermediateTokenDecoder<
     input_sent = std::ranges::end(in);
 
     if (!out.empty()) {
-        ++output_iter++ = token_type{std::move(token[0])};
+        *output_iter++ = token_type{std::move(token[0])};
         state_ = State::kBit;
     }
 }
@@ -143,7 +143,7 @@ constexpr void LzssIntermediateTokenDecoder<
     input_sent = std::ranges::end(in);
 
     if (!out.empty()) {
-        ++output_iter++ = token_type{receiver_position_[0], length[0]};
+        *output_iter++ = token_type{receiver_position_[0], length[0]};
         state_ = State::kBit;
     }
 }
