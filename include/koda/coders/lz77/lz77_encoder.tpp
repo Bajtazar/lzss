@@ -273,9 +273,8 @@ constexpr Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Lz77Encoder(
     size_t dictionary_size, size_t look_ahead_size,
     AuxiliaryEncoder auxiliary_encoder,
     std::optional<size_t> cyclic_buffer_size, const Allocator& allocator)
-    : Base{dictionary_size + 1, look_ahead_size,
-           std::move(auxiliary_encoder), std::move(cyclic_buffer_size),
-           allocator} {}
+    : Base{dictionary_size + 1, look_ahead_size, std::move(auxiliary_encoder),
+           std::move(cyclic_buffer_size), allocator} {}
 
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
@@ -285,8 +284,32 @@ constexpr Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Lz77Encoder(
     size_t dictionary_size, size_t look_ahead_size,
     std::optional<size_t> cyclic_buffer_size, const Allocator& allocator)
     requires std::is_default_constructible_v<AuxiliaryEncoder>
-    : Base{dictionary_size + 1, look_ahead_size,
-           std::move(cyclic_buffer_size), allocator} {}
+    : Base{dictionary_size + 1, look_ahead_size, std::move(cyclic_buffer_size),
+           allocator} {}
+
+template <std::integral Token,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
+          typename Allocator>
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::InitializeDict(
+    InputRange<Token> auto&& input) {
+    [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(
+        this->dictionary_and_buffer_))]];
+
+    auto iter = std::ranges::begin(input);
+
+    auto& dict =
+        std::get<FusedDictionaryAndBuffer<Token>>(this->dictionary_and_buffer_);
+
+    dict.AddSymbolToBuffer(*iter++);
+    // now dict contains only one element - the one that will be used to search
+    // for the repeatitions so remove it!
+    auto buffer = dict.get_oldest_dictionary_full_match();
+    buffer.remove_suffix(1);
+    this->search_tree_.RemoveString(buffer);
+
+    return std::ranges::subrange{std::move(iter), std::ranges::end(input)};
+}
 
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
@@ -296,7 +319,8 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Encode(
     InputRange<Token> auto&& input, BitOutputRange auto&& output) {
     if (std::holds_alternative<typename Base::FusedDictAndBufferInfo>(
             this->dictionary_and_buffer_)) {
-        return EncodeData(this->InitializeBuffer(input), output);
+        return EncodeData(InitializeDict(this->InitializeBuffer(input)),
+                          output);
     }
     return EncodeData(input, output);
 }
@@ -327,11 +351,11 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
         PopulateDictionary(std::forward<decltype(input)>(input), dict);
 
     for (; (input_iter != input_sent) && !out_range.empty(); ++input_iter) {
-        auto [buffer, look_ahead] = GetBufferAndLookAhead(dict);
+        auto [token, look_ahead] = GetTokenAndLookAhead(dict);
         this->search_tree_.RemoveString(look_ahead);
         AddStringToSearchTree(dict);
-        out_range =
-            PeformEncodigStep(dict, buffer, look_ahead, std::move(out_range));
+        out_range = PeformEncodigStep(dict, token, look_ahead,
+                                      std::move(out_range), false);
 
         dict.AddSymbolToBuffer(*input_iter);
     }
@@ -365,12 +389,12 @@ template <std::integral Token,
     requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
 constexpr auto
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
-    FusedDictionaryAndBuffer<Token>& dict, SequenceView buffer,
-    SequenceView look_ahead, BitOutputRange auto&& output) {
+    FusedDictionaryAndBuffer<Token>& dict, const Token& token,
+    SequenceView look_ahead, BitOutputRange auto&& output, bool tail) {
     if (!this->match_count_) {
         auto new_output = EncodeTokenOrMatch(
-            dict, buffer, this->search_tree_.FindMatch(look_ahead),
-            std::move(output));
+            dict, token, this->search_tree_.FindMatch(look_ahead),
+            std::move(output), tail);
         return new_output;
     }
 
@@ -384,24 +408,21 @@ template <std::integral Token,
     requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
 constexpr auto
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
-    FusedDictionaryAndBuffer<Token>& dict, SequenceView buffer, Match&& match,
-    BitOutputRange auto&& output) {
-    // buffer is one symbol longer than the actual look-ahead buffer
-    // calculate the match end position since decoding will be performed from
-    // the last symbol to the first one
-    auto match_end_position = match.match_position + match.match_length;
+    FusedDictionaryAndBuffer<Token>& dict, const Token& token, Match&& match,
+    BitOutputRange auto&& output, bool tail) {
     match.match_position =
-        match_end_position >= dict.dictionary_size() || !match.match_length
-            ? 0
-            : dict.dictionary_size() - match_end_position - 1;
-    match.match_length = match_end_position >= dict.dictionary_size()
-                             ? dict.dictionary_size() - match.match_position - 1
-                             : match.match_length;
+        dict.dictionary_size() - (match.match_position + match.match_length);
+    if (match.match_position >= dict.dictionary_size()) {
+        match.match_length = match.match_position - dict.dictionary_size();
+        match.match_position = 0;
+    }
+    if (tail && (match.match_length &&
+                 dict.dictionary_size() - this->search_tree_.size() == 2)) {
+        match.match_position -= 2;
+    }
 
-    auto suffix_token = buffer[match.match_length];
     IMToken symbol_token{
-        suffix_token,
-        static_cast<typename IMToken::Position>(match.match_position),
+        token, static_cast<typename IMToken::Position>(match.match_position),
         static_cast<typename IMToken::Length>(match.match_length)};
 
     this->match_count_ = match.match_length;
@@ -413,15 +434,14 @@ template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
     requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
-constexpr std::pair<
-    typename Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::SequenceView,
-    typename Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::SequenceView>
-Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::GetBufferAndLookAhead(
+constexpr std::pair<const Token&, typename Lz77Encoder<Token, AuxiliaryEncoder,
+                                                       Allocator>::SequenceView>
+Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::GetTokenAndLookAhead(
     FusedDictionaryAndBuffer<Token>& dict) const {
     auto buffer = dict.get_oldest_dictionary_full_match();
     auto look_ahead = buffer;
-    look_ahead.remove_suffix(1);
-    return {buffer, look_ahead};
+    look_ahead.remove_prefix(1);
+    return {buffer[0], look_ahead};
 }
 
 template <std::integral Token,
@@ -432,9 +452,11 @@ constexpr void
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::AddStringToSearchTree(
     FusedDictionaryAndBuffer<Token>& dict) {
     auto buffer = dict.get_buffer();
-    this->search_tree_.AddString(
-        {buffer.begin(),
-         std::next(buffer.begin(), this->search_tree_.string_size())});
+    if (!buffer.empty()) {
+        this->search_tree_.AddString(
+            {buffer.begin(),
+             std::next(buffer.begin(), this->search_tree_.string_size())});
+    }
 }
 
 template <std::integral Token,
@@ -463,12 +485,12 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
         dict.AddEndSymbolToBuffer();
     }
 
-    // Buffer is one element longer than the search tree match
     while (!dict.empty()) {
-        auto [buffer, look_ahead] = GetBufferAndLookAhead(dict);
+        auto [token, look_ahead] = GetTokenAndLookAhead(dict);
+        AddStringToSearchTree(dict);
         this->search_tree_.RemoveString(look_ahead);
-        out_range =
-            PeformEncodigStep(dict, buffer, look_ahead, std::move(out_range));
+        out_range = PeformEncodigStep(dict, token, look_ahead,
+                                      std::move(out_range), true);
         dict.AddEndSymbolToBuffer();
     }
     return out_range;

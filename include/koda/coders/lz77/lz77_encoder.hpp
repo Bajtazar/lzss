@@ -160,6 +160,8 @@ class Lz77Encoder<Token, AuxiliaryEncoder, Allocator>
     using Match = Base::Match;
     using AuxTraits = Base::AuxTraits;
 
+    constexpr auto InitializeDict(InputRange<Token> auto&& input);
+
     constexpr auto EncodeData(InputRange<Token> auto&& input,
                               BitOutputRange auto&& output);
 
@@ -167,15 +169,15 @@ class Lz77Encoder<Token, AuxiliaryEncoder, Allocator>
                                       FusedDictionaryAndBuffer<Token>& dict);
 
     constexpr auto PeformEncodigStep(FusedDictionaryAndBuffer<Token>& dict,
-                                     SequenceView buffer,
+                                     const Token& token,
                                      SequenceView look_ahead,
-                                     BitOutputRange auto&& output);
+                                     BitOutputRange auto&& output, bool tail);
 
     constexpr auto EncodeTokenOrMatch(FusedDictionaryAndBuffer<Token>& dict,
-                                      SequenceView buffer, Match&& match,
-                                      BitOutputRange auto&& output);
+                                      const Token& token, Match&& match,
+                                      BitOutputRange auto&& output, bool tail);
 
-    constexpr std::pair<SequenceView, SequenceView> GetBufferAndLookAhead(
+    constexpr std::pair<const Token&, SequenceView> GetTokenAndLookAhead(
         FusedDictionaryAndBuffer<Token>& dict) const;
 
     constexpr void AddStringToSearchTree(FusedDictionaryAndBuffer<Token>& dict);

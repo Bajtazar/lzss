@@ -59,11 +59,17 @@ template <typename Tp, typename AllocatorTp>
 }
 
 template <typename Tp, typename AllocatorTp>
+[[nodiscard]] constexpr size_t SearchBinaryTree<Tp, AllocatorTp>::size()
+    const noexcept {
+    return buffer_start_index_ - dictionary_start_index_;
+}
+
+template <typename Tp, typename AllocatorTp>
 constexpr void SearchBinaryTree<Tp, AllocatorTp>::UpdateNodeReference(
     Node* node, const ValueType* key) {
     ++node->value.ref_counter;
     node->value.key = key;
-    node->value.insertion_index = buffer_start_index_ - dictionary_start_index_;
+    node->value.insertion_index = buffer_start_index_;
 }
 
 template <typename Tp, typename AllocatorTp>

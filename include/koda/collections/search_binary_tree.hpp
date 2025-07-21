@@ -63,6 +63,8 @@ class SearchBinaryTree
 
     [[nodiscard]] constexpr size_t string_size() const noexcept;
 
+    [[nodiscard]] constexpr size_t size() const noexcept;
+
     constexpr ~SearchBinaryTree() override = default;
 
    private:
