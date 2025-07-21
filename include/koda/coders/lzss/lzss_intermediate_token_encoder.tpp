@@ -141,7 +141,7 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
 constexpr void LzssIntermediateTokenEncoder<
     InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
     LengthEncoder>::EmitLength(auto& output_iter, auto& output_sent) {
-    auto [in, out] = position_encoder_.Encode(
+    auto [in, out] = length_encoder_.Encode(
         std::ranges::subrange{std::ranges::begin(emitter_.length),
                               std::ranges::end(emitter_.length)},
         std::ranges::subrange{output_iter, output_sent});
