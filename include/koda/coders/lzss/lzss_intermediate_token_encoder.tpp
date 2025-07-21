@@ -1,0 +1,114 @@
+#pragma once
+
+namespace koda {
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp, SizeAwareEncoder<InputToken> TokenEncoder,
+          SizeAwareEncoder<PositionTp> PositionEncoder,
+          SizeAwareEncoder<LengthTp> LengthEncoder>
+constexpr LzssIntermediateTokenEncoder<
+    InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
+    LengthEncoder>::LzssIntermediateTokenEncoder(TokenEncoder token_encoder,
+                                                 PositionEncoder
+                                                     position_encoder,
+                                                 LengthEncoder length_encoder)
+    : token_encoder_{std::move(token_encoder)},
+      position_encoder_{std::move(position_encoder)},
+      length_encoder_{std::move(length_encoder)} {}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp, SizeAwareEncoder<InputToken> TokenEncoder,
+          SizeAwareEncoder<PositionTp> PositionEncoder,
+          SizeAwareEncoder<LengthTp> LengthEncoder>
+constexpr float LzssIntermediateTokenEncoder<
+    InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
+    LengthEncoder>::TokenBitSize(const token_type& token) const {
+    if (auto symbol = token.get_symbol()) {
+        return 1 + token_encoder_.TokenBitSize(*symbol);
+    }
+    auto [pos, len] = *token.get_marker();
+    return 1 + position_encoder_.TokenBitSize(pos) +
+           length_encoder_.TokenBitSize(len);
+}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp, SizeAwareEncoder<InputToken> TokenEncoder,
+          SizeAwareEncoder<PositionTp> PositionEncoder,
+          SizeAwareEncoder<LengthTp> LengthEncoder>
+constexpr auto LzssIntermediateTokenEncoder<
+    InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
+    LengthEncoder>::Encode(InputRange<Token> auto&& input,
+                           BitOutputRange auto&& output) {
+    auto output_iter = std::ranges::begin(output);
+    auto output_sent = std::ranges::end(output);
+    auto input_iter = std::ranges::begin(input);
+    auto input_sent = std::ranges::end(input);
+
+    while ((input_iter != input_sent) && (output_iter != output_sent)) {
+        // std::tie doesn't work on structs
+        switch (state_) {
+            case State::kBit:
+                EmitBit(*input_iter++, output_iter);
+                break;
+            case State::kToken:
+                EmitToken(output_iter, output_sent);
+                break;
+            case State::kPosition:
+                return position_encoder_.Encode(input_range, output_range);
+            case State::kLength:
+                return length_encoder_.Encode(input_range, output_range);
+        }
+    }
+
+    return CoderResult{std::move(input_iter), std::move(input_sent),
+                       std::move(output_range)};
+}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp, SizeAwareEncoder<InputToken> TokenEncoder,
+          SizeAwareEncoder<PositionTp> PositionEncoder,
+          SizeAwareEncoder<LengthTp> LengthEncoder>
+constexpr void LzssIntermediateTokenEncoder<
+    InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
+    LengthEncoder>::EmitBit(auto& token, auto& output_iter) {
+    if (auto symbol = token.get_symbol()) {
+        *output_iter++ = 0;
+        state_ = State::kToken;
+        emitter_.symbol[0] = *symbol;
+    } else {
+        *output_iter++ = 1;
+        state = State::kPosition;
+        emitter_.marker[0] = *token.get_marker();
+    }
+}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp, SizeAwareEncoder<InputToken> TokenEncoder,
+          SizeAwareEncoder<PositionTp> PositionEncoder,
+          SizeAwareEncoder<LengthTp> LengthEncoder>
+constexpr void LzssIntermediateTokenEncoder<
+    InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
+    LengthEncoder>::EmitToken(auto& output_iter, auto& output_sent) {
+    auto [in, out] = token_encoder_.Encode(
+        std::ranges::subrange{std::ranges::begin(emitter_.symbol),
+                              std::ranges::end(emitter_.symbol)},
+        std::ranges::subrange{output_iter, output_sent});
+
+    output_iter = std::ranges::begin(out);
+    output_sent = std::ranges::end(out);
+
+    if (in.empty()) {
+        state_ = State::kBit;
+        emitter_.symbol->~InputToken();
+    }
+}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp, SizeAwareEncoder<InputToken> TokenEncoder,
+          SizeAwareEncoder<PositionTp> PositionEncoder,
+          SizeAwareEncoder<LengthTp> LengthEncoder>
+constexpr auto LzssIntermediateTokenEncoder<
+    InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
+    LengthEncoder>::Flush(BitOutputRange auto&& output);
+
+}  // namespace koda

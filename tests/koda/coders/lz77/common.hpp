@@ -70,7 +70,7 @@ class Lz77DummyAuxDecoderBase
 
 }  // namespace details
 
-template <typename Tp, bool IsAsymetrical>
+template <typename Tp, bool IsAsymetric>
 struct Lz77DummyAuxEncoder;
 
 template <typename Tp>
@@ -90,7 +90,7 @@ struct Lz77DummyAuxEncoder<Tp, true>
     using token_type = Tp;
 };
 
-template <typename Tp, bool IsAsymetrical>
+template <typename Tp, bool IsAsymetric>
 struct Lz77DummyAuxDecoder;
 
 template <typename Tp>
