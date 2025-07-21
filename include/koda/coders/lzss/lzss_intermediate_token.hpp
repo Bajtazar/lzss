@@ -1,10 +1,10 @@
 #pragma once
 
-#include <koda/coders/token_traits.hpp>
 #include <koda/utils/concepts.hpp>
 
 #include <cinttypes>
 #include <cstddef>
+#include <format>
 #include <optional>
 
 namespace koda {
@@ -82,5 +82,13 @@ struct TokenTraits<LzssIntermediateToken<InputToken, PositionTp, LengthTp>> {
 };
 
 }  // namespace koda
+
+template <typename Token, typename Position, typename Length>
+struct std::formatter<koda::LzssIntermediateToken<Token, Position, Length>> {
+    constexpr auto parse(std::format_parse_context& ctx);
+
+    auto format(const koda::LzssIntermediateToken<Token, Position, Length>& obj,
+                std::format_context& ctx) const;
+};
 
 #include <koda/coders/lzss/lzss_intermediate_token.tpp>

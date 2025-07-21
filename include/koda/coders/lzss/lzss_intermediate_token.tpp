@@ -196,3 +196,27 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
 }
 
 }  // namespace koda
+
+namespace std {
+
+template <typename Token, typename Position, typename Length>
+constexpr auto
+formatter<koda::LzssIntermediateToken<Token, Position, Length>>::parse(
+    std::format_parse_context& ctx) {
+    return ctx.begin();
+}
+
+template <typename Token, typename Position, typename Length>
+auto formatter<koda::LzssIntermediateToken<Token, Position, Length>>::format(
+    const koda::LzssIntermediateToken<Token, Position, Length>& obj,
+    std::format_context& ctx) const {
+    if (auto symbol = obj.get_symbol()) {
+        return std::format_to(ctx.out(), "LzssIntermediateToken(symbol={})",
+                              *symbol);
+    }
+    const auto [pos, len] = *obj.get_marker();
+    return std::format_to(
+        ctx.out(), "LzssIntermediateToken(position={}, length={})", pos, len);
+}
+
+}  // namespace std

@@ -55,11 +55,11 @@ struct TokenTraits<Lz77IntermediateToken<InputToken, PositionTp, LengthTp>> {
 
 }  // namespace koda
 
-template <typename Token>
-struct std::formatter<koda::Lz77IntermediateToken<Token>> {
+template <typename Token, typename Position, typename Length>
+struct std::formatter<koda::Lz77IntermediateToken<Token, Position, Length>> {
     constexpr auto parse(std::format_parse_context& ctx);
 
-    auto format(const koda::Lz77IntermediateToken<Token>& obj,
+    auto format(const koda::Lz77IntermediateToken<Token, Position, Length>& obj,
                 std::format_context& ctx) const;
 };
 
