@@ -16,9 +16,11 @@ struct CoderTraits {
         };
 
     static constexpr bool IsAsymetric =
-        (requires {
-            { typename CoderTp::asymetrical } -> std::same_as<void>;
-        }) || (requires { CoderTp::IsAsymetric; } && CoderTp::IsAsymetric);
+        (requires { typename CoderTp::asymetrical; }) || (requires {
+            {
+                std::integral_constant<bool, CoderTp::IsAsymetric>{}
+            } -> std::same_as<std::true_type>;
+        });
 
     static constexpr bool IsSymetric = !IsAsymetric;
 };
