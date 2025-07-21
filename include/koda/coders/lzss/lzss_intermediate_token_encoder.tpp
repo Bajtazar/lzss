@@ -39,7 +39,7 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
           SizeAwareEncoder<LengthTp> LengthEncoder>
 constexpr auto LzssIntermediateTokenEncoder<
     InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
-    LengthEncoder>::Encode(InputRange<Token> auto&& input,
+    LengthEncoder>::Encode(InputRange<token_type> auto&& input,
                            BitOutputRange auto&& output) {
     auto output_iter = std::ranges::begin(output);
     auto output_sent = std::ranges::end(output);
@@ -68,7 +68,7 @@ constexpr auto LzssIntermediateTokenEncoder<
     }
 
     return CoderResult{std::move(input_iter), std::move(input_sent),
-                       std::move(output_range)};
+                       std::move(output_iter), std::move(output_sent)};
 }
 
 template <std::integral InputToken, UnsignedIntegral PositionTp,
@@ -77,7 +77,7 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
           SizeAwareEncoder<LengthTp> LengthEncoder>
 constexpr void LzssIntermediateTokenEncoder<
     InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
-    LengthEncoder>::EmitBit(auto& token, auto& output_iter) {
+    LengthEncoder>::EmitBit(const token_type& token, auto& output_iter) {
     if constexpr (IsSymetric) {
         *output_iter++ = token.holds_marker();
     }
@@ -86,7 +86,8 @@ constexpr void LzssIntermediateTokenEncoder<
         state_ = State::kToken;
         emitter_.symbol[0] = *symbol;
     } else {
-        state = IsSymetric ? State::kPosition : State::kLength;
+        state_ = IsSymetric ? State::kPosition : State::kLength;
+        auto [pos, len] = *token.get_marker();
         emitter_.marker.position[0] = pos;
         emitter_.marker.length[0] = len;
     }

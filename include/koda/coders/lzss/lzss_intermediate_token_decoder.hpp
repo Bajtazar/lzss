@@ -12,9 +12,9 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
 class LzssIntermediateTokenDecoder
     : public DecoderInterface<
           LzssIntermediateToken<InputToken, PositionTp, LengthTp>,
-          DecoderInterface<LzssIntermediateTokenDecoder<
-              InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
-              LengthDecoder>>> {
+          LzssIntermediateTokenDecoder<InputToken, PositionTp, LengthTp,
+                                       TokenDecoder, PositionDecoder,
+                                       LengthDecoder>> {
     using TokenTraits = CoderTraits<TokenDecoder>;
     using PositionTraits = CoderTraits<PositionDecoder>;
     using LengthTraits = CoderTraits<LengthDecoder>;
@@ -26,13 +26,13 @@ class LzssIntermediateTokenDecoder
                                         PositionTraits::IsAsymetric &&
                                         LengthTraits::IsAsymetric;
 
-    constexpr explicit LzssIntermediateTokenDeoder(
+    constexpr explicit LzssIntermediateTokenDecoder(
         TokenDecoder token_decoder, PositionDecoder position_decoder,
         LengthDecoder length_decoder);
     constexpr auto Initialize(BitInputRange auto&& input);
 
     constexpr auto Decode(BitInputRange auto&& input,
-                          std::ranges::output_range<Token> auto&& output);
+                          std::ranges::output_range<token_type> auto&& output);
 
    private:
     enum class State : uint8_t {

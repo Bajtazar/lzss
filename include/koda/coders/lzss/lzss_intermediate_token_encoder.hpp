@@ -16,10 +16,10 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
           SizeAwareEncoder<LengthTp> LengthEncoder>
 class LzssIntermediateTokenEncoder
     : public EncoderInterface<
-          LzssIntermediateTokenEncoder<InputToken, PositionTp, LengthTp>,
-          EncoderInterface<LzssIntermediateTokenEncoder<
-              InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
-              LengthEncoder>>> {
+          LzssIntermediateToken<InputToken, PositionTp, LengthTp>,
+          LzssIntermediateTokenEncoder<InputToken, PositionTp, LengthTp,
+                                       TokenEncoder, PositionEncoder,
+                                       LengthEncoder>> {
     using TokenTraits = CoderTraits<TokenEncoder>;
     using PositionTraits = CoderTraits<PositionEncoder>;
     using LengthTraits = CoderTraits<LengthEncoder>;
@@ -37,7 +37,7 @@ class LzssIntermediateTokenEncoder
 
     constexpr float TokenBitSize(const token_type& token) const;
 
-    constexpr auto Encode(InputRange<Token> auto&& input,
+    constexpr auto Encode(InputRange<token_type> auto&& input,
                           BitOutputRange auto&& output);
 
     constexpr auto Flush(BitOutputRange auto&& output);
@@ -73,7 +73,7 @@ class LzssIntermediateTokenEncoder
         };
     } emitter_;
 
-    constexpr void EmitBit(auto& token, auto& output_iter);
+    constexpr void EmitBit(const token_type& token, auto& output_iter);
 
     constexpr void EmitToken(auto& output_iter, auto& output_sent);
 
