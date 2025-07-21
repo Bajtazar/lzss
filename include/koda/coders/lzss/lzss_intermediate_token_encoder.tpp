@@ -54,9 +54,11 @@ constexpr auto LzssIntermediateTokenEncoder<
                 EmitToken(output_iter, output_sent);
                 break;
             case State::kPosition:
-                return position_encoder_.Encode(input_range, output_range);
+                EmitPosition(output_iter, output_sent);
+                break;
             case State::kLength:
-                return length_encoder_.Encode(input_range, output_range);
+                EmitLength(output_iter, output_sent);
+                break;
         }
     }
 
@@ -78,7 +80,9 @@ constexpr void LzssIntermediateTokenEncoder<
     } else {
         *output_iter++ = 1;
         state = State::kPosition;
-        emitter_.marker[0] = *token.get_marker();
+        auto [pos, len] = *token.get_marker();
+        emitter_.marker.position[0] = pos;
+        emitter_.marker.length[0] = len;
     }
 }
 
@@ -100,6 +104,46 @@ constexpr void LzssIntermediateTokenEncoder<
     if (in.empty()) {
         state_ = State::kBit;
         emitter_.symbol->~InputToken();
+    }
+}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp, SizeAwareEncoder<InputToken> TokenEncoder,
+          SizeAwareEncoder<PositionTp> PositionEncoder,
+          SizeAwareEncoder<LengthTp> LengthEncoder>
+constexpr void LzssIntermediateTokenEncoder<
+    InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
+    LengthEncoder>::EmitPosition(auto& output_iter, auto& output_sent) {
+    auto [in, out] = position_encoder_.Encode(
+        std::ranges::subrange{std::ranges::begin(emitter_.position),
+                              std::ranges::end(emitter_.position)},
+        std::ranges::subrange{output_iter, output_sent});
+
+    output_iter = std::ranges::begin(out);
+    output_sent = std::ranges::end(out);
+
+    if (in.empty()) {
+        state_ = State::kLength;
+    }
+}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp, SizeAwareEncoder<InputToken> TokenEncoder,
+          SizeAwareEncoder<PositionTp> PositionEncoder,
+          SizeAwareEncoder<LengthTp> LengthEncoder>
+constexpr void LzssIntermediateTokenEncoder<
+    InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
+    LengthEncoder>::EmitLength(auto& output_iter, auto& output_sent) {
+    auto [in, out] = position_encoder_.Encode(
+        std::ranges::subrange{std::ranges::begin(emitter_.length),
+                              std::ranges::end(emitter_.length)},
+        std::ranges::subrange{output_iter, output_sent});
+
+    output_iter = std::ranges::begin(out);
+    output_sent = std::ranges::end(out);
+
+    if (in.empty()) {
+        state_ = State::kBit;
     }
 }
 

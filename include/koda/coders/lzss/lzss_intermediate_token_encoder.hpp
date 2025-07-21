@@ -43,8 +43,6 @@ class LzssIntermediateTokenEncoder
     constexpr auto Flush(BitOutputRange auto&& output);
 
    private:
-    using Marker = token_type::RepeatitionMarker;
-
     enum class State : uint8_t {
         kBit = 0,
         kToken = 1,
@@ -58,12 +56,19 @@ class LzssIntermediateTokenEncoder
     State state_ = State::kBit;
     union {
         InputToken symbol[1];
-        Marker marker[1];
+        struct {
+            PositionEncoder position[1];
+            LengthEncoder length[1];
+        };
     } emitter_;
 
     constexpr void EmitBit(auto& token, auto& output_iter);
 
     constexpr void EmitToken(auto& output_iter, auto& output_sent);
+
+    constexpr void EmitPosition(auto& output_iter, auto& output_sent);
+
+    constexpr void EmitLength(auto& output_iter, auto& output_sent);
 
     static constexpr bool IsSymetric = TokenTraits::IsSymetric &&
                                        PositionTraits::IsSymetric &&
