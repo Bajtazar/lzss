@@ -46,16 +46,14 @@ constexpr auto Lz77IntermediateTokenEncoder<
         auto [new_input, new_output] = [&] {
             switch (state_) {
                 case State::kToken:
-                    state_ = State::PositionTp;
                     return token_encoder_.Encode(input_range, output_range);
                 case State::kPosition:
-                    state_ = State::LengthTp;
                     return position_encoder_.Encode(input_range, output_range);
-                case State::kToken:
-                    state_ = State::LengthTp;
+                case State::kLength:
                     return length_encoder_.Encode(input_range, output_range);
             }
         }();
+        state_ = kNextState[state_];
         input_range = std::move(new_input);
         output_range = std::move(new_output);
     }
@@ -72,21 +70,19 @@ constexpr auto Lz77IntermediateTokenEncoder<
     LengthEncoder>::Flush(BitOutputRange auto&& output) {
     auto output_range = AsSubrange(std::forward<decltype(output)>(output));
 
-    while (!input_range.empty() && !output_range.empty()) {
+    while (!output_range.empty()) {
         // std::tie doesn't work on structs
         output_range = [&] {
             switch (state_) {
                 case State::kToken:
-                    state_ = State::PositionTp;
                     return token_encoder_.Flush(output_range);
                 case State::kPosition:
-                    state_ = State::LengthTp;
                     return position_encoder_.Flush(output_range);
                 case State::kToken:
-                    state_ = State::LengthTp;
                     return length_encoder_.Flush(output_range);
             }
         }();
+        state_ = kNextState[state_];
     }
 
     return output_range;

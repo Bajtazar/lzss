@@ -4,6 +4,9 @@
 #include <koda/coders/coder_traits.hpp>
 #include <koda/coders/lz77/lz77_intermediate_token.hpp>
 
+#include <array>
+#include <cinttypes>
+
 namespace koda {
 
 template <std::integral InputToken, UnsignedIntegral PositionTp,
@@ -29,14 +32,26 @@ class Lz77IntermediateTokenDecoder
     using PositionTraits = CoderTraits<PositionDecoder>;
     using LengthTraits = CoderTraits<LengthDecoder>;
 
-    enum class State { kToken, kPosition, kLength };
+    enum class State : uint8_t { kToken = 0, kPosition = 1, kLength = 2 };
 
     TokenDecoder token_decoder_;
     PositionDecoder position_decoder_;
     LengthDecoder length_decoder_;
-    State state_;
+    State state_ = IsSymetric ? kToken : kLength;
 
-    static consteval State InitState();
+    static constexpr bool IsSymetric = TokenTraits::IsSymetrical &&
+                                       PositionTraits::IsSymetrical &&
+                                       LengthTraits::IsSymetrical;
+    static constexpr bool IsAsymetric = TokenTraits::IsAsymetrical &&
+                                        PositionTraits::IsAsymetrical &&
+                                        LengthTraits::IsAsymetrical;
+
+    static constexpr std::array<State, 3> kNextState{
+        IsSymetric ? {kPosition, kLength, kToken}
+                   : {kPosition, kToken, kLength}};
+
+    static_assert(IsSymetric || IsAsymetric,
+                  "All of the decoders has to be either symetric or asymetric");
 };
 
 }  // namespace koda
