@@ -140,21 +140,19 @@ BeginConstexprTest(Lz77EncoderAsymetricTest, EncodeTokensShortDictionary) {
 }
 EndConstexprTest;
 
-// BeginConstexprTest(Lz77EncoderAsymetricTest, EncodeRepeatingSequence) {
-//     std::string input_sequence = "aaaaaaa";
-//     std::vector<uint8_t> target;
-//     std::vector expected_result = {
-//         koda::Lz77IntermediateToken<char>{'a', 0, 0},
-//         koda::Lz77IntermediateToken<char>{'a', 0, 3},
-//         koda::Lz77IntermediateToken<char>{'a', 2, 1}};
+BeginConstexprTest(Lz77EncoderAsymetricTest, EncodeRepeatingSequence) {
+    std::string input_sequence = "aaaaaaa";
+    std::vector<uint8_t> target;
+    std::vector expected_result = {
+        koda::Lz77IntermediateToken<char>{'a', 0, 3},
+        koda::Lz77IntermediateToken<char>{'a', 0, 1},
+        koda::Lz77IntermediateToken<char>{'a', 0, 0}};
 
-//     koda::Lz77Encoder<char,
-//                       Lz77DummyAuxEncoder<koda::Lz77IntermediateToken<char>>>
-//         encoder{8, 3};
-//     encoder(input_sequence, target | koda::views::InsertFromBack |
-//                                 koda::views::LittleEndianOutput);
+    koda::Lz77Encoder<char, DummyEncoder> encoder{8, 3};
+    encoder(input_sequence, target | koda::views::InsertFromBack |
+                                koda::views::LittleEndianOutput);
 
-//     ConstexprAssertEqual(encoder.auxiliary_encoder().tokens,
-//     expected_result); ConstexprAssertTrue(target.empty());
-// }
-// EndConstexprTest;
+    ConstexprAssertEqual(encoder.auxiliary_encoder().tokens, expected_result);
+    ConstexprAssertTrue(target.empty());
+}
+EndConstexprTest;
