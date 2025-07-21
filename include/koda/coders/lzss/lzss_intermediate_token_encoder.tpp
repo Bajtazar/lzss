@@ -45,7 +45,6 @@ constexpr auto LzssIntermediateTokenEncoder<
     auto input_sent = std::ranges::end(input);
 
     while ((input_iter != input_sent) && (output_iter != output_sent)) {
-        // std::tie doesn't work on structs
         switch (state_) {
             case State::kBit:
                 EmitBit(*input_iter++, output_iter);
@@ -103,7 +102,7 @@ constexpr void LzssIntermediateTokenEncoder<
 
     if (in.empty()) {
         state_ = State::kBit;
-        emitter_.symbol->~InputToken();
+        emitter_.symbol[0].~InputToken();
     }
 }
 
@@ -153,6 +152,23 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
           SizeAwareEncoder<LengthTp> LengthEncoder>
 constexpr auto LzssIntermediateTokenEncoder<
     InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
-    LengthEncoder>::Flush(BitOutputRange auto&& output);
+    LengthEncoder>::Flush(BitOutputRange auto&& output) {
+    auto output_iter = std::ranges::begin(output);
+    auto output_sent = std::ranges::end(output);
+
+    auto flush = [&](auto& encoder) {
+        auto res =
+            encoder.Flush(std::ranges::subrange{output_iter, output_sent});
+        output_iter = std::ranges::begin(res);
+        output_sent = std::ranges::end(res);
+    };
+
+    flush(token_encoder_);
+    flush(position_encoder_);
+    flush(length_encoder_);
+
+    return std::ranges::subrange{std::move(output_iter),
+                                 std::move(output_sent)};
+}
 
 }  // namespace koda
