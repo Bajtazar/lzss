@@ -90,7 +90,7 @@ constexpr void LzssIntermediateTokenDecoder<
     InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
     LengthDecoder>::ReceiveToken(auto& input_iter, auto& input_sent,
                                  auto& output_iter) {
-    InputToken token[0];
+    InputToken token[1];
 
     auto [in, out] =
         token_decoder_.Decode(std::ranges::subrange{input_iter, input_sent},
@@ -132,7 +132,7 @@ constexpr void LzssIntermediateTokenDecoder<
     InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
     LengthDecoder>::ReceiveLength(auto& input_iter, auto& input_sent,
                                   auto& output_iter) {
-    LengthTp length[0];
+    LengthTp length[1];
 
     auto [in, out] =
         token_decoder_.Decode(std::ranges::subrange{input_iter, input_sent},

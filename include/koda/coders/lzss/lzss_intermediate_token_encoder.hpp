@@ -68,8 +68,8 @@ class LzssIntermediateTokenEncoder
     union {
         InputToken symbol[1];
         struct {
-            PositionEncoder position[1];
-            LengthEncoder length[1];
+            PositionTp position[1];
+            LengthTp length[1];
         };
     } emitter_;
 

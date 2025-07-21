@@ -88,8 +88,8 @@ constexpr void LzssIntermediateTokenEncoder<
     } else {
         state_ = IsSymetric ? State::kPosition : State::kLength;
         auto [pos, len] = *token.get_marker();
-        emitter_.marker.position[0] = pos;
-        emitter_.marker.length[0] = len;
+        emitter_.position[0] = pos;
+        emitter_.length[0] = len;
     }
 }
 
