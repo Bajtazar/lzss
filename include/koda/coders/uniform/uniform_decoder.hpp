@@ -21,7 +21,7 @@ class UniformDecoder : public DecoderInterface<Token, UniformDecoder<Token>> {
     using BitIter = LittleEndianOutputBitIter<Token*>;
     using BitRange = std::pair<BitIter, BitIter>;
 
-    Token token_[1];
+    Token token_[1]{};
     BitRange receiver_;
     size_t token_bit_size_;
 

@@ -32,6 +32,12 @@ class [[nodiscard]] LzssIntermediateToken {
     constexpr explicit LzssIntermediateToken(PositionTp match_position,
                                              LengthTp match_length) noexcept;
 
+    constexpr LzssIntermediateToken(
+        const LzssIntermediateToken& other) noexcept;
+
+    constexpr LzssIntermediateToken& operator=(
+        const LzssIntermediateToken& other) noexcept;
+
     [[nodiscard]] constexpr bool holds_symbol() const noexcept;
 
     [[nodiscard]] constexpr bool holds_marker() const noexcept;
@@ -48,6 +54,8 @@ class [[nodiscard]] LzssIntermediateToken {
     [[nodiscard]] constexpr bool operator==(
         const LzssIntermediateToken& right) const noexcept;
 
+    constexpr ~LzssIntermediateToken();
+
    private:
     // We don't need to manually call destructor on an active
     // member since both of them are trivially destructible
@@ -56,6 +64,8 @@ class [[nodiscard]] LzssIntermediateToken {
         RepeatitionMarker repeatition_marker_;
     };
     bool holds_distance_match_pair_;
+
+    constexpr void Destroy();
 };
 
 template <std::integral InputToken, UnsignedIntegral PositionTp,

@@ -51,6 +51,7 @@ constexpr auto UniformDecoder<Token>::SetReceiver(auto iter, const auto& sent) {
 template <std::integral Token>
 constexpr Token UniformDecoder<Token>::DecodeToken() {
     Token token = token_[0];
+    token_[0] = {};
     receiver_ =
         std::pair{BitIter{std::ranges::begin(token_)},
                   token_bit_size_ == (sizeof(Token) * CHAR_BIT)

@@ -18,6 +18,32 @@ constexpr LzssIntermediateToken<InputToken, PositionTp, LengthTp>::
 
 template <std::integral InputToken, UnsignedIntegral PositionTp,
           UnsignedIntegral LengthTp>
+constexpr LzssIntermediateToken<InputToken, PositionTp, LengthTp>::
+    LzssIntermediateToken(const LzssIntermediateToken& other) noexcept {
+    if ((holds_distance_match_pair_ = other.holds_distance_match_pair_)) {
+        repeatition_marker_ = other.repeatition_marker_;
+    } else {
+        symbol_ = other.symbol_;
+    }
+}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
+constexpr LzssIntermediateToken<InputToken, PositionTp,
+                                LengthTp>&
+LzssIntermediateToken<InputToken, PositionTp,
+                                LengthTp>::operator=(const LzssIntermediateToken& other) noexcept {
+    Destroy();
+    if ((holds_distance_match_pair_ = other.holds_distance_match_pair_)) {
+        repeatition_marker_ = other.repeatition_marker_;
+    } else {
+        symbol_ = other.symbol_;
+    }
+    return *this;
+}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
 [[nodiscard]] constexpr std::partial_ordering
 LzssIntermediateToken<InputToken, PositionTp, LengthTp>::operator<=>(
     const LzssIntermediateToken& right) const noexcept {
@@ -48,6 +74,24 @@ LzssIntermediateToken<InputToken, PositionTp, LengthTp>::operator==(
         return *get_marker() == *other;
     }
     return false;
+}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
+constexpr LzssIntermediateToken<InputToken, PositionTp,
+                                LengthTp>::~LzssIntermediateToken() {
+    Destroy();
+}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp>
+constexpr void
+LzssIntermediateToken<InputToken, PositionTp, LengthTp>::Destroy() {
+    if (holds_distance_match_pair_) {
+        repeatition_marker_.~RepeatitionMarker();
+    } else {
+        symbol_.~Symbol();
+    }
 }
 
 template <std::integral InputToken, UnsignedIntegral PositionTp,
