@@ -72,3 +72,30 @@ BeginConstexprTest(Lz77DecoderAsymetricTest, DecodeMoreTokens) {
     ConstexprAssertEqual(target, kExpected);
 }
 EndConstexprTest;
+
+BeginConstexprTest(Lz77DecoderSymetricTest, DecodeTokensRepeatitions) {
+    std::vector input_sequence = {
+        koda::Lz77IntermediateToken<char>{'t', 0, 0},  // 't'
+        koda::Lz77IntermediateToken<char>{'o', 0, 0},  // 'o'
+        koda::Lz77IntermediateToken<char>{'k', 0, 0},  // 'k'
+        koda::Lz77IntermediateToken<char>{' ', 0, 3},  // 'kot '
+        koda::Lz77IntermediateToken<char>{' ', 0, 3},  // 'kot '
+        koda::Lz77IntermediateToken<char>{' ', 0, 3},  // 'kot '
+        koda::Lz77IntermediateToken<char>{' ', 0, 3},  // 'kot '
+        koda::Lz77IntermediateToken<char>{' ', 0, 3},  // 'kot '
+        koda::Lz77IntermediateToken<char>{' ', 0, 3},  // 'kot '
+    };
+    std::string kExpected{
+        std::from_range, "kot kot kot kot kot kot kot"sv | std::views::reverse};
+    std::vector<uint8_t> binary_range = {1};
+    std::string target;
+
+    koda::Lz77Decoder<char, DummyDecoder> decoder{
+        1024, 3, DummyDecoder{std::move(input_sequence)}};
+
+    decoder(binary_range | koda::views::LittleEndianInput,
+            target | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(target, kExpected);
+}
+EndConstexprTest;
