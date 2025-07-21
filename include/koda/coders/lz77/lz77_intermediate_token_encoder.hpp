@@ -16,13 +16,16 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
 class Lz77IntermediateTokenEncoder
     : public EncoderInterface<
           Lz77IntermediateToken<InputToken, PositionTp, LengthTp>,
-          EncoderInterface<InputToken, PositionTp, LengthTp, TokenEncoder,
-                           PositionEncoder, LengthEncoder>> {
+          EncoderInterface<Lz77IntermediateTokenEncoder<
+              InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
+              LengthEncoder>>> {
     using TokenTraits = CoderTraits<TokenEncoder>;
     using PositionTraits = CoderTraits<PositionEncoder>;
     using LengthTraits = CoderTraits<LengthEncoder>;
 
    public:
+    using token_type = Lz77IntermediateToken<InputToken, PositionTp, LengthTp>;
+
     static constexpr bool IsAsymetric = TokenTraits::IsAsymetric &&
                                         PositionTraits::IsAsymetric &&
                                         LengthTraits::IsAsymetric;
@@ -31,7 +34,7 @@ class Lz77IntermediateTokenEncoder
         TokenEncoder token_encoder, PositionEncoder position_encoder,
         LengthEncoder length_encoder);
 
-    constexpr float TokenBitSize(Token token) const;
+    constexpr float TokenBitSize(const token_type& token) const;
 
     constexpr auto Encode(InputRange<Token> auto&& input,
                           BitOutputRange auto&& output);

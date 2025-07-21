@@ -24,7 +24,7 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
           SizeAwareEncoder<LengthTp> LengthEncoder>
 constexpr float Lz77IntermediateTokenEncoder<
     InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
-    LengthEncoder>::TokenBitSize(Token token) const {
+    LengthEncoder>::TokenBitSize(const token_type& token) const {
     return token_encoder_.TokenBitSize(token.suffix_symbol()) +
            position_encoder_.TokenBitSize(token.match_position()) +
            length_encoder_.TokenBitSize(token.match_length());

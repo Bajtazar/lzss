@@ -15,13 +15,16 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
 class Lz77IntermediateTokenDecoder
     : public DecoderInterface<
           Lz77IntermediateToken<InputToken, PositionTp, LengthTp>,
-          DecoderInterface<InputToken, PositionTp, LengthTp, TokenDecoder,
-                           PositionDecoder, LengthDecoder>> {
+          DecoderInterface<Lz77IntermediateTokenDecoder<
+              InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
+              LengthDecoder>>> {
     using TokenTraits = CoderTraits<TokenDecoder>;
     using PositionTraits = CoderTraits<PositionDecoder>;
     using LengthTraits = CoderTraits<LengthDecoder>;
 
    public:
+    using token_type = Lz77IntermediateToken<InputToken, PositionTp, LengthTp>;
+
     static constexpr bool IsAsymetric = TokenTraits::IsAsymetric &&
                                         PositionTraits::IsAsymetric &&
                                         LengthTraits::IsAsymetric;
