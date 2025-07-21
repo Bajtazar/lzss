@@ -12,9 +12,9 @@ class UniformDecoder : public DecoderInterface<Token, UniformDecoder<Token>> {
     constexpr explicit UniformDecoder(
         size_t token_bit_size = sizeof(Token) * CHAR_BIT) noexcept;
 
-    constexpr UniformDecoder(const UniformDecoder&& other) noexcept;
+    constexpr UniformDecoder(const UniformDecoder& other) noexcept;
 
-    constexpr UniformDecoder& operator=(UniformDecoder&& other);
+    constexpr UniformDecoder& operator=(const UniformDecoder& other);
 
     constexpr auto Decode(BitInputRange auto&& input,
                           std::ranges::output_range<Token> auto&& output);

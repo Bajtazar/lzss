@@ -12,18 +12,18 @@ constexpr UniformDecoder<Token>::UniformDecoder(size_t token_bit_size) noexcept
 
 template <std::integral Token>
 constexpr UniformDecoder<Token>::UniformDecoder(
-    const UniformDecoder&& other) noexcept
-    : token_bit_size_{other.token_bit_size_},
-      token_{other.token_[0]},
+    const UniformDecoder& other) noexcept
+    : token_{other.token_[0]},
       receiver_{
           BitIter{std::ranges::begin(token_), other.receiver_.first.Position()},
-          token_bit_size_ == (sizeof(Token) * CHAR_BIT)
+          other.token_bit_size_ == (sizeof(Token) * CHAR_BIT)
               ? BitIter{std::ranges::end(token_)}
-              : BitIter{std::ranges::begin(token_)}} {}
+              : BitIter{std::ranges::begin(token_)}},
+      token_bit_size_{other.token_bit_size_} {}
 
 template <std::integral Token>
 constexpr UniformDecoder<Token>& UniformDecoder<Token>::operator=(
-    UniformDecoder&& other) {
+    const UniformDecoder& other) {
     token_bit_size_ = other.token_bit_size_;
     token_[0] = other.token_[0];
     receiver_ = {
