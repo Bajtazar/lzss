@@ -273,7 +273,7 @@ constexpr Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Lz77Encoder(
     size_t dictionary_size, size_t look_ahead_size,
     AuxiliaryEncoder auxiliary_encoder,
     std::optional<size_t> cyclic_buffer_size, const Allocator& allocator)
-    : Base{dictionary_size + look_ahead_size + 1, look_ahead_size,
+    : Base{dictionary_size + 1, look_ahead_size,
            std::move(auxiliary_encoder), std::move(cyclic_buffer_size),
            allocator} {}
 
@@ -285,7 +285,7 @@ constexpr Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Lz77Encoder(
     size_t dictionary_size, size_t look_ahead_size,
     std::optional<size_t> cyclic_buffer_size, const Allocator& allocator)
     requires std::is_default_constructible_v<AuxiliaryEncoder>
-    : Base{dictionary_size + look_ahead_size + 1, look_ahead_size,
+    : Base{dictionary_size + 1, look_ahead_size,
            std::move(cyclic_buffer_size), allocator} {}
 
 template <std::integral Token,
