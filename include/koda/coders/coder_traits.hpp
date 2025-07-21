@@ -15,10 +15,12 @@ struct CoderTraits {
             { coder.TokenBitSize(token) } -> std::same_as<float>;
         };
 
-    static constexpr bool IsAsymetrical =
-        requires { typename CoderTp::asymetrical; };
+    static constexpr bool IsAsymetric =
+        (requires {
+            { typename CoderTp::asymetrical } -> std::same_as<void>;
+        }) || (requires { CoderTp::IsAsymetric; } && CoderTp::IsAsymetric);
 
-    static constexpr bool IsSymetrical = !IsAsymetrical;
+    static constexpr bool IsSymetric = !IsAsymetric;
 };
 
 }  // namespace koda

@@ -102,7 +102,7 @@ Lz77EncoderBase<Token, AuxiliaryEncoder, Allocator>::EncodeIntermediateToken(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsSymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsSymetric)
 constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Flush(
     BitOutputRange auto&& output) {
     return this->auxiliary_encoder_.Flush(
@@ -112,7 +112,7 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Flush(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsSymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsSymetric)
 constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Encode(
     InputRange<Token> auto&& input, BitOutputRange auto&& output) {
     if (std::holds_alternative<typename Base::FusedDictAndBufferInfo>(
@@ -125,7 +125,7 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Encode(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsSymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsSymetric)
 constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
     InputRange<Token> auto&& input, BitOutputRange auto&& output) {
     [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(
@@ -160,7 +160,7 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsSymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsSymetric)
 constexpr auto
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
     SequenceView buffer, const Match& match, BitOutputRange auto&& output) {
@@ -179,7 +179,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsSymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsSymetric)
 constexpr auto
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
     FusedDictionaryAndBuffer<Token>& dict, SequenceView buffer,
@@ -200,7 +200,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsSymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsSymetric)
 constexpr void Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::
     TryToRemoveStringFromSearchTree(FusedDictionaryAndBuffer<Token>& dict) {
     if (dict.full()) {
@@ -213,7 +213,7 @@ constexpr void Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsSymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsSymetric)
 constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
     BitOutputRange auto&& output) {
     [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(
@@ -243,7 +243,7 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsSymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsSymetric)
 constexpr std::pair<
     typename Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::SequenceView,
     typename Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::SequenceView>
@@ -258,7 +258,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::GetBufferAndLookAhead(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetric)
 constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Flush(
     BitOutputRange auto&& output) {
     return this->auxiliary_encoder_.Flush(
@@ -268,7 +268,7 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Flush(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetric)
 constexpr Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Lz77Encoder(
     size_t dictionary_size, size_t look_ahead_size,
     AuxiliaryEncoder auxiliary_encoder,
@@ -279,7 +279,7 @@ constexpr Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Lz77Encoder(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetric)
 constexpr Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Lz77Encoder(
     size_t dictionary_size, size_t look_ahead_size,
     std::optional<size_t> cyclic_buffer_size, const Allocator& allocator)
@@ -290,7 +290,7 @@ constexpr Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Lz77Encoder(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetric)
 constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::InitializeDict(
     InputRange<Token> auto&& input) {
     [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(
@@ -314,7 +314,7 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::InitializeDict(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetric)
 constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Encode(
     InputRange<Token> auto&& input, BitOutputRange auto&& output) {
     if (std::holds_alternative<typename Base::FusedDictAndBufferInfo>(
@@ -328,7 +328,7 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::Encode(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetric)
 constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
     InputRange<Token> auto&& input, BitOutputRange auto&& output) {
     [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(
@@ -366,7 +366,7 @@ constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeData(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetric)
 constexpr auto
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PopulateDictionary(
     InputRange<Token> auto&& input, FusedDictionaryAndBuffer<Token>& dict) {
@@ -386,7 +386,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PopulateDictionary(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetric)
 constexpr auto
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
     FusedDictionaryAndBuffer<Token>& dict, const Token& token,
@@ -405,7 +405,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::PeformEncodigStep(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetric)
 constexpr auto
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
     FusedDictionaryAndBuffer<Token>& dict, const Token& token, Match&& match,
@@ -433,7 +433,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetric)
 constexpr std::pair<const Token&, typename Lz77Encoder<Token, AuxiliaryEncoder,
                                                        Allocator>::SequenceView>
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::GetTokenAndLookAhead(
@@ -447,7 +447,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::GetTokenAndLookAhead(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetric)
 constexpr void
 Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::AddStringToSearchTree(
     FusedDictionaryAndBuffer<Token>& dict) {
@@ -462,7 +462,7 @@ Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::AddStringToSearchTree(
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetric)
 constexpr auto Lz77Encoder<Token, AuxiliaryEncoder, Allocator>::FlushData(
     BitOutputRange auto&& output) {
     [[assume(std::holds_alternative<FusedDictionaryAndBuffer<Token>>(

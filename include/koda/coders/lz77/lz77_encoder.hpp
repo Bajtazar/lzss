@@ -73,7 +73,7 @@ class Lz77Encoder;
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsSymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsSymetric)
 class Lz77Encoder<Token, AuxiliaryEncoder, Allocator>
     : public EncoderInterface<Token,
                               Lz77Encoder<Token, AuxiliaryEncoder, Allocator>>,
@@ -123,7 +123,7 @@ class Lz77Encoder<Token, AuxiliaryEncoder, Allocator>
 template <std::integral Token,
           SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator>
-    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetrical)
+    requires(CoderTraits<AuxiliaryEncoder>::IsAsymetric)
 class Lz77Encoder<Token, AuxiliaryEncoder, Allocator>
     : public EncoderInterface<Token,
                               Lz77Encoder<Token, AuxiliaryEncoder, Allocator>>,

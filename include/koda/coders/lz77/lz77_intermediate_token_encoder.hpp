@@ -18,7 +18,15 @@ class Lz77IntermediateTokenEncoder
           Lz77IntermediateToken<InputToken, PositionTp, LengthTp>,
           EncoderInterface<InputToken, PositionTp, LengthTp, TokenEncoder,
                            PositionEncoder, LengthEncoder>> {
+    using TokenTraits = CoderTraits<TokenEncoder>;
+    using PositionTraits = CoderTraits<PositionEncoder>;
+    using LengthTraits = CoderTraits<LengthEncoder>;
+
    public:
+    static constexpr bool IsAsymetric = TokenTraits::IsAsymetric &&
+                                        PositionTraits::IsAsymetric &&
+                                        LengthTraits::IsAsymetric;
+
     constexpr explicit Lz77IntermediateTokenEncoder(
         TokenEncoder token_encoder, PositionEncoder position_encoder,
         LengthEncoder length_encoder);
@@ -31,10 +39,6 @@ class Lz77IntermediateTokenEncoder
     constexpr auto Flush(BitOutputRange auto&& output);
 
    private:
-    using TokenTraits = CoderTraits<TokenEncoder>;
-    using PositionTraits = CoderTraits<PositionEncoder>;
-    using LengthTraits = CoderTraits<LengthEncoder>;
-
     enum class State : uint8_t { kToken = 0, kPosition = 1, kLength = 2 };
 
     TokenEncoder token_encoder_;
@@ -42,12 +46,9 @@ class Lz77IntermediateTokenEncoder
     LengthEncoder length_encoder_;
     State state_ = State::kToken;
 
-    static constexpr bool IsSymetric = TokenTraits::IsSymetrical &&
-                                       PositionTraits::IsSymetrical &&
-                                       LengthTraits::IsSymetrical;
-    static constexpr bool IsAsymetric = TokenTraits::IsAsymetrical &&
-                                        PositionTraits::IsAsymetrical &&
-                                        LengthTraits::IsAsymetrical;
+    static constexpr bool IsSymetric = TokenTraits::IsSymetric &&
+                                       PositionTraits::IsSymetric &&
+                                       LengthTraits::IsSymetric;
     static constexpr std::array<State, 3> kNextState{
         {kPosition, kLength, kToken}};
 

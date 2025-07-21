@@ -17,7 +17,15 @@ class Lz77IntermediateTokenDecoder
           Lz77IntermediateToken<InputToken, PositionTp, LengthTp>,
           DecoderInterface<InputToken, PositionTp, LengthTp, TokenDecoder,
                            PositionDecoder, LengthDecoder>> {
+    using TokenTraits = CoderTraits<TokenDecoder>;
+    using PositionTraits = CoderTraits<PositionDecoder>;
+    using LengthTraits = CoderTraits<LengthDecoder>;
+
    public:
+    static constexpr bool IsAsymetric = TokenTraits::IsAsymetric &&
+                                        PositionTraits::IsAsymetric &&
+                                        LengthTraits::IsAsymetric;
+
     constexpr explicit Lz77IntermediateTokenDeoder(
         TokenDecoder token_decoder, PositionDecoder position_decoder,
         LengthDecoder length_decoder);
@@ -28,10 +36,6 @@ class Lz77IntermediateTokenDecoder
                           std::ranges::output_range<Token> auto&& output);
 
    private:
-    using TokenTraits = CoderTraits<TokenDecoder>;
-    using PositionTraits = CoderTraits<PositionDecoder>;
-    using LengthTraits = CoderTraits<LengthDecoder>;
-
     enum class State : uint8_t { kToken = 0, kPosition = 1, kLength = 2 };
 
     TokenDecoder token_decoder_;
@@ -39,12 +43,9 @@ class Lz77IntermediateTokenDecoder
     LengthDecoder length_decoder_;
     State state_ = IsSymetric ? kToken : kLength;
 
-    static constexpr bool IsSymetric = TokenTraits::IsSymetrical &&
-                                       PositionTraits::IsSymetrical &&
-                                       LengthTraits::IsSymetrical;
-    static constexpr bool IsAsymetric = TokenTraits::IsAsymetrical &&
-                                        PositionTraits::IsAsymetrical &&
-                                        LengthTraits::IsAsymetrical;
+    static constexpr bool IsSymetric = TokenTraits::IsSymetric &&
+                                       PositionTraits::IsSymetric &&
+                                       LengthTraits::IsSymetric;
 
     static constexpr std::array<State, 3> kNextState{
         IsSymetric ? {kPosition, kLength, kToken}
