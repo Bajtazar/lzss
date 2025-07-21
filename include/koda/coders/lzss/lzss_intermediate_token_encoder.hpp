@@ -43,11 +43,22 @@ class LzssIntermediateTokenEncoder
     constexpr auto Flush(BitOutputRange auto&& output);
 
    private:
+    // Symetric encoder:
+    // kBit -> kToken -> kBit or kBit -> kPosition -> kLength -> kBit
+    // Asymetric encoder
+    // kBit -> kLength -> kPosition -> kDeferredBitFromMarker -> kBit or
+    // kBit -> kToken -> kDeferredBitFromToken -> kBit
+    // In case of symetric encoder the kBit state emits bit
+    // In case of the asymetric encoder the kDeferred states emit bit and kBit
+    // does not
     enum class State : uint8_t {
         kBit = 0,
         kToken = 1,
         kPosition = 2,
-        kLength = 3
+        kLength = 3,
+        // Only used by the asymetric encoder
+        kDeferredBitFromToken = 4,
+        kDeferredBitFromMarker = 5
     };
 
     TokenEncoder token_encoder_;
@@ -69,6 +80,8 @@ class LzssIntermediateTokenEncoder
     constexpr void EmitPosition(auto& output_iter, auto& output_sent);
 
     constexpr void EmitLength(auto& output_iter, auto& output_sent);
+
+    constexpr void EmitDeferredBit(auto& output_iter);
 
     static constexpr bool IsSymetric = TokenTraits::IsSymetric &&
                                        PositionTraits::IsSymetric &&

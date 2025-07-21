@@ -58,6 +58,10 @@ constexpr auto LzssIntermediateTokenEncoder<
             case State::kLength:
                 EmitLength(output_iter, output_sent);
                 break;
+            case State::kDeferredBitFromToken:
+            case State::kDeferredBitFromMarker:
+                EmitDeferredBit(output_iter);
+                break;
         }
     }
 
@@ -72,14 +76,15 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
 constexpr void LzssIntermediateTokenEncoder<
     InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
     LengthEncoder>::EmitBit(auto& token, auto& output_iter) {
+    if constexpr (IsSymetric) {
+        *output_iter++ = token.holds_marker();
+    }
+
     if (auto symbol = token.get_symbol()) {
-        *output_iter++ = 0;
         state_ = State::kToken;
         emitter_.symbol[0] = *symbol;
     } else {
-        *output_iter++ = 1;
-        state = State::kPosition;
-        auto [pos, len] = *token.get_marker();
+        state = IsSymetric ? State::kPosition : State::kLength;
         emitter_.marker.position[0] = pos;
         emitter_.marker.length[0] = len;
     }
@@ -101,7 +106,7 @@ constexpr void LzssIntermediateTokenEncoder<
     output_sent = std::ranges::end(out);
 
     if (in.empty()) {
-        state_ = State::kBit;
+        state_ = IsSymetric ? State::kBit : State::kDeferredBitFromToken;
         emitter_.symbol[0].~InputToken();
     }
 }
@@ -122,7 +127,7 @@ constexpr void LzssIntermediateTokenEncoder<
     output_sent = std::ranges::end(out);
 
     if (in.empty()) {
-        state_ = State::kLength;
+        state_ = IsSymetric ? State::kLength : State::kDeferredBitFromMarker;
     }
 }
 
@@ -142,7 +147,22 @@ constexpr void LzssIntermediateTokenEncoder<
     output_sent = std::ranges::end(out);
 
     if (in.empty()) {
+        state_ = IsSymetric ? State::kBit : State::kPosition;
+    }
+}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp, SizeAwareEncoder<InputToken> TokenEncoder,
+          SizeAwareEncoder<PositionTp> PositionEncoder,
+          SizeAwareEncoder<LengthTp> LengthEncoder>
+constexpr void LzssIntermediateTokenEncoder<
+    InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
+    LengthEncoder>::EmitDeferredBit(auto& output_iter) {
+    if constexpr (IsAsymetric) {
+        *output_iter++ = state_ == State::kDeferredBitFromMarker;
         state_ = State::kBit;
+    } else {
+        std::unreachable();
     }
 }
 
@@ -163,9 +183,15 @@ constexpr auto LzssIntermediateTokenEncoder<
         output_sent = std::ranges::end(res);
     };
 
-    flush(token_encoder_);
-    flush(position_encoder_);
-    flush(length_encoder_);
+    if constexpr (IsSymetric) {
+        flush(token_encoder_);
+        flush(position_encoder_);
+        flush(length_encoder_);
+    } else {
+        flush(length_encoder_);
+        flush(position_encoder_);
+        flush(token_encoder_);
+    }
 
     return std::ranges::subrange{std::move(output_iter),
                                  std::move(output_sent)};
