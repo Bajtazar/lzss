@@ -97,33 +97,35 @@ BeginConstexprTest(RiceEncoderTest, PartialInputEncoding) {
 }
 EndConstexprTest;
 
-// BeginConstexprTest(UniformEncoderTest, PartialOutputEncoding) {
-//     const std::vector<uint8_t> kSource{{0x43, 0x74, 0x35, 0x33}};
-//     auto kExpected = kSource | koda::views::LittleEndianInput |
-//                      std::ranges::to<std::vector>();
+BeginConstexprTest(RiceEncoderTest, PartialOutputEncoding) {
+    const std::vector<uint8_t> kInput{{1, 4, 8, 13, 16}};
+    const std::vector<bool> kExpected = {
+        1, 1, 0, 0, 0,    // 1
+        1, 0, 0, 1, 0,    // 4
+        1, 0, 0, 0, 1,    // 8
+        1, 1, 0, 1, 1,    // 13
+        0, 1, 0, 0, 0, 0  // 16
+    };
+    std::vector<bool> stream;
 
-//     koda::UniformEncoder<uint8_t> encoder;
+    koda::RiceEncoder<uint8_t> encoder{4};
 
-//     std::vector<bool> stream;
+    auto [in_1, _] = encoder.Encode(
+        kInput, stream | koda::views::InsertFromBack | koda::views::Take(5));
 
-//     auto [in_1, _] = encoder.Encode(
-//         kSource, stream | koda::views::InsertFromBack |
-//         koda::views::Take(5));
+    ConstexprAssertEqual(stream.size(), 5);
+    ConstexprAssertEqual(stream, kExpected | koda::views::Take(5));
 
-//     ConstexprAssertEqual(stream.size(), 5);
-//     ConstexprAssertEqual(stream, kExpected | koda::views::Take(5));
+    auto [in_2, _] =
+        encoder.Encode(std::move(in_1), stream | koda::views::InsertFromBack |
+                                            koda::views::Take(13));
 
-//     auto [in_2, _] =
-//         encoder.Encode(std::move(in_1), stream | koda::views::InsertFromBack
-//         |
-//                                             koda::views::Take(13));
+    ConstexprAssertEqual(stream.size(), 18);
+    ConstexprAssertEqual(stream, kExpected | koda::views::Take(18));
 
-//     ConstexprAssertEqual(stream.size(), 18);
-//     ConstexprAssertEqual(stream, kExpected | koda::views::Take(18));
+    encoder(std::move(in_2), stream | koda::views::InsertFromBack);
 
-//     encoder(std::move(in_2), stream | koda::views::InsertFromBack);
-
-//     ConstexprAssertEqual(stream.size(), kExpected.size());
-//     ConstexprAssertEqual(stream, kExpected);
-// }
-// EndConstexprTest;
+    ConstexprAssertEqual(stream.size(), kExpected.size());
+    ConstexprAssertEqual(stream, kExpected);
+}
+EndConstexprTest;
