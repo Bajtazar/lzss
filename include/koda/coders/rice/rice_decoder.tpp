@@ -37,7 +37,7 @@ constexpr auto RiceDecoder<Token>::DecodeToken(auto out_iter, auto iter,
     }
 
     if (bits_) {
-        token_ = (token_ << 1) | *iter++;
+        token_ = (token_ << 1) | last_iter;
         --bits_;
     } else if (last_iter) {
         bits_ = order_;
