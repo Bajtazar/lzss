@@ -23,24 +23,21 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
 constexpr auto Lz77IntermediateTokenDeoder<
     InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
     LengthDecoder>::Initialize(BitInputRange auto&& input) {
-    auto input_range = AsSubrange(std::forward<decltype(input)>(input));
+    auto input_iter = std::ranges::begin(input);
+    auto input_sent = std::ranges::end(input);
 
-    while (!input_range.empty()) {
-        // std::tie doesn't work on structs
-        input_range = [&] {
-            switch (state_) {
-                case State::kToken:
-                    return token_decoder_.Initialize(input);
-                case State::kPosition:
-                    return position_decoder_.Initialize(input);
-                case State::kToken:
-                    return length_decoder_.Initialize(input);
-            }
-        }();
-        state_ = kNextState[state_];
-    }
+    auto init = [&](auto& decoder) {
+        auto res =
+            decoder.Initialize(std::ranges::subrange{input_iter, input_sent});
+        input_iter = std::ranges::begin(res);
+        input_sent = std::ranges::end(res);
+    };
 
-    return output_range;
+    init(token_decoder_);
+    init(position_decoder_);
+    init(length_decoder_);
+
+    return std::ranges::subrange{std::move(input_iter), std::move(input_sent)};
 }
 
 template <std::integral InputToken, UnsignedIntegral PositionTp,
@@ -50,27 +47,88 @@ constexpr auto Lz77IntermediateTokenDeoder<
     InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
     LengthDecoder>::Decode(BitInputRange auto&& input,
                            std::ranges::output_range<Token> auto&& output) {
-    auto input_range = AsSubrange(std::forward<decltype(input)>(input));
-    auto output_range = AsSubrange(std::forward<decltype(output)>(output));
+    auto output_iter = std::ranges::begin(output);
+    auto output_sent = std::ranges::end(output);
+    auto input_iter = std::ranges::begin(input);
+    auto input_sent = std::ranges::end(input);
 
-    while (!input_range.empty() && !output_range.empty()) {
-        // std::tie doesn't work on structs
-        auto [new_input, new_output] = [&] {
-            switch (state_) {
-                case State::kToken:
-                    return token_decoder_.Decode(input_range, output_range);
-                case State::kPosition:
-                    return position_decoder_.Decode(input_range, output_range);
-                case State::kLength:
-                    return length_decoder_.Decode(input_range, output_range);
-            }
-        }();
-        state_ = kNextState[state_];
-        input_range = std::move(new_input);
-        output_range = std::move(new_output);
+    while ((input_iter != input_sent) && (output_iter != output_sent)) {
+        switch (state_) {
+            case State::kToken:
+                ReceiveToken(input_iter, input_sent);
+                break;
+            case State::kPosition:
+                ReceivePosition(input_iter, input_sent);
+                break;
+            case State::kLength:
+                ReceiveLength(input_iter, input_sent, output_iter);
+                break;
+        }
     }
 
-    return CoderResult{std::move(input_range), std::move(output_range)};
+    return CoderResult{std::move(input_iter), std::move(input_sent),
+                       std::move(output_iter), std::move(output_sent)};
+}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp, Decoder<InputToken> TokenDecoder,
+          Decoder<PositionTp> PositionDecoder, Decoder<LengthTp> LengthDecoder>
+constexpr void Lz77IntermediateTokenDeoder<
+    InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
+    LengthDecoder>::ReceiveToken(auto& input_iter, auto& input_sent) {
+    auto [in, out] =
+        token_decoder_.Decode(std::ranges::subrange{input_iter, input_sent},
+                              std::ranges::subrange{std::ranges::begin(token_),
+                                                    std::ranges::end(token_)});
+
+    input_iter = std::ranges::begin(in);
+    input_sent = std::ranges::end(in);
+
+    if (out.empty()) {
+        state_ = State::kPosition;
+    }
+}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp, Decoder<InputToken> TokenDecoder,
+          Decoder<PositionTp> PositionDecoder, Decoder<LengthTp> LengthDecoder>
+constexpr void Lz77IntermediateTokenDeoder<
+    InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
+    LengthDecoder>::ReceivePosition(auto& input_iter, auto& input_sent) {
+    auto [in, out] = position_decoder_.Decode(
+        std::ranges::subrange{input_iter, input_sent},
+        std::ranges::subrange{std::ranges::begin(position_),
+                              std::ranges::end(position_)});
+
+    input_iter = std::ranges::begin(in);
+    input_sent = std::ranges::end(in);
+
+    if (out.empty()) {
+        state_ = State::kLength;
+    }
+}
+
+template <std::integral InputToken, UnsignedIntegral PositionTp,
+          UnsignedIntegral LengthTp, Decoder<InputToken> TokenDecoder,
+          Decoder<PositionTp> PositionDecoder, Decoder<LengthTp> LengthDecoder>
+constexpr void Lz77IntermediateTokenDeoder<
+    InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
+    LengthDecoder>::ReceiveLength(auto& input_iter, auto& input_sent,
+                                  auto& output_iter) {
+    LengthTp length[1];
+
+    auto [in, out] =
+        length_decoder_.Decode(std::ranges::subrange{input_iter, input_sent},
+                               std::ranges::subrange{std::ranges::begin(length),
+                                                     std::ranges::end(length)});
+
+    input_iter = std::ranges::begin(in);
+    input_sent = std::ranges::end(in);
+
+    if (out.empty()) {
+        *output_iter++ = token_type{token_[0], position_[0], length_[0]};
+        state_ = State::kToken;
+    }
 }
 
 }  // namespace koda

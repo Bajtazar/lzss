@@ -15,9 +15,9 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
 class Lz77IntermediateTokenDecoder
     : public DecoderInterface<
           Lz77IntermediateToken<InputToken, PositionTp, LengthTp>,
-          DecoderInterface<Lz77IntermediateTokenDecoder<
-              InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
-              LengthDecoder>>> {
+          Lz77IntermediateTokenDecoder<InputToken, PositionTp, LengthTp,
+                                       TokenDecoder, PositionDecoder,
+                                       LengthDecoder>> {
     using TokenTraits = CoderTraits<TokenDecoder>;
     using PositionTraits = CoderTraits<PositionDecoder>;
     using LengthTraits = CoderTraits<LengthDecoder>;
@@ -44,15 +44,20 @@ class Lz77IntermediateTokenDecoder
     TokenDecoder token_decoder_;
     PositionDecoder position_decoder_;
     LengthDecoder length_decoder_;
-    State state_ = IsSymetric ? kToken : kLength;
+    InputToken token_[1];
+    PositionTp position_[1];
+    State state_ = State::kToken;
 
     static constexpr bool IsSymetric = TokenTraits::IsSymetric &&
                                        PositionTraits::IsSymetric &&
                                        LengthTraits::IsSymetric;
 
-    static constexpr std::array<State, 3> kNextState{
-        IsSymetric ? {kPosition, kLength, kToken}
-                   : {kPosition, kToken, kLength}};
+    constexpr void ReceiveToken(auto& input_iter, auto& input_sent);
+
+    constexpr void ReceivePosition(auto& input_iter, auto& input_sent);
+
+    constexpr void ReceiveLength(auto& input_iter, auto& input_sent,
+                                 auto& output_iter);
 
     static_assert(IsSymetric || IsAsymetric,
                   "All of the decoders has to be either symetric or asymetric");
