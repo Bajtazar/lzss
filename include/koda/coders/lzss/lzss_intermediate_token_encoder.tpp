@@ -31,8 +31,9 @@ constexpr float LzssIntermediateTokenEncoder<
     }
     auto [pos, len] = *token.get_marker();
     assert(len != 0 && "Token must have length");
+    // len will never be zero so encode len - 1 to utilize it
     return static_cast<float>(1 + position_encoder_.TokenBitSize(pos) +
-                              length_encoder_.TokenBitSize(len)) /
+                              length_encoder_.TokenBitSize(len - 1)) /
            len;
 }
 
@@ -92,8 +93,10 @@ constexpr void LzssIntermediateTokenEncoder<
     } else {
         state_ = IsSymetric ? State::kPosition : State::kLength;
         auto [pos, len] = *token.get_marker();
+        assert(len != 0 && "Marker has to have length!");
         emitter_.position[0] = pos;
-        emitter_.length[0] = len;
+        // len will never be zero so encode len - 1 to utilize it
+        emitter_.length[0] = --len;
     }
 }
 

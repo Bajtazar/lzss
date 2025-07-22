@@ -143,7 +143,8 @@ constexpr void LzssIntermediateTokenDecoder<
     input_sent = std::ranges::end(in);
 
     if (out.empty()) {
-        *output_iter++ = token_type{receiver_position_[0], length[0]};
+        // Encoder decreases length by one since 0 is not permitted
+        *output_iter++ = token_type{receiver_position_[0], ++length[0]};
         state_ = State::kBit;
     }
 }

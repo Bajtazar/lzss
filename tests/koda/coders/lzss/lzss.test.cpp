@@ -45,7 +45,7 @@ using LzssDecoder = koda::LzssDecoder<char, IMDecoder>;
 BeginConstexprTest(LzssTest, NormalTest) {
     LzssEncoder encoder{
         1024, 16,
-        IMEncoder{TokenEncoder{}, PositionEncoder{10}, LengthEncoder{5}}};
+        IMEncoder{TokenEncoder{}, PositionEncoder{10}, LengthEncoder{4}}};
 
     std::vector<uint8_t> encoded;
 
@@ -58,7 +58,7 @@ BeginConstexprTest(LzssTest, NormalTest) {
 
     LzssDecoder decoder{
         1024, 16,
-        IMDecoder{TokenDecoder{}, PositionDecoder{10}, LengthDecoder{5}}};
+        IMDecoder{TokenDecoder{}, PositionDecoder{10}, LengthDecoder{4}}};
 
     decoder(kTestString.size(), encoded | koda::views::LittleEndianInput,
             decoded | koda::views::InsertFromBack);
@@ -70,7 +70,7 @@ EndConstexprTest;
 BeginConstexprTest(LzssTest, SmallBufferTest) {
     LzssEncoder encoder{
         1024, 1,
-        IMEncoder{TokenEncoder{}, PositionEncoder{10}, LengthEncoder{1}}};
+        IMEncoder{TokenEncoder{}, PositionEncoder{10}, LengthEncoder{0}}};
 
     std::vector<uint8_t> encoded;
 
@@ -83,7 +83,7 @@ BeginConstexprTest(LzssTest, SmallBufferTest) {
 
     LzssDecoder decoder{
         1024, 1,
-        IMDecoder{TokenDecoder{}, PositionDecoder{10}, LengthDecoder{1}}};
+        IMDecoder{TokenDecoder{}, PositionDecoder{10}, LengthDecoder{0}}};
 
     decoder(kTestString.size(), encoded | koda::views::LittleEndianInput,
             decoded | koda::views::InsertFromBack);
@@ -95,7 +95,7 @@ EndConstexprTest;
 BeginConstexprTest(LzssTest, SmallDictionaryTest) {
     LzssEncoder encoder{
         16, 16,
-        IMEncoder{TokenEncoder{}, PositionEncoder{4}, LengthEncoder{5}}};
+        IMEncoder{TokenEncoder{}, PositionEncoder{4}, LengthEncoder{4}}};
 
     std::vector<uint8_t> encoded;
 
@@ -108,7 +108,7 @@ BeginConstexprTest(LzssTest, SmallDictionaryTest) {
 
     LzssDecoder decoder{
         16, 16,
-        IMDecoder{TokenDecoder{}, PositionDecoder{4}, LengthDecoder{5}}};
+        IMDecoder{TokenDecoder{}, PositionDecoder{4}, LengthDecoder{4}}};
 
     decoder(kTestString.size(), encoded | koda::views::LittleEndianInput,
             decoded | koda::views::InsertFromBack);
