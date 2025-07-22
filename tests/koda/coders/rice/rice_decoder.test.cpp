@@ -31,3 +31,37 @@ BeginConstexprTest(RiceDecoderTest, DecoderFirstDegree) {
     ConstexprAssertEqual(kInput, result);
 }
 EndConstexprTest;
+
+BeginConstexprTest(RiceDecoderTest, DecoderSecondDegree) {
+    const std::vector<uint8_t> kInput{{1, 4, 8, 13}};
+    std::vector<bool> stream;
+    std::vector<uint8_t> result;
+
+    koda::RiceEncoder<uint8_t> encoder{2};
+
+    encoder(kInput, stream | koda::views::InsertFromBack);
+
+    koda::RiceDecoder<uint8_t> decoder{2};
+
+    decoder(stream, result | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(kInput, result);
+}
+EndConstexprTest;
+
+BeginConstexprTest(RiceDecoderTest, DecoderFourthDegree) {
+    const std::vector<uint8_t> kInput{{1, 4, 8, 13, 22, 17, 19}};
+    std::vector<bool> stream;
+    std::vector<uint8_t> result;
+
+    koda::RiceEncoder<uint8_t> encoder{4};
+
+    encoder(kInput, stream | koda::views::InsertFromBack);
+
+    koda::RiceDecoder<uint8_t> decoder{4};
+
+    decoder(stream, result | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(kInput, result);
+}
+EndConstexprTest;
