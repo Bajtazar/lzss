@@ -3,8 +3,6 @@
 #include <koda/ranges/bit_iterator.hpp>
 #include <koda/tests/tests.hpp>
 
-static_assert(koda::Decoder<koda::LzssDecoder<uint8_t>, uint8_t>);
-
 namespace {
 
 template <typename Tp>
@@ -15,14 +13,6 @@ class LzssDummyAuxDecoder
 
     constexpr explicit LzssDummyAuxDecoder(std::vector<Tp> tokens = {})
         : tokens_{std::move(tokens)} {}
-
-    constexpr float TokenBitSize(Tp token) const {
-        if (auto symbol = token.get_symbol()) {
-            return 1 + sizeof(*symbol);
-        }
-        auto [pos, len] = *token.get_marker();
-        return (1.f + sizeof(pos) + sizeof(len)) / len;
-    }
 
     constexpr auto Initialize(koda::BitInputRange auto&& input) {
         return koda::AsSubrange(std::forward<decltype(input)>(input));
@@ -51,6 +41,8 @@ class LzssDummyAuxDecoder
 }  // namespace
 
 using DummyDecoder = LzssDummyAuxDecoder<koda::LzssIntermediateToken<char>>;
+
+static_assert(koda::Decoder<koda::LzssDecoder<char, DummyDecoder>, char>);
 
 BeginConstexprTest(LzssDecoder, DecodeTokens) {
     std::vector input_sequence = {

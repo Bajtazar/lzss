@@ -5,10 +5,10 @@
 
 #include "common.hpp"
 
-static_assert(koda::Decoder<koda::Lz77Decoder<uint8_t>, uint8_t>);
-
 using DummyDecoder =
     Lz77DummyAuxDecoder<koda::Lz77IntermediateToken<char>, true>;
+
+static_assert(koda::Decoder<koda::Lz77Decoder<char, DummyDecoder>, char>);
 
 using namespace std::literals;
 

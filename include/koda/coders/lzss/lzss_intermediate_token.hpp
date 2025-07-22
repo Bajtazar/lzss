@@ -68,19 +68,6 @@ class [[nodiscard]] LzssIntermediateToken {
     constexpr void Destroy();
 };
 
-template <std::integral InputToken, UnsignedIntegral PositionTp,
-          UnsignedIntegral LengthTp>
-struct TokenTraits<LzssIntermediateToken<InputToken, PositionTp, LengthTp>> {
-    using TokenType = LzssIntermediateToken<InputToken, PositionTp, LengthTp>;
-
-    static constexpr auto EncodeToken(TokenType token,
-                                      BitOutputRange auto&& output);
-
-    [[nodiscard]] static constexpr auto DecodeToken(BitInputRange auto&& input);
-
-    [[nodiscard]] static constexpr float TokenBitSize(TokenType token);
-};
-
 }  // namespace koda
 
 template <typename Token, typename Position, typename Length>

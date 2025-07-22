@@ -9,10 +9,10 @@
 
 #include "common.hpp"
 
-static_assert(koda::Encoder<koda::Lz77Encoder<uint8_t>, uint8_t>);
-
 using DummyEncoder =
     Lz77DummyAuxEncoder<koda::Lz77IntermediateToken<char>, true>;
+
+static_assert(koda::Encoder<koda::Lz77Encoder<char, DummyEncoder>, char>);
 
 BeginConstexprTest(Lz77EncoderAsymetricTest, EncodeTokens) {
     std::string input_sequence = "ala ma kota a kot ma ale";

@@ -2,7 +2,6 @@
 
 #include <koda/coders/coder.hpp>
 #include <koda/coders/coder_traits.hpp>
-#include <koda/coders/direct_encoder.hpp>
 #include <koda/coders/lz77/lz77_intermediate_token.hpp>
 #include <koda/collections/fused_dictionary_and_buffer.hpp>
 #include <koda/collections/search_binary_tree.hpp>
@@ -64,9 +63,8 @@ class Lz77EncoderBase {
 
 }  // namespace details
 
-template <std::integral Token = uint8_t,
-          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder =
-              DirectEncoder<Lz77IntermediateToken<Token>>,
+template <std::integral Token,
+          SizeAwareEncoder<Lz77IntermediateToken<Token>> AuxiliaryEncoder,
           typename Allocator = std::allocator<Token>>
 class Lz77Encoder;
 

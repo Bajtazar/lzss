@@ -1,7 +1,6 @@
 #pragma once
 
 #include <koda/coders/coder.hpp>
-#include <koda/coders/direct_decoder.hpp>
 #include <koda/coders/lz77/lz77_intermediate_token.hpp>
 #include <koda/collections/fused_dictionary_and_buffer.hpp>
 #include <koda/collections/search_binary_tree.hpp>
@@ -11,9 +10,8 @@
 
 namespace koda {
 
-template <std::integral Token = uint8_t,
-          Decoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder =
-              DirectDecoder<Lz77IntermediateToken<Token>>,
+template <std::integral Token,
+          Decoder<Lz77IntermediateToken<Token>> AuxiliaryDecoder,
           typename Allocator = std::allocator<Token>>
 class Lz77Decoder
     : public DecoderInterface<Token,
