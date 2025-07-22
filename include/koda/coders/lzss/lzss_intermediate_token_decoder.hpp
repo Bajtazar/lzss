@@ -46,7 +46,7 @@ class LzssIntermediateTokenDecoder
     PositionDecoder position_decoder_;
     LengthDecoder length_decoder_;
     State state_ = State::kBit;
-    PositionTp receiver_position_[1];
+    PositionTp receiver_position_[1]{};
 
     constexpr void ReceiveBit(bool bit);
 
