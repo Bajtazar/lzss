@@ -46,7 +46,8 @@ constexpr auto LzssIntermediateTokenEncoder<
     auto input_iter = std::ranges::begin(input);
     auto input_sent = std::ranges::end(input);
 
-    while ((input_iter != input_sent) && (output_iter != output_sent)) {
+    while (((input_iter != input_sent) || state_ != State::kBit) &&
+           (output_iter != output_sent)) {
         switch (state_) {
             case State::kBit:
                 EmitBit(*input_iter++, output_iter);
@@ -81,6 +82,8 @@ constexpr void LzssIntermediateTokenEncoder<
     if constexpr (IsSymetric) {
         *output_iter++ = token.holds_marker();
     }
+
+    std::println("Encoding: {} ", token);
 
     if (auto symbol = token.get_symbol()) {
         state_ = State::kToken;
