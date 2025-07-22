@@ -52,11 +52,9 @@ class Lz77IntermediateTokenEncoder
     TokenEncoder token_encoder_;
     PositionEncoder position_encoder_;
     LengthEncoder length_encoder_;
-    struct {
-        InputToken symbol_[1];
-        PositionTp position_[1];
-        LengthTp length_[1];
-    };
+    InputToken symbol_[1]{};
+    PositionTp position_[1]{};
+    LengthTp length_[1]{};
     State state_ = State::kInsert;
 
     static constexpr bool IsSymetric = TokenTraits::IsSymetric &&

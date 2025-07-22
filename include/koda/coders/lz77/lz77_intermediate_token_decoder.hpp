@@ -44,8 +44,8 @@ class Lz77IntermediateTokenDecoder
     TokenDecoder token_decoder_;
     PositionDecoder position_decoder_;
     LengthDecoder length_decoder_;
-    InputToken token_[1];
-    PositionTp position_[1];
+    InputToken token_[1]{};
+    PositionTp position_[1]{};
     State state_ = State::kToken;
 
     static constexpr bool IsSymetric = TokenTraits::IsSymetric &&

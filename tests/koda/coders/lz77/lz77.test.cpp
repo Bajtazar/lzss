@@ -1,10 +1,19 @@
+#include <koda/coders/huffman/huffman_decoder.hpp>
+#include <koda/coders/huffman/huffman_encoder.hpp>
 #include <koda/coders/lz77/lz77_decoder.hpp>
 #include <koda/coders/lz77/lz77_encoder.hpp>
+#include <koda/coders/lz77/lz77_intermediate_token_decoder.hpp>
+#include <koda/coders/lz77/lz77_intermediate_token_encoder.hpp>
+#include <koda/coders/rice/rice_decoder.hpp>
+#include <koda/coders/rice/rice_encoder.hpp>
+#include <koda/coders/uniform/uniform_decoder.hpp>
+#include <koda/coders/uniform/uniform_encoder.hpp>
 #include <koda/ranges/back_inserter_iterator.hpp>
 #include <koda/ranges/bit_iterator.hpp>
 #include <koda/tests/tests.hpp>
+#include <koda/utils/counter.hpp>
 
-static constexpr const char* kTestString =
+static constexpr std::string_view kTestString =
     "The number theoretic transform is based on generalizing the $ N$ th "
     "primitive root of unity (see §3.12) to a ``quotient ring'' instead of "
     "the usual field of complex numbers. Let $ W_N$ denote a primitive $ "
@@ -14,65 +23,107 @@ static constexpr const char* kTestString =
     "visits all of the ``DFT frequency points'' on the unit circle in the "
     "$ z$ plane, as $ k$ goes from 0 to $ N-1$";
 
-BeginConstexprTest(Lz77Test, NormalTest) {
-    std::string sequence = kTestString;
+static constexpr koda::HuffmanTable<char> BuildHuffmanTable() {
+    return koda::MakeHuffmanTable(koda::Counter{kTestString}.counted());
+}
 
-    koda::Lz77Encoder<char> encoder{1024, 16};
+using TokenEncoder = koda::HuffmanEncoder<char>;
+using TokenDecoder = koda::HuffmanDecoder<char>;
+
+using PositionEncoder = koda::UniformEncoder<uint32_t>;
+using PositionDecoder = koda::UniformDecoder<uint32_t>;
+
+using LengthEncoder = koda::RiceEncoder<uint16_t>;
+using LengthDecoder = koda::RiceDecoder<uint16_t>;
+
+using IMEncoder =
+    koda::Lz77IntermediateTokenEncoder<char, uint32_t, uint16_t, TokenEncoder,
+                                       PositionEncoder, LengthEncoder>;
+
+using IMDecoder =
+    koda::Lz77IntermediateTokenDecoder<char, uint32_t, uint16_t, TokenDecoder,
+                                       PositionDecoder, LengthDecoder>;
+
+using Lz77Encoder = koda::Lz77Encoder<char, IMEncoder>;
+using Lz77Decoder = koda::Lz77Decoder<char, IMDecoder>;
+
+BeginConstexprTest(Lz77Test, NormalTest) {
+    const auto kHuffmanTable = BuildHuffmanTable();
+
+    Lz77Encoder encoder{1024, 16,
+                        IMEncoder{TokenEncoder{kHuffmanTable},
+                                  PositionEncoder{10}, LengthEncoder{2}}};
 
     std::vector<uint8_t> encoded;
 
-    encoder(sequence, encoded | koda::views::InsertFromBack |
-                          koda::views::LittleEndianOutput);
+    encoder(kTestString, encoded | koda::views::InsertFromBack |
+                             koda::views::LittleEndianOutput)
+        .output_range.begin()
+        .Flush();
 
     std::string decoded;
 
-    koda::Lz77Decoder<char> decoder{1024, 16};
+    Lz77Decoder decoder{1024, 16,
+                        IMDecoder{TokenDecoder{kHuffmanTable},
+                                  PositionDecoder{10}, LengthDecoder{2}}};
 
-    decoder(sequence.size(), encoded | koda::views::LittleEndianInput,
+    decoder(kTestString.size(), encoded | koda::views::LittleEndianInput,
             decoded | koda::views::InsertFromBack);
 
-    ConstexprAssertEqual(sequence, decoded);
+    ConstexprAssertEqual(kTestString, decoded);
 };
 EndConstexprTest;
 
 BeginConstexprTest(Lz77Test, SmallBufferTest) {
-    std::string sequence = kTestString;
+    const auto kHuffmanTable = BuildHuffmanTable();
 
-    koda::Lz77Encoder<char> encoder{1024, 1};
+    Lz77Encoder encoder{1024, 16,
+                        IMEncoder{TokenEncoder{kHuffmanTable},
+                                  PositionEncoder{10}, LengthEncoder{1}}};
 
     std::vector<uint8_t> encoded;
 
-    encoder(sequence, encoded | koda::views::InsertFromBack |
-                          koda::views::LittleEndianOutput);
+    encoder(kTestString, encoded | koda::views::InsertFromBack |
+                             koda::views::LittleEndianOutput)
+        .output_range.begin()
+        .Flush();
 
     std::string decoded;
 
-    koda::Lz77Decoder<char> decoder{1024, 1};
+    Lz77Decoder decoder{1024, 16,
+                        IMDecoder{TokenDecoder{kHuffmanTable},
+                                  PositionDecoder{10}, LengthDecoder{1}}};
 
-    decoder(sequence.size(), encoded | koda::views::LittleEndianInput,
+    decoder(kTestString.size(), encoded | koda::views::LittleEndianInput,
             decoded | koda::views::InsertFromBack);
 
-    ConstexprAssertEqual(sequence, decoded);
+    ConstexprAssertEqual(kTestString, decoded);
 };
 EndConstexprTest;
 
 BeginConstexprTest(Lz77Test, SmallDictionaryTest) {
-    std::string sequence = kTestString;
+    const auto kHuffmanTable = BuildHuffmanTable();
 
-    koda::Lz77Encoder<char> encoder{16, 16};
+    Lz77Encoder encoder{16, 16,
+                        IMEncoder{TokenEncoder{kHuffmanTable},
+                                  PositionEncoder{10}, LengthEncoder{3}}};
 
     std::vector<uint8_t> encoded;
 
-    encoder(sequence, encoded | koda::views::InsertFromBack |
-                          koda::views::LittleEndianOutput);
+    encoder(kTestString, encoded | koda::views::InsertFromBack |
+                             koda::views::LittleEndianOutput)
+        .output_range.begin()
+        .Flush();
 
     std::string decoded;
 
-    koda::Lz77Decoder<char> decoder{16, 16};
+    Lz77Decoder decoder{16, 16,
+                        IMDecoder{TokenDecoder{kHuffmanTable},
+                                  PositionDecoder{10}, LengthDecoder{3}}};
 
-    decoder(sequence.size(), encoded | koda::views::LittleEndianInput,
+    decoder(kTestString.size(), encoded | koda::views::LittleEndianInput,
             decoded | koda::views::InsertFromBack);
 
-    ConstexprAssertEqual(sequence, decoded);
+    ConstexprAssertEqual(kTestString, decoded);
 }
 EndConstexprTest;
