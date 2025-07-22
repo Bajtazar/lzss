@@ -74,7 +74,8 @@ constexpr auto HuffmanEncoder<Token>::EncodeToken(const Token& token,
 }
 
 template <typename Token>
-[[noreturn]] constexpr void HuffmanEncoder<Token>::ThrowException(Token token) {
+[[noreturn]] constexpr void HuffmanEncoder<Token>::ThrowException(
+    Token token) const {
     throw FormattedException{
         "Token ({}) is not described by the huffman codes table", token};
 }

@@ -1,3 +1,5 @@
+#include <koda/coders/huffman/huffman_decoder.hpp>
+#include <koda/coders/huffman/huffman_encoder.hpp>
 #include <koda/coders/lzss/lzss_decoder.hpp>
 #include <koda/coders/lzss/lzss_encoder.hpp>
 #include <koda/coders/lzss/lzss_intermediate_token_decoder.hpp>
@@ -7,10 +9,7 @@
 #include <koda/ranges/back_inserter_iterator.hpp>
 #include <koda/ranges/bit_iterator.hpp>
 #include <koda/tests/tests.hpp>
-
-#include <gtest/gtest.h>
-
-#include <print>
+#include <koda/utils/counter.hpp>
 
 static constexpr std::string_view kTestString =
     "The number theoretic transform is based on generalizing the $ N$ th "
@@ -22,8 +21,12 @@ static constexpr std::string_view kTestString =
     "visits all of the ``DFT frequency points'' on the unit circle in the "
     "$ z$ plane, as $ k$ goes from 0 to $ N-1$";
 
-using TokenEncoder = koda::UniformEncoder<char>;
-using TokenDecoder = koda::UniformDecoder<char>;
+static constexpr koda::HuffmanTable<char> BuildHuffmanTable() {
+    return koda::MakeHuffmanTable(koda::Counter{kTestString}.counted());
+}
+
+using TokenEncoder = koda::HuffmanEncoder<char>;
+using TokenDecoder = koda::HuffmanDecoder<char>;
 
 using PositionEncoder = koda::UniformEncoder<uint32_t>;
 using PositionDecoder = koda::UniformDecoder<uint32_t>;
@@ -43,9 +46,10 @@ using LzssEncoder = koda::LzssEncoder<char, IMEncoder>;
 using LzssDecoder = koda::LzssDecoder<char, IMDecoder>;
 
 BeginConstexprTest(LzssTest, NormalTest) {
-    LzssEncoder encoder{
-        1024, 16,
-        IMEncoder{TokenEncoder{}, PositionEncoder{10}, LengthEncoder{4}}};
+    const auto kHuffmanTable = BuildHuffmanTable();
+    LzssEncoder encoder{1024, 16,
+                        IMEncoder{TokenEncoder{kHuffmanTable},
+                                  PositionEncoder{10}, LengthEncoder{4}}};
 
     std::vector<uint8_t> encoded;
 
@@ -56,9 +60,9 @@ BeginConstexprTest(LzssTest, NormalTest) {
 
     std::string decoded;
 
-    LzssDecoder decoder{
-        1024, 16,
-        IMDecoder{TokenDecoder{}, PositionDecoder{10}, LengthDecoder{4}}};
+    LzssDecoder decoder{1024, 16,
+                        IMDecoder{TokenDecoder{kHuffmanTable},
+                                  PositionDecoder{10}, LengthDecoder{4}}};
 
     decoder(kTestString.size(), encoded | koda::views::LittleEndianInput,
             decoded | koda::views::InsertFromBack);
@@ -68,9 +72,10 @@ BeginConstexprTest(LzssTest, NormalTest) {
 EndConstexprTest;
 
 BeginConstexprTest(LzssTest, SmallBufferTest) {
-    LzssEncoder encoder{
-        1024, 1,
-        IMEncoder{TokenEncoder{}, PositionEncoder{10}, LengthEncoder{0}}};
+    const auto kHuffmanTable = BuildHuffmanTable();
+    LzssEncoder encoder{1024, 1,
+                        IMEncoder{TokenEncoder{kHuffmanTable},
+                                  PositionEncoder{10}, LengthEncoder{0}}};
 
     std::vector<uint8_t> encoded;
 
@@ -81,9 +86,9 @@ BeginConstexprTest(LzssTest, SmallBufferTest) {
 
     std::string decoded;
 
-    LzssDecoder decoder{
-        1024, 1,
-        IMDecoder{TokenDecoder{}, PositionDecoder{10}, LengthDecoder{0}}};
+    LzssDecoder decoder{1024, 1,
+                        IMDecoder{TokenDecoder{kHuffmanTable},
+                                  PositionDecoder{10}, LengthDecoder{0}}};
 
     decoder(kTestString.size(), encoded | koda::views::LittleEndianInput,
             decoded | koda::views::InsertFromBack);
@@ -93,9 +98,10 @@ BeginConstexprTest(LzssTest, SmallBufferTest) {
 EndConstexprTest;
 
 BeginConstexprTest(LzssTest, SmallDictionaryTest) {
-    LzssEncoder encoder{
-        16, 16,
-        IMEncoder{TokenEncoder{}, PositionEncoder{4}, LengthEncoder{4}}};
+    const auto kHuffmanTable = BuildHuffmanTable();
+    LzssEncoder encoder{16, 16,
+                        IMEncoder{TokenEncoder{kHuffmanTable},
+                                  PositionEncoder{4}, LengthEncoder{4}}};
 
     std::vector<uint8_t> encoded;
 
@@ -106,9 +112,9 @@ BeginConstexprTest(LzssTest, SmallDictionaryTest) {
 
     std::string decoded;
 
-    LzssDecoder decoder{
-        16, 16,
-        IMDecoder{TokenDecoder{}, PositionDecoder{4}, LengthDecoder{4}}};
+    LzssDecoder decoder{16, 16,
+                        IMDecoder{TokenDecoder{kHuffmanTable},
+                                  PositionDecoder{4}, LengthDecoder{4}}};
 
     decoder(kTestString.size(), encoded | koda::views::LittleEndianInput,
             decoded | koda::views::InsertFromBack);

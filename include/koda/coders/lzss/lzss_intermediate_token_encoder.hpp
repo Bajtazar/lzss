@@ -71,7 +71,7 @@ class LzssIntermediateTokenEncoder
             PositionTp position[1];
             LengthTp length[1];
         };
-    } emitter_;
+    } emitter_{};
 
     constexpr void EmitBit(const token_type& token, auto& output_iter);
 
