@@ -16,9 +16,9 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
 class Lz77IntermediateTokenEncoder
     : public EncoderInterface<
           Lz77IntermediateToken<InputToken, PositionTp, LengthTp>,
-          EncoderInterface<Lz77IntermediateTokenEncoder<
-              InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
-              LengthEncoder>>> {
+          Lz77IntermediateTokenEncoder<InputToken, PositionTp, LengthTp,
+                                       TokenEncoder, PositionEncoder,
+                                       LengthEncoder>> {
     using TokenTraits = CoderTraits<TokenEncoder>;
     using PositionTraits = CoderTraits<PositionEncoder>;
     using LengthTraits = CoderTraits<LengthEncoder>;
@@ -42,18 +42,34 @@ class Lz77IntermediateTokenEncoder
     constexpr auto Flush(BitOutputRange auto&& output);
 
    private:
-    enum class State : uint8_t { kToken = 0, kPosition = 1, kLength = 2 };
+    enum class State : uint8_t {
+        kToken = 0,
+        kPosition = 1,
+        kLength = 2,
+        kInsert = 3
+    };
 
     TokenEncoder token_encoder_;
     PositionEncoder position_encoder_;
     LengthEncoder length_encoder_;
-    State state_ = State::kToken;
+    struct {
+        InputToken symbol_[1];
+        PositionTp position_[1];
+        LengthTp length_[1];
+    };
+    State state_ = State::kInsert;
 
     static constexpr bool IsSymetric = TokenTraits::IsSymetric &&
                                        PositionTraits::IsSymetric &&
                                        LengthTraits::IsSymetric;
-    static constexpr std::array<State, 3> kNextState{
-        {kPosition, kLength, kToken}};
+
+    constexpr void InsertSymbol(const token_type& token);
+
+    constexpr void EmitToken(auto& output_iter, auto& output_sent);
+
+    constexpr void EmitPosition(auto& output_iter, auto& output_sent);
+
+    constexpr void EmitLength(auto& output_iter, auto& output_sent);
 
     static_assert(IsSymetric || IsAsymetric,
                   "All of the decoders has to be either symetric or asymetric");
