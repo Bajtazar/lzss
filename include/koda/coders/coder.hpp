@@ -205,7 +205,6 @@ concept Encoder =
         {
             encoder(stream_length, input, output)
         } -> SpecializationOf<CoderResult>;
-        typename EncoderTp::token_type;
     };
 
 template <typename EncoderTp, typename Tp>
@@ -230,7 +229,6 @@ concept Decoder =
         {
             decoder(stream_length, input, output)
         } -> SpecializationOf<CoderResult>;
-        typename DecoderTp::token_type;
     };
 
 }  // namespace koda
