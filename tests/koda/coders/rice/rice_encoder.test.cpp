@@ -69,34 +69,33 @@ BeginConstexprTest(RiceEncoderTest, EncodeFourthDegree) {
 }
 EndConstexprTest;
 
-// BeginConstexprTest(UniformEncoderTest, PartialInputEncoding) {
-//     const std::vector<uint8_t> expected{{0x43, 0x74, 0x35, 0x33}};
-//     std::vector<uint8_t> target;
+BeginConstexprTest(RiceEncoderTest, PartialInputEncoding) {
+    const std::vector<uint8_t> kInput{{1, 4, 8, 13, 16}};
+    const std::vector<bool> kExpected = {
+        1, 1, 0, 0, 0,    // 1
+        1, 0, 0, 1, 0,    // 4
+        1, 0, 0, 0, 1,    // 8
+        1, 1, 0, 1, 1,    // 13
+        0, 1, 0, 0, 0, 0  // 16
+    };
+    std::vector<bool> target;
 
-//     koda::UniformEncoder<uint8_t> encoder;
+    koda::RiceEncoder<uint8_t> encoder{4};
 
-//     encoder.EncodeN(
-//         2, expected,
-//         target | koda::views::InsertFromBack |
-//         koda::views::LittleEndianOutput);
+    encoder.EncodeN(2, kInput, target | koda::views::InsertFromBack);
 
-//     ConstexprAssertEqual(expected | koda::views::Take(2), target);
+    ConstexprAssertEqual(kExpected | koda::views::Take(10), target);
 
-//     encoder.EncodeN(
-//         1, expected | std::views::drop(2),
-//         target | koda::views::InsertFromBack |
-//         koda::views::LittleEndianOutput);
+    encoder.EncodeN(1, kInput | std::views::drop(2),
+                    target | koda::views::InsertFromBack);
 
-//     ConstexprAssertEqual(expected | koda::views::Take(3), target);
+    ConstexprAssertEqual(kExpected | koda::views::Take(15), target);
 
-//     encoder(
-//         expected | std::views::drop(3),
-//         target | koda::views::InsertFromBack |
-//         koda::views::LittleEndianOutput);
+    encoder(kInput | std::views::drop(3), target | koda::views::InsertFromBack);
 
-//     ConstexprAssertEqual(expected, target);
-// }
-// EndConstexprTest;
+    ConstexprAssertEqual(kExpected, target);
+}
+EndConstexprTest;
 
 // BeginConstexprTest(UniformEncoderTest, PartialOutputEncoding) {
 //     const std::vector<uint8_t> kSource{{0x43, 0x74, 0x35, 0x33}};
