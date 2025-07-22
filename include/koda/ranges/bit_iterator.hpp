@@ -78,6 +78,10 @@ class BitIteratorBase {
 
     [[nodiscard]] static inline consteval size_t ByteLength() noexcept;
 
+    // It seems that for derived types self is deduces as the derived type
+    // itself which makes this increadibly useful
+    [[nodiscard]] constexpr auto Rebind(this auto&& self, Iter other) noexcept;
+
    protected:
     using TemporaryTp = std::iter_value_t<Iter>;
 

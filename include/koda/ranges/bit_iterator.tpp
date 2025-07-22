@@ -22,6 +22,15 @@ BitIteratorBase<Iter>::ByteLength() noexcept {
     return sizeof(TemporaryTp) * CHAR_BIT;
 }
 
+template <BitIteratorUnderlyingInputOrOutputIterator Iter>
+[[nodiscard]] constexpr auto BitIteratorBase<Iter>::Rebind(
+    this auto&& self, Iter other) noexcept {
+    // should decay
+    auto copy = self;
+    copy.iter_ = other;
+    return copy;
+}
+
 template <BitIteratorUnderlyingInputIterator Iter>
 [[nodiscard]] constexpr LittleEndianInputBitIter<Iter>::bit
 LittleEndianInputBitIter<Iter>::operator*() const noexcept {
