@@ -5,11 +5,8 @@
 #include <koda/ranges/bit_iterator.hpp>
 #include <koda/tests/tests.hpp>
 
-#include <gtest/gtest.h>
-
 #include <bitset>
 #include <iterator>
-#include <print>
 #include <vector>
 
 static_assert(koda::SizeAwareEncoder<koda::RiceEncoder<uint8_t>, uint8_t>);

@@ -16,7 +16,7 @@ constexpr auto RiceDecoder<Token>::Decode(
     auto out_sent = std::ranges::end(output);
 
     while ((in_iter != in_sent) && (out_iter != out_sent)) {
-        std::tie(out_iter, in_iter) = SetReceiver(out_iter, in_iter, in_sent);
+        std::tie(out_iter, in_iter) = DecodeToken(out_iter, in_iter, in_sent);
     }
 
     return CoderResult{std::move(in_iter), std::move(in_sent),
@@ -29,22 +29,25 @@ constexpr auto RiceDecoder<Token>::Initialize(BitInputRange auto&& input) {
 }
 
 template <UnsignedIntegral Token>
-constexpr auto RiceDecoder<Token>::SetReceiver(auto out_iter, auto iter,
+constexpr auto RiceDecoder<Token>::DecodeToken(auto out_iter, auto iter,
                                                const auto& sent) {
-    bool last_iter = *iter;
-    for (; !bits_ && (iter != sent) && last_iter; ++iter, ++token) {
+    bool last_iter = *iter++;
+    for (; !bits_ && !last_iter && (iter != sent); ++iter, ++token_) {
         last_iter = *iter;
     }
 
-    if (!bits_ && last_iter) {
+    if (bits_) {
+        token_ = (token_ << 1) | *iter++;
+        --bits_;
+    } else if (last_iter) {
         bits_ = order_;
     }
 
-    for (; (bits_ != 0) && (iter != sent); ++iter) {
-        order_ = (order_ << 1) | *iter;
-        if (!--bits) {
+    for (; bits_ && (iter != sent); ++iter) {
+        token_ = (token_ << 1) | *iter;
+        if (!--bits_) {
             *out_iter++ = std::move(token_);
-            token_{};
+            token_ = Token{};
         }
     }
     return std::pair{std::move(out_iter), std::move(iter)};
