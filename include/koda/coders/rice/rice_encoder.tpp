@@ -57,8 +57,8 @@ constexpr auto RiceEncoder<Token>::FlushEmitter(auto iter, const auto& sent) {
         *iter++ = 1;
     }
 
-    for (; (bits_ != 0) && (iter != sent); ++iter, --bits_, token_ >>= 1) {
-        *iter = token_ & 1;
+    for (; (bits_ != 0) && (iter != sent); ++iter, --bits_) {
+        *iter = 1 & (token_ >> (bits_ - 1));
     }
 
     return iter;

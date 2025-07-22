@@ -35,10 +35,10 @@ EndConstexprTest;
 BeginConstexprTest(RiceEncoderTest, EncodeSecondDegree) {
     const std::vector<uint8_t> kInput{{1, 4, 8, 13}};
     const std::vector<bool> kExpected = {
-        1, 1, 0,          // 1
+        1, 0, 1,          // 1
         0, 1, 0, 0,       // 4
         0, 0, 1, 0, 0,    // 8
-        0, 0, 0, 1, 1, 0  // 13
+        0, 0, 0, 1, 0, 1  // 13
     };
     std::vector<bool> target;
 
@@ -53,10 +53,10 @@ EndConstexprTest;
 BeginConstexprTest(RiceEncoderTest, EncodeFourthDegree) {
     const std::vector<uint8_t> kInput{{1, 4, 8, 13, 16}};
     const std::vector<bool> kExpected = {
-        1, 1, 0, 0, 0,    // 1
-        1, 0, 0, 1, 0,    // 4
-        1, 0, 0, 0, 1,    // 8
-        1, 1, 0, 1, 1,    // 13
+        1, 0, 0, 0, 1,    // 1
+        1, 0, 1, 0, 0,    // 4
+        1, 1, 0, 0, 0,    // 8
+        1, 1, 1, 0, 1,    // 13
         0, 1, 0, 0, 0, 0  // 16
     };
     std::vector<bool> target;
@@ -72,10 +72,10 @@ EndConstexprTest;
 BeginConstexprTest(RiceEncoderTest, PartialInputEncoding) {
     const std::vector<uint8_t> kInput{{1, 4, 8, 13, 16}};
     const std::vector<bool> kExpected = {
-        1, 1, 0, 0, 0,    // 1
-        1, 0, 0, 1, 0,    // 4
-        1, 0, 0, 0, 1,    // 8
-        1, 1, 0, 1, 1,    // 13
+        1, 0, 0, 0, 1,    // 1
+        1, 0, 1, 0, 0,    // 4
+        1, 1, 0, 0, 0,    // 8
+        1, 1, 1, 0, 1,    // 13
         0, 1, 0, 0, 0, 0  // 16
     };
     std::vector<bool> target;
@@ -100,10 +100,10 @@ EndConstexprTest;
 BeginConstexprTest(RiceEncoderTest, PartialOutputEncoding) {
     const std::vector<uint8_t> kInput{{1, 4, 8, 13, 16}};
     const std::vector<bool> kExpected = {
-        1, 1, 0, 0, 0,    // 1
-        1, 0, 0, 1, 0,    // 4
-        1, 0, 0, 0, 1,    // 8
-        1, 1, 0, 1, 1,    // 13
+        1, 0, 0, 0, 1,    // 1
+        1, 0, 1, 0, 0,    // 4
+        1, 1, 0, 0, 0,    // 8
+        1, 1, 1, 0, 1,    // 13
         0, 1, 0, 0, 0, 0  // 16
     };
     std::vector<bool> stream;
