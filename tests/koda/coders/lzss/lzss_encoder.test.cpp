@@ -71,9 +71,7 @@ BeginConstexprTest(LzssEncoder, EncodeTokens) {
 
     std::vector<uint8_t> target;
 
-    koda::LzssEncoder<char,
-                      DummyEncoder>
-        encoder{1024, 4};
+    koda::LzssEncoder<char, DummyEncoder> encoder{1024, 4};
     encoder(input_sequence, target | koda::views::InsertFromBack |
                                 koda::views::LittleEndianOutput);
 
@@ -107,10 +105,7 @@ BeginConstexprTest(LzssEncoder, EncodeTokensRealScenario) {
 
     std::vector<uint8_t> target;
 
-    koda::LzssEncoder<char,
-                      DummyEncoder>
-        encoder{1024, 7,
-                DummyEncoder{false}};
+    koda::LzssEncoder<char, DummyEncoder> encoder{1024, 7, DummyEncoder{false}};
 
     encoder(input_sequence, target | koda::views::InsertFromBack |
                                 koda::views::LittleEndianOutput);
@@ -151,10 +146,7 @@ BeginConstexprTest(LzssEncoder, EncodeTokensRealScenarioTooShortLookAhead) {
 
     std::vector<uint8_t> target;
 
-    koda::LzssEncoder<char,
-                      DummyEncoder>
-        encoder{1024, 4,
-                DummyEncoder{false}};
+    koda::LzssEncoder<char, DummyEncoder> encoder{1024, 4, DummyEncoder{false}};
     encoder(input_sequence, target | koda::views::InsertFromBack |
                                 koda::views::LittleEndianOutput);
 
@@ -182,9 +174,7 @@ BeginConstexprTest(LzssEncoder, EncodeTokensRepeatitions) {
 
     std::vector<uint8_t> target;
 
-    koda::LzssEncoder<char,
-                      DummyEncoder>
-        encoder{1024, 3};
+    koda::LzssEncoder<char, DummyEncoder> encoder{1024, 3};
     encoder(input_sequence, target | koda::views::InsertFromBack |
                                 koda::views::LittleEndianOutput);
 
@@ -228,9 +218,7 @@ BeginConstexprTest(LzssEncoder, EncodeTokensShortDictionary) {
 
     std::vector<uint8_t> target;
 
-    koda::LzssEncoder<char,
-                      DummyEncoder>
-        encoder{8, 3};
+    koda::LzssEncoder<char, DummyEncoder> encoder{8, 3};
     encoder(input_sequence, target | koda::views::InsertFromBack |
                                 koda::views::LittleEndianOutput);
 
@@ -245,9 +233,7 @@ BeginConstexprTest(LzssEncoder, EncodeRepeatingSequence) {
     std::vector expected_result = {koda::LzssIntermediateToken<char>{'a'},
                                    koda::LzssIntermediateToken<char>{0, 3}};
 
-    koda::LzssEncoder<char,
-                      DummyEncoder>
-        encoder{8, 3};
+    koda::LzssEncoder<char, DummyEncoder> encoder{8, 3};
     encoder(input_sequence, target | koda::views::InsertFromBack |
                                 koda::views::LittleEndianOutput);
 

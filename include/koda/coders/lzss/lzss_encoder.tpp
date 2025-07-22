@@ -146,9 +146,9 @@ LzssEncoder<Token, AuxiliaryEncoder, Allocator>::EncodeTokenOrMatch(
     IMToken match_token{static_cast<uint32_t>(match.match_position),
                         static_cast<uint16_t>(match.match_length)};
 
-    float est_match_bitsize = auxiliary_encoder_.TokenBitSize(match_token);
-    float est_symbol_bitsize =
-        auxiliary_encoder_.TokenBitSize(symbol_token) / match.match_length;
+    float est_match_bitsize =
+        auxiliary_encoder_.TokenBitSize(match_token) / match.match_length;
+    float est_symbol_bitsize = auxiliary_encoder_.TokenBitSize(symbol_token);
 
     if (est_symbol_bitsize <= est_match_bitsize) {
         return EncodeIntermediateToken(std::move(symbol_token),
