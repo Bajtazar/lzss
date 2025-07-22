@@ -32,6 +32,24 @@ BeginConstexprTest(RiceEncoderTest, EncodeFirstDegree) {
 }
 EndConstexprTest;
 
+BeginConstexprTest(RiceEncoderTest, EncodeFirstSecond) {
+    const std::vector<uint8_t> kInput{{1, 4, 8, 13}};
+    const std::vector<bool> kExpected = {
+        1, 1, 0,          // 1
+        0, 1, 0, 0,       // 4
+        0, 0, 1, 0, 0,    // 8
+        0, 0, 0, 1, 1, 0  // 13
+    };
+    std::vector<bool> target;
+
+    koda::RiceEncoder<uint8_t> encoder{2};
+
+    encoder(kInput, target | koda::views::InsertFromBack);
+
+    ConstexprAssertEqual(kExpected, target);
+}
+EndConstexprTest;
+
 // BeginConstexprTest(UniformEncoderTest, PartialInputEncoding) {
 //     const std::vector<uint8_t> expected{{0x43, 0x74, 0x35, 0x33}};
 //     std::vector<uint8_t> target;
