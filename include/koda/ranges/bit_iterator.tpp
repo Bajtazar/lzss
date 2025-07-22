@@ -23,12 +23,17 @@ BitIteratorBase<Iter>::ByteLength() noexcept {
 }
 
 template <BitIteratorUnderlyingInputOrOutputIterator Iter>
-[[nodiscard]] constexpr auto BitIteratorBase<Iter>::Rebind(
-    this auto&& self, Iter other) noexcept {
+[[nodiscard]] constexpr auto BitIteratorBase<Iter>::Rebind(this auto&& self,
+                                                           Iter other) {
     // should decay
     auto copy = self;
     copy.iter_ = other;
     return copy;
+}
+
+template <BitIteratorUnderlyingInputOrOutputIterator Iter>
+[[nodiscard]] constexpr auto&& BitIteratorBase<Iter>::Base(this auto&& self) {
+    return std::forward_like<decltype(self)>(self.iter_);
 }
 
 template <BitIteratorUnderlyingInputIterator Iter>

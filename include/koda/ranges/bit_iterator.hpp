@@ -80,7 +80,9 @@ class BitIteratorBase {
 
     // It seems that for derived types self is deduces as the derived type
     // itself which makes this increadibly useful
-    [[nodiscard]] constexpr auto Rebind(this auto&& self, Iter other) noexcept;
+    [[nodiscard]] constexpr auto Rebind(this auto&& self, Iter other);
+
+    [[nodiscard]] constexpr auto&& Base(this auto&& self);
 
    protected:
     using TemporaryTp = std::iter_value_t<Iter>;

@@ -15,10 +15,10 @@ constexpr UniformDecoder<Token>::UniformDecoder(
     const UniformDecoder& other) noexcept
     : token_{other.token_[0]},
       receiver_{other.receiver_.first.Rebind(std::ranges::begin(token_)),
-                other.receiver_.second.Rebind(other.token_bit_size_ ==
-                                                      (sizeof(Token) * CHAR_BIT)
-                                                  ? std::ranges::begin(token_)
-                                                  : std::ranges::end(token_))},
+                other.receiver_.second.Rebind(
+                    other.token_bit_size_ == (sizeof(Token) * CHAR_BIT)
+                        ? std::ranges::end(token_)
+                        : std::ranges::begin(token_))},
       token_bit_size_{other.token_bit_size_} {}
 
 template <std::integral Token>
@@ -29,8 +29,8 @@ constexpr UniformDecoder<Token>& UniformDecoder<Token>::operator=(
     receiver_ = {other.receiver_.first.Rebind(std::ranges::begin(token_)),
                  other.receiver_.second.Rebind(
                      other.token_bit_size_ == (sizeof(Token) * CHAR_BIT)
-                         ? std::ranges::begin(token_)
-                         : std::ranges::end(token_))};
+                         ? std::ranges::end(token_)
+                         : std::ranges::begin(token_))};
     return *this;
 }
 
