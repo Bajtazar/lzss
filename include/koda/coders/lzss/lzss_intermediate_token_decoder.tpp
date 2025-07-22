@@ -112,7 +112,7 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
 constexpr void LzssIntermediateTokenDecoder<
     InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
     LengthDecoder>::ReceivePosition(auto& input_iter, auto& input_sent) {
-    auto [in, out] = token_decoder_.Decode(
+    auto [in, out] = position_decoder_.Decode(
         std::ranges::subrange{input_iter, input_sent},
         std::ranges::subrange{std::ranges::begin(receiver_position_),
                               std::ranges::end(receiver_position_)});
@@ -135,9 +135,9 @@ constexpr void LzssIntermediateTokenDecoder<
     LengthTp length[1];
 
     auto [in, out] =
-        token_decoder_.Decode(std::ranges::subrange{input_iter, input_sent},
-                              std::ranges::subrange{std::ranges::begin(length),
-                                                    std::ranges::end(length)});
+        length_decoder_.Decode(std::ranges::subrange{input_iter, input_sent},
+                               std::ranges::subrange{std::ranges::begin(length),
+                                                     std::ranges::end(length)});
 
     input_iter = std::ranges::begin(in);
     input_sent = std::ranges::end(in);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <utility>
 
 namespace koda {
@@ -29,8 +30,10 @@ constexpr float LzssIntermediateTokenEncoder<
         return 1 + token_encoder_.TokenBitSize(*symbol);
     }
     auto [pos, len] = *token.get_marker();
-    return 1 + position_encoder_.TokenBitSize(pos) +
-           length_encoder_.TokenBitSize(len);
+    assert(len != 0 && "Token must have length");
+    return static_cast<float>(1 + position_encoder_.TokenBitSize(pos) +
+                              length_encoder_.TokenBitSize(len)) /
+           len;
 }
 
 template <std::integral InputToken, UnsignedIntegral PositionTp,
@@ -82,8 +85,6 @@ constexpr void LzssIntermediateTokenEncoder<
     if constexpr (IsSymetric) {
         *output_iter++ = token.holds_marker();
     }
-
-    std::println("Encoding: {} ", token);
 
     if (auto symbol = token.get_symbol()) {
         state_ = State::kToken;
