@@ -36,7 +36,7 @@ template <std::integral InputToken, UnsignedIntegral PositionTp,
           SizeAwareEncoder<LengthTp> LengthEncoder>
 constexpr auto Lz77IntermediateTokenEncoder<
     InputToken, PositionTp, LengthTp, TokenEncoder, PositionEncoder,
-    LengthEncoder>::Encode(InputRange<Token> auto&& input,
+    LengthEncoder>::Encode(InputRange<token_type> auto&& input,
                            BitOutputRange auto&& output) {
     auto output_iter = std::ranges::begin(output);
     auto output_sent = std::ranges::end(output);

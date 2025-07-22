@@ -7,12 +7,12 @@ namespace koda {
 template <std::integral InputToken, UnsignedIntegral PositionTp,
           UnsignedIntegral LengthTp, Decoder<InputToken> TokenDecoder,
           Decoder<PositionTp> PositionDecoder, Decoder<LengthTp> LengthDecoder>
-constexpr Lz77IntermediateTokenDeoder<
+constexpr Lz77IntermediateTokenDecoder<
     InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
-    LengthDecoder>::Lz77IntermediateTokenDeoder(TokenDecoder token_decoder,
-                                                PositionDecoder
-                                                    position_decoder,
-                                                LengthDecoder length_decoder)
+    LengthDecoder>::Lz77IntermediateTokenDecoder(TokenDecoder token_decoder,
+                                                 PositionDecoder
+                                                     position_decoder,
+                                                 LengthDecoder length_decoder)
     : token_decoder_{std::move(token_decoder)},
       position_decoder_{std::move(position_decoder)},
       length_decoder_{std::move(length_decoder)} {}
@@ -20,7 +20,7 @@ constexpr Lz77IntermediateTokenDeoder<
 template <std::integral InputToken, UnsignedIntegral PositionTp,
           UnsignedIntegral LengthTp, Decoder<InputToken> TokenDecoder,
           Decoder<PositionTp> PositionDecoder, Decoder<LengthTp> LengthDecoder>
-constexpr auto Lz77IntermediateTokenDeoder<
+constexpr auto Lz77IntermediateTokenDecoder<
     InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
     LengthDecoder>::Initialize(BitInputRange auto&& input) {
     auto input_iter = std::ranges::begin(input);
@@ -43,10 +43,11 @@ constexpr auto Lz77IntermediateTokenDeoder<
 template <std::integral InputToken, UnsignedIntegral PositionTp,
           UnsignedIntegral LengthTp, Decoder<InputToken> TokenDecoder,
           Decoder<PositionTp> PositionDecoder, Decoder<LengthTp> LengthDecoder>
-constexpr auto Lz77IntermediateTokenDeoder<
+constexpr auto Lz77IntermediateTokenDecoder<
     InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
     LengthDecoder>::Decode(BitInputRange auto&& input,
-                           std::ranges::output_range<Token> auto&& output) {
+                           std::ranges::output_range<token_type> auto&&
+                               output) {
     auto output_iter = std::ranges::begin(output);
     auto output_sent = std::ranges::end(output);
     auto input_iter = std::ranges::begin(input);
@@ -73,7 +74,7 @@ constexpr auto Lz77IntermediateTokenDeoder<
 template <std::integral InputToken, UnsignedIntegral PositionTp,
           UnsignedIntegral LengthTp, Decoder<InputToken> TokenDecoder,
           Decoder<PositionTp> PositionDecoder, Decoder<LengthTp> LengthDecoder>
-constexpr void Lz77IntermediateTokenDeoder<
+constexpr void Lz77IntermediateTokenDecoder<
     InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
     LengthDecoder>::ReceiveToken(auto& input_iter, auto& input_sent) {
     auto [in, out] =
@@ -92,7 +93,7 @@ constexpr void Lz77IntermediateTokenDeoder<
 template <std::integral InputToken, UnsignedIntegral PositionTp,
           UnsignedIntegral LengthTp, Decoder<InputToken> TokenDecoder,
           Decoder<PositionTp> PositionDecoder, Decoder<LengthTp> LengthDecoder>
-constexpr void Lz77IntermediateTokenDeoder<
+constexpr void Lz77IntermediateTokenDecoder<
     InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
     LengthDecoder>::ReceivePosition(auto& input_iter, auto& input_sent) {
     auto [in, out] = position_decoder_.Decode(
@@ -111,7 +112,7 @@ constexpr void Lz77IntermediateTokenDeoder<
 template <std::integral InputToken, UnsignedIntegral PositionTp,
           UnsignedIntegral LengthTp, Decoder<InputToken> TokenDecoder,
           Decoder<PositionTp> PositionDecoder, Decoder<LengthTp> LengthDecoder>
-constexpr void Lz77IntermediateTokenDeoder<
+constexpr void Lz77IntermediateTokenDecoder<
     InputToken, PositionTp, LengthTp, TokenDecoder, PositionDecoder,
     LengthDecoder>::ReceiveLength(auto& input_iter, auto& input_sent,
                                   auto& output_iter) {
@@ -126,7 +127,7 @@ constexpr void Lz77IntermediateTokenDeoder<
     input_sent = std::ranges::end(in);
 
     if (out.empty()) {
-        *output_iter++ = token_type{token_[0], position_[0], length_[0]};
+        *output_iter++ = token_type{token_[0], position_[0], length[0]};
         state_ = State::kToken;
     }
 }

@@ -29,14 +29,14 @@ class Lz77IntermediateTokenDecoder
                                         PositionTraits::IsAsymetric &&
                                         LengthTraits::IsAsymetric;
 
-    constexpr explicit Lz77IntermediateTokenDeoder(
+    constexpr explicit Lz77IntermediateTokenDecoder(
         TokenDecoder token_decoder, PositionDecoder position_decoder,
         LengthDecoder length_decoder);
 
     constexpr auto Initialize(BitInputRange auto&& input);
 
     constexpr auto Decode(BitInputRange auto&& input,
-                          std::ranges::output_range<Token> auto&& output);
+                          std::ranges::output_range<token_type> auto&& output);
 
    private:
     enum class State : uint8_t { kToken = 0, kPosition = 1, kLength = 2 };

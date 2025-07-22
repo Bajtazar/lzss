@@ -36,7 +36,7 @@ class Lz77IntermediateTokenEncoder
 
     constexpr float TokenBitSize(const token_type& token) const;
 
-    constexpr auto Encode(InputRange<Token> auto&& input,
+    constexpr auto Encode(InputRange<token_type> auto&& input,
                           BitOutputRange auto&& output);
 
     constexpr auto Flush(BitOutputRange auto&& output);
