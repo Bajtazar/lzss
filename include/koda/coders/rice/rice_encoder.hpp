@@ -1,10 +1,11 @@
 #pragma once
 
 #include <koda/coders/coder.hpp>
+#include <koda/utils/concepts.hpp>
 
 namespace koda {
 
-template <std::integral Token>
+template <UnsignedIntegral Token>
 class RiceEncoder : public EncoderInterface<Token, RiceEncoder<Token>> {
    public:
     using token_type = Token;

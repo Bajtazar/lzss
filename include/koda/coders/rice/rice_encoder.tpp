@@ -2,18 +2,18 @@
 
 namespace koda {
 
-template <std::integral Token>
+template <UnsignedIntegral Token>
 constexpr RiceEncoder<Token>::RiceEncoder(size_t order)
     : mask_{static_cast<Token>((1 << order) - 1)},
       limit_{1 + order},
       order_{order} {}
 
-template <std::integral Token>
+template <UnsignedIntegral Token>
 constexpr float RiceEncoder<Token>::TokenBitSize(Token token) const {
     return order_ + 1 + (token >> order_);
 }
 
-template <std::integral Token>
+template <UnsignedIntegral Token>
 constexpr auto RiceEncoder<Token>::Encode(InputRange<Token> auto&& input,
                                           BitOutputRange auto&& output) {
     auto sentinel = std::ranges::end(output);
@@ -28,21 +28,21 @@ constexpr auto RiceEncoder<Token>::Encode(InputRange<Token> auto&& input,
                         std::move(sentinel));
 }
 
-template <std::integral Token>
+template <UnsignedIntegral Token>
 constexpr auto RiceEncoder<Token>::Flush(BitOutputRange auto&& output) {
     auto sentinel = std::ranges::end(output);
     return std::ranges::subrange{
         FlushEmitter(std::ranges::begin(output), sentinel), sentinel};
 }
 
-template <std::integral Token>
+template <UnsignedIntegral Token>
 constexpr auto RiceEncoder<Token>::SetEmitter(const Token& token, auto iter) {
     token_ = token;
     bits_ = limit_ + (token >> order_);
     return iter;
 }
 
-template <std::integral Token>
+template <UnsignedIntegral Token>
 constexpr auto RiceEncoder<Token>::FlushEmitter(auto iter, const auto& sent) {
     if (!bits_) {
         return iter;
@@ -64,7 +64,7 @@ constexpr auto RiceEncoder<Token>::FlushEmitter(auto iter, const auto& sent) {
     return iter;
 }
 
-template <std::integral Token>
+template <UnsignedIntegral Token>
 constexpr auto RiceEncoder<Token>::EncodeTokens(InputRange<Token> auto&& input,
                                                 auto iter, auto sentinel) {
     auto input_iter = std::ranges::begin(input);
