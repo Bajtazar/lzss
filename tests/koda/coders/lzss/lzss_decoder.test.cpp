@@ -17,7 +17,11 @@ class LzssDummyAuxDecoder
         : tokens_{std::move(tokens)} {}
 
     constexpr float TokenBitSize(Tp token) const {
-        return koda::TokenTraits<Tp>::TokenBitSize(token);
+        if (auto symbol = token.get_symbol()) {
+            return 1 + sizeof(*symbol);
+        }
+        auto [pos, len] = *token.get_marker();
+        return (1.f + sizeof(pos) + sizeof(len)) / len;
     }
 
     constexpr auto Initialize(koda::BitInputRange auto&& input) {
