@@ -3,12 +3,14 @@
 namespace koda {
 
 template <std::integral Token>
-constexpr RiceEncoder<Token>::RiceEncoder(uint8_t order)
-    : mask_{(1 << mask) - 1}, limit_{1 << mask}, order_{order} {}
+constexpr RiceEncoder<Token>::RiceEncoder(size_t order)
+    : mask_{static_cast<Token>((1 << order) - 1)},
+      limit_{1 + order},
+      order_{order} {}
 
 template <std::integral Token>
 constexpr float RiceEncoder<Token>::TokenBitSize(Token token) const {
-    return order + 1 + (token >> order);
+    return order_ + 1 + (token >> order_);
 }
 
 template <std::integral Token>
@@ -34,30 +36,28 @@ constexpr auto RiceEncoder<Token>::Flush(BitOutputRange auto&& output) {
 }
 
 template <std::integral Token>
-constexpr auto RiceEncoder<Token>::SetEmitter(const Token& token, auto& iter) {
-    *iter++ = 0;  // emit first zero
+constexpr auto RiceEncoder<Token>::SetEmitter(const Token& token, auto iter) {
     token_ = token;
-    bits_ = order;
+    bits_ = limit_ + (token >> order_);
     return iter;
 }
 
 template <std::integral Token>
-constexpr auto& RiceEncoder<Token>::FlushEmitter(auto& iter,
-                                                 const auto& sentinel) {
+constexpr auto RiceEncoder<Token>::FlushEmitter(auto iter, const auto& sent) {
     if (!bits_) {
         return iter;
     }
 
-    for (; (token_ > limit_) && (iter != sent); ++iter, --token_) {
+    for (; (bits_ > limit_) && (iter != sent); ++iter, --bits_) {
         *iter = 0;
     }
 
-    if ((token == limit_) && (iter != sent)) {
-        --token_;
+    if ((bits_ == limit_) && (iter != sent)) {
+        --bits_;
         *iter++ = 1;
     }
 
-    for (; (bits_ != 0) && (iter != sent); ++iter, token >>= 1) {
+    for (; (bits_ != 0) && (iter != sent); ++iter, --bits_, token_ >>= 1) {
         *iter = token_ & 1;
     }
 
